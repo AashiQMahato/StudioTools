@@ -56,8 +56,8 @@ export interface EditorDoc {
     strokes: readonly Stroke[];
 }
 
-export const TRANSPARENT: BackgroundSpec = { kind: "transparent" };
-export const CENTRED: Placement = { x: 0, y: 0, scale: 1 };
+const TRANSPARENT: BackgroundSpec = { kind: "transparent" };
+const CENTRED: Placement = { x: 0, y: 0, scale: 1 };
 export const INITIAL_DOC: EditorDoc = { background: TRANSPARENT, placement: CENTRED, strokes: [] };
 
 /** A continuous change (dragging, a colour wheel, a slider) becomes one undo step once it settles. */

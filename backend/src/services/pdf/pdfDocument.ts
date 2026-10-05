@@ -4,7 +4,7 @@ import { env } from "../../config/env.js";
 import { AppError } from "../../utils/AppError.js";
 
 export const invalidPdf = () => new AppError("We couldn't read this PDF. It may be damaged.", 422, "INVALID_PDF");
-export const encryptedPdf = () => new AppError("This PDF is password-protected. Remove the password, then try again.", 422, "PDF_ENCRYPTED");
+const encryptedPdf = () => new AppError("This PDF is password-protected. Remove the password, then try again.", 422, "PDF_ENCRYPTED");
 export const tooManyPages = () => new AppError(`That's more than ${env.documents.maxPages} pages. Please use a shorter document.`, 413, "TOO_MANY_PAGES");
 
 /** A PDF starts with "%PDF-" (a few bytes of junk before it are tolerated, as readers do). */

@@ -46,7 +46,7 @@ interface Box {
  * Where an image goes: the page's size and the box the image is drawn in (points, from the top
  * left). The frontend's preview uses the same arithmetic, so what you see is what you get.
  */
-export function placeImage(image: { width: number; height: number }, options: ImagesToPdfOptions): { page: { width: number; height: number }; box: Box; crop: boolean } {
+function placeImage(image: { width: number; height: number }, options: ImagesToPdfOptions): { page: { width: number; height: number }; box: Box; crop: boolean } {
     const margin = Math.max(0, options.margin) * MM;
     const natural = { width: image.width * PX, height: image.height * PX };
     if (options.size === "original") {

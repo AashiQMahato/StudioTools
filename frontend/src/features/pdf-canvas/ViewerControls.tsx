@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import { type useZoom, ZOOM_STEPS } from "./useZoom";
 
-export const toolbarButton =
+const toolbarButton =
     "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 aria-pressed:bg-[var(--brand-soft)] aria-pressed:text-[var(--brand)] pointer-coarse:size-11";
 
 export function ToolbarButton({ icon: Icon, label, onClick, disabled, pressed, shortcut, className }: { icon: LucideIcon; label: string; onClick: () => void; disabled?: boolean; pressed?: boolean; shortcut?: string; className?: string }) {

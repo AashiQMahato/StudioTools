@@ -6,7 +6,7 @@ import type { Box, DocBlock, DocLine, OcrDocument, Recognition, RecognizedLine }
 /** The editor's page width in CSS pixels (A4/Letter-like at 96 dpi); heights follow the image. */
 export const EDITOR_PAGE_WIDTH = 816;
 /** Words the engine was less sure of than this are flagged for review (never changed). */
-export const LOW_CONFIDENCE = 0.8;
+const LOW_CONFIDENCE = 0.8;
 
 const DEVANAGARI = /[ऀ-ॿ]/u;
 const LATIN = /[A-Za-z]/;

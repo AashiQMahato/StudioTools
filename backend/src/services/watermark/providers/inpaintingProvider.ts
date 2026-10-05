@@ -13,7 +13,7 @@ export interface InpaintingProvider {
  * (by LaMa via IOPaint when configured, otherwise the built-in engine) and blended back at full
  * resolution. WATERMARK_REMOVAL_PROVIDER picks the engine.
  */
-export const retouchInpainter: InpaintingProvider = {
+const retouchInpainter: InpaintingProvider = {
     get name() {
         return retouching.providerName("remove", env.watermark.removalProvider);
     },

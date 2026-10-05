@@ -26,7 +26,7 @@ Every feature runs in one of three places:
 | --- | --- | --- | --- |
 | **Image tools** | | | |
 | Photo Editor (light, colour, filters, resize) | Canvas | — | — |
-| Crop (straighten, ratios, rotate/flip) | react-easy-crop | — | — |
+| Crop (straighten, ratios, rotate/flip) | Canvas | — | — |
 | Image Compressor | Upload, preview | sharp | — |
 | Background Remover | Upload, preview | Queue | rembg |
 | AI Upscaler (2× / 4×) | Upload, preview | `upscayl-bin` (needs a GPU) | — |

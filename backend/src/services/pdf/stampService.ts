@@ -32,7 +32,7 @@ const EDGE = 36;
  * (kept `EDGE` in from the edges, allowing for the turn), or a staggered tiling across the page.
  * The editor's preview uses the same arithmetic.
  */
-export function stampCentres(page: { width: number; height: number }, stamp: { width: number; height: number }, rotation: number, position: Position | "tile") {
+function stampCentres(page: { width: number; height: number }, stamp: { width: number; height: number }, rotation: number, position: Position | "tile") {
     const radians = (rotation * Math.PI) / 180;
     const boxWidth = Math.abs(stamp.width * Math.cos(radians)) + Math.abs(stamp.height * Math.sin(radians));
     const boxHeight = Math.abs(stamp.width * Math.sin(radians)) + Math.abs(stamp.height * Math.cos(radians));

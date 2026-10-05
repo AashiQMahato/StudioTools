@@ -31,7 +31,7 @@ interface EditStore {
     setAspect: (aspect: AspectId, portrait?: boolean) => void;
 }
 
-export function initialEdit(width: number, height: number): EditState {
+function initialEdit(width: number, height: number): EditState {
     return {
         orientation: { quarter: 0, flipX: false, flipY: false, angle: 0 },
         crop: fullRect(width, height, 0),

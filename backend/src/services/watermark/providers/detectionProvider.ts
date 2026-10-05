@@ -31,7 +31,7 @@ export interface WatermarkDetector {
  * The built-in detector, in the internal Python service: OpenCV's PP-OCRv3 text model for text marks,
  * plus overlay analysis for semi-transparent marks, weighted by where watermarks are usually placed.
  */
-export const opencvDetector: WatermarkDetector = {
+const opencvDetector: WatermarkDetector = {
     name: "opencv-ppocr",
     async detect(image, signal) {
         const response = await postToImageService("/detect-watermarks", image, "image.jpg", signal, env.watermark.timeoutMs, {

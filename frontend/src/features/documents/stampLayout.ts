@@ -35,7 +35,7 @@ export function numberCentre(page: { width: number; height: number }, label: { w
 }
 
 /** Latin text is set in Helvetica (vector); anything else in Noto Sans Devanagari (shaped, as an image). */
-export const isLatin = (text: string) => /^[\x20-\x7e -ÿ]*$/.test(text);
+const isLatin = (text: string) => /^[\x20-\x7e -ÿ]*$/.test(text);
 
 let context: CanvasRenderingContext2D | null = null;
 /**

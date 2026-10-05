@@ -18,7 +18,7 @@ export function pageColours(result: OcrDocument, mode: EditorMode) {
 }
 
 /** Below this, a word is shown as uncertain (the server uses the same line). */
-export const LOW_CONFIDENCE = 0.8;
+const LOW_CONFIDENCE = 0.8;
 
 /**
  * Fonts on offer. Each is a stack with a Devanagari partner, so Nepali in a Latin font (and Latin in a
@@ -278,7 +278,7 @@ export function listMarker(list: PMNode, index: number): string {
 }
 
 /** A paragraph's text, line breaks included. */
-export function inlineText(node: PMNode): string {
+function inlineText(node: PMNode): string {
     let text = "";
     node.forEach((child) => {
         text += child.isText ? child.text! : child.type.name === "hardBreak" ? "\n" : "";

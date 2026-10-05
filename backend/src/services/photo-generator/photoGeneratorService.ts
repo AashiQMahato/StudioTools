@@ -70,7 +70,7 @@ const WHITE = { r: 255, g: 255, b: 255, alpha: 1 };
 const CLEAR = { r: 0, g: 0, b: 0, alpha: 0 };
 const PREVIEW_SIDE = 900;
 
-export function getPreset(id: unknown): PhotoPreset {
+function getPreset(id: unknown): PhotoPreset {
     const preset = typeof id === "string" && Object.hasOwn(PHOTO_PRESETS, id) ? PHOTO_PRESETS[id] : undefined;
     if (!preset) throw new AppError("Choose a photo type.", 400, "INVALID_PRESET");
     return preset;
@@ -243,7 +243,7 @@ async function generate(upload: Buffer, fileName: string, presetId: unknown, emi
 
 // ------------------------------------------------------------------ sheets
 
-export function sheetLayout(preset: PhotoPreset) {
+function sheetLayout(preset: PhotoPreset) {
     const paper = PAPER.a4;
     const columns = Math.floor((paper.widthMm - paper.marginMm * 2 + paper.gapMm) / (preset.widthMm + paper.gapMm));
     const rows = Math.floor((paper.heightMm - paper.marginMm * 2 + paper.gapMm) / (preset.heightMm + paper.gapMm));

@@ -46,7 +46,7 @@ export const LINE_HEIGHT = 1.25;
 
 let measurer: CanvasRenderingContext2D | null = null;
 /** A text box's size: its widest line by its number of lines. */
-export function measureText(text: string, size: number, bold: boolean) {
+function measureText(text: string, size: number, bold: boolean) {
     measurer ??= document.createElement("canvas").getContext("2d");
     const lines = text.split("\n");
     let width = size * 0.5;

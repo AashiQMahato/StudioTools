@@ -247,7 +247,7 @@ function TextStudio({ tool, initialTab, content }: { tool: ToolKey; initialTab: 
     );
 }
 
-/** The page you write on: paper, whatever the app's theme. */
+/** The page you write on: paper in light mode, dark in dark mode (exports are always on white). */
 function Page({ editor }: { editor: Editor }) {
     return (
         <div className="flex min-h-full w-full justify-center p-3 sm:p-5">

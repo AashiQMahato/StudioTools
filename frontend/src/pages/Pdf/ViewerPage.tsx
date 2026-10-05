@@ -1,4 +1,4 @@
-import { FilePlus2 } from "lucide-react";
+import { FilePlus2, FileText } from "lucide-react";
 import { useState } from "react";
 import { BottomSheet } from "@/components/studio/BottomSheet";
 import { useStudio } from "@/components/studio/StudioShell";
@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/base/buttons/button";
 import { ContinueWith } from "@/features/documents/ContinueWith";
 import { DocumentStudio } from "@/features/documents/DocumentStudio";
 import { MAX_PDF_MB, PDF_ACCEPT } from "@/features/documents/limits";
-import { PdfFileSummary, SinglePdfWorkspace } from "@/features/documents/SinglePdfWorkspace";
+import { SinglePdfWorkspace } from "@/features/documents/SinglePdfWorkspace";
 import { useSinglePdf } from "@/features/documents/useSinglePdf";
 import { PdfViewer } from "@/features/pdf-canvas/PdfViewer";
 import { formatBytes } from "@/features/image-processing/format";
@@ -23,29 +23,16 @@ export function ViewerPage() {
         <PanelBody>
             {pdf.file ? (
                 <>
-                    <PdfFileSummary name={pdf.file.name} pages={pdf.ready?.sizes.length ?? null} />
-                    <p className="-mt-2 text-xs text-tertiary tabular-nums">{formatBytes(pdf.file.size)}</p>
-                    <OpenAnother label={copy.openAnother} />
-                    {pdf.ready && <ContinueWith kind="pdf" current="pdfViewer" files={async () => [pdf.file!]} />}
-                    {/* Keyboard shortcuts: only where there's likely a keyboard. */}
-                    <section className="hidden flex-col gap-2 pointer-fine:flex">
-                        <h3 className="text-sm font-semibold text-primary">{copy.shortcutsTitle}</h3>
-                        <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1.5 text-xs">
-                            {copy.shortcuts.map(([keys, action]) => (
-                                <div key={keys} className="contents">
-                                    <dt>
-                                        <kbd className="rounded border border-[var(--card-line)] bg-secondary px-1.5 py-0.5 font-sans text-[0.6875rem] text-secondary">{keys}</kbd>
-                                    </dt>
-                                    <dd className="text-tertiary">{action}</dd>
-                                </div>
-                            ))}
-                        </dl>
+                    <section className="flex flex-col gap-2">
+                        <FileCard name={pdf.file.name} pages={pdf.ready?.sizes.length ?? null} size={pdf.file.size} />
+                        <OpenAnother label={copy.openAnother} />
                     </section>
+                    {pdf.ready && <ContinueWith kind="pdf" current="pdfViewer" files={async () => [pdf.file!]} />}
                 </>
             ) : (
                 <PanelIntro title={t.studio.howItWorks} steps={copy.steps} />
             )}
-            <p className="text-xs leading-relaxed text-tertiary">{copy.local}</p>
+            <p className="px-1 text-xs leading-relaxed text-tertiary">{copy.local}</p>
         </PanelBody>
     );
 
@@ -57,6 +44,7 @@ export function ViewerPage() {
             panelLabel={t.nav.toolItems.pdfViewer.title}
             panel={details}
             mobilePanel={pdf.file ? "none" : "stack"}
+            panelWidth="compact"
         >
             {pdf.file ? (
                 <SinglePdfWorkspace pdf={pdf}>{({ document, sizes }) => <PdfViewer key={pdf.id} file={pdf.file!} document={document} sizes={sizes} onDetails={() => setSheet(true)} />}</SinglePdfWorkspace>
@@ -73,10 +61,29 @@ export function ViewerPage() {
     );
 }
 
+/** The open file: name, then pages and size on one line. */
+function FileCard({ name, pages, size }: { name: string; pages: number | null; size: number }) {
+    const t = useT();
+    const details = [pages !== null ? t.documents.result.pages(pages) : null, formatBytes(size)].filter(Boolean).join(" · ");
+    return (
+        <div className="flex items-center gap-3 rounded-xl border border-[var(--card-line)] bg-secondary p-3">
+            <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary text-[var(--brand)] shadow-xs">
+                <FileText className="size-5" aria-hidden />
+            </span>
+            <div className="min-w-0 flex-1">
+                <h3 className="truncate text-sm font-semibold text-primary" title={name}>
+                    {name}
+                </h3>
+                <p className="text-xs text-tertiary tabular-nums">{details}</p>
+            </div>
+        </div>
+    );
+}
+
 function OpenAnother({ label }: { label: string }) {
     const { openPicker } = useStudio();
     return (
-        <Button size="md" color="secondary" iconLeading={FilePlus2} onPress={openPicker} className="self-start">
+        <Button size="sm" color="secondary" iconLeading={FilePlus2} onPress={openPicker} className="w-full">
             {label}
         </Button>
     );

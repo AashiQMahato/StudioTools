@@ -42,6 +42,8 @@ interface StudioShellProps {
     dirty?: boolean;
     /** Below desktop width the panel stacks under the canvas, unless the tool shows it its own way (a bottom sheet). */
     mobilePanel?: "stack" | "none";
+    /** "compact" gives the canvas more room when the panel only holds a summary and links (the PDF viewer). */
+    panelWidth?: "default" | "compact";
     /**
      * A tool that takes several images at once (the compressor) receives every picked, dropped or pasted
      * file here instead of the shared single image.
@@ -57,7 +59,7 @@ interface StudioShellProps {
  * The frame every tool shares: a top bar, the tools on the left, the image in the middle and the
  * tool's controls on the right. An image can be dropped or pasted anywhere on it.
  */
-export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, children, dirty = false, mobilePanel = "stack", onFiles, interceptFile, accept }: StudioShellProps) {
+export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, children, dirty = false, mobilePanel = "stack", panelWidth = "default", onFiles, interceptFile, accept }: StudioShellProps) {
     useImmersiveLayout();
     const t = useT();
     const copy = t.studio;
@@ -172,7 +174,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                         {children}
                     </section>
 
-                    <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0 lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
+                    <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[18rem] xl:w-[19.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
                         {/* The panel's own heading, so its sections' headings sit under it in the outline. */}
                         <h2 className="sr-only">{panelLabel}</h2>
                         {panel}

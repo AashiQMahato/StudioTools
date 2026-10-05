@@ -173,8 +173,6 @@ function sweep() {
 }
 setInterval(sweep, 60_000).unref();
 
-export const jobStats = () => ({ jobs: jobs.size, ...limiter.stats });
-
 /** Everything deleted — on shutdown. */
 export async function deleteAllJobs() {
     await Promise.all([...jobs.keys()].map(deleteJob));

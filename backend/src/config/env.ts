@@ -75,8 +75,6 @@ export const env = {
         concurrency: Math.floor(parsePositive(env_.UPSCALE_CONCURRENCY, 1)),
         /** Largest result allowed (pixels). 4× multiplies pixel count by 16, so 4× accepts smaller inputs than 2×. */
         maxOutputPixels: parsePositive(env_.UPSCALE_MAX_OUTPUT_PIXELS, 40_000_000),
-        /** Reserved for an optional hosted fallback. Server-side only; never sent to the browser. */
-        cloudApiKey: env_.UPSCAYL_API_KEY?.trim() || "",
     },
 
     retouch: {

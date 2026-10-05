@@ -56,7 +56,7 @@ export function fits(rect: CropRect, angle: number, width: number, height: numbe
     return true;
 }
 
-export const lerpRect = (a: CropRect, b: CropRect, t: number): CropRect => ({
+const lerpRect = (a: CropRect, b: CropRect, t: number): CropRect => ({
     cx: a.cx + (b.cx - a.cx) * t,
     cy: a.cy + (b.cy - a.cy) * t,
     w: a.w + (b.w - a.w) * t,
@@ -110,10 +110,6 @@ export function largestWithAspect(aspect: number, center: { cx: number; cy: numb
 /** Rotate a crop rect 90° counter-clockwise on screen (y points down). */
 export function rotateRectCCW(rect: CropRect): CropRect {
     return { cx: rect.cy, cy: -rect.cx, w: rect.h, h: rect.w };
-}
-
-export function clampSize(rect: CropRect, min = MIN_CROP): CropRect {
-    return { ...rect, w: Math.max(min, rect.w), h: Math.max(min, rect.h) };
 }
 
 export type Handle = "n" | "s" | "e" | "w" | "ne" | "nw" | "se" | "sw";

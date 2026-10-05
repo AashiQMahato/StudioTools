@@ -1,24 +1,4 @@
-import type { Dictionary } from "@/i18n";
 import { type AppRoute, ROUTES } from "./routes";
-
-type Nav = Dictionary["nav"];
-/** Only the plain-string labels — `nav` also holds the menu's grouped copy. */
-type NavKey = { [K in keyof Nav]: Nav[K] extends string ? K : never }[keyof Nav];
-
-export interface NavItem {
-    /** Short label (navbar). */
-    label: NavKey;
-    /** Full label (footer, menus). */
-    fullLabel: NavKey;
-    href: AppRoute;
-}
-
-export const PRIMARY_NAV: readonly NavItem[] = [
-    { label: "removeBgShort", fullLabel: "removeBg", href: ROUTES.removeBackground },
-    { label: "upscale", fullLabel: "upscaler", href: ROUTES.upscale },
-    { label: "crop", fullLabel: "crop", href: ROUTES.crop },
-    { label: "editor", fullLabel: "editor", href: ROUTES.editor },
-];
 
 /* ------------------------------------------------------------------ Navbar
  * One source for the desktop mega menu and the mobile accordion. Every entry points at a route that
@@ -81,7 +61,7 @@ export const ORGANIZE_MODES: readonly NavTool[] = [
 export const isOrganizeMode = (tool: ToolKey) => ORGANIZE_MODES.some((mode) => mode.key === tool);
 
 /** The Text Editor's panels that have their own addresses (old links, search): they open the editor on that panel. */
-export const TEXT_EDITOR_PANELS: readonly NavTool[] = [
+const TEXT_EDITOR_PANELS: readonly NavTool[] = [
     { key: "textCleaner", href: ROUTES.textCleaner },
     { key: "caseConverter", href: ROUTES.caseConverter },
     { key: "wordCounter", href: ROUTES.wordCounter },

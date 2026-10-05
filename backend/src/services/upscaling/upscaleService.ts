@@ -4,10 +4,7 @@ import { AppError } from "../../utils/AppError.js";
 import { ConcurrencyLimiter } from "../../utils/concurrency.js";
 import { upscaylProvider } from "./upscaylProvider.js";
 
-/**
- * Local Upscayl (upscayl-ncnn) is the only provider. A hosted fallback can be slotted in here when
- * UPSCAYL_API_KEY is configured; the key stays server-side.
- */
+/** Local Upscayl (upscayl-ncnn) is the only provider. */
 const provider = upscaylProvider;
 // GPU-heavy: default to one job at a time.
 const limiter = new ConcurrencyLimiter(env.upscayl.concurrency, env.maxQueuedJobs);

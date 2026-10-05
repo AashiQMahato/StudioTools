@@ -5,7 +5,7 @@ import { Button as AriaButton, Link as AriaLink } from "react-aria-components";
 import { cx, sortCx } from "@/lib/utils/cx";
 import { isReactComponent } from "@/lib/utils/is-react-component";
 
-export const styles = sortCx({
+const styles = sortCx({
     common: {
         root: [
             "group relative inline-flex h-max cursor-pointer items-center justify-center whitespace-nowrap outline-brand transition duration-100 ease-linear before:absolute focus-visible:outline-2 focus-visible:outline-offset-2",

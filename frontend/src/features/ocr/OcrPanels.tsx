@@ -8,7 +8,7 @@ import { useT } from "@/i18n";
 import type { EditorMode } from "./convert";
 import type { ReadSettings, RegionTool } from "./settings";
 
-export function PanelSection({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
+function PanelSection({ title, children, className }: { title: string; children: ReactNode; className?: string }) {
     return (
         <section className={cn("flex flex-col gap-3", className)}>
             <h3 className="text-sm font-semibold text-primary">{title}</h3>
@@ -17,7 +17,7 @@ export function PanelSection({ title, children, className }: { title: string; ch
     );
 }
 
-export function Checkbox({ checked, onChange, label, hint }: { checked: boolean; onChange: (value: boolean) => void; label: string; hint?: string }) {
+function Checkbox({ checked, onChange, label, hint }: { checked: boolean; onChange: (value: boolean) => void; label: string; hint?: string }) {
     return (
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-secondary">
             <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />

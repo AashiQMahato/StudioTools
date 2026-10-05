@@ -96,6 +96,6 @@ python/ocr_service/    internal PaddleOCR service (own venv: python/.venv-ocr); 
 vendor/upscayl/        upscayl-bin + models (installed by scripts/setup-ml.sh; git-ignored)
 ```
 
-Swap engines by implementing `BackgroundRemovalProvider` / `UpscaleProvider` (`src/types/image.ts`). A hosted upscaling fallback would plug into `services/upscaling/upscaleService.ts`, keyed by `UPSCAYL_API_KEY` (server-side only); none is enabled.
+Swap engines by implementing `BackgroundRemovalProvider` / `UpscaleProvider` (`src/types/image.ts`).
 
 See `.env.example` for every setting and [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md) for licences.

@@ -9,4 +9,3 @@ export const CONVERTIBLE_EXTENSIONS = [".heic", ".heif", ".avif", ".tif", ".tiff
 /** For file pickers. */
 export const UPLOAD_ACCEPT = [...ACCEPTED_IMAGE_TYPES, ...CONVERTIBLE_IMAGE_TYPES, ...CONVERTIBLE_EXTENSIONS].join(",");
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
-export const UPLOAD_HINT = "JPG, PNG, WebP or HEIC · up to 10 MB";

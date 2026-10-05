@@ -3,7 +3,7 @@ import { useCallback, useLayoutEffect, useState } from "react";
 export type ZoomMode = "width" | "page" | "custom";
 
 /** 100% is the page at its real size: 96 CSS pixels to the inch, 72 points to the inch. */
-export const PX_PER_POINT = 96 / 72;
+const PX_PER_POINT = 96 / 72;
 export const ZOOM_STEPS = [25, 50, 75, 100, 125, 150, 200, 300, 400] as const;
 const MIN = 10;
 const MAX = 500;

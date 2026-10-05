@@ -31,7 +31,7 @@ export function FaqSection() {
     );
 }
 
-export function FaqItem({ question, answer, open, onToggle }: { question: string; answer: string; open: boolean; onToggle: () => void }) {
+function FaqItem({ question, answer, open, onToggle }: { question: string; answer: string; open: boolean; onToggle: () => void }) {
     const id = useId();
     return (
         <div>

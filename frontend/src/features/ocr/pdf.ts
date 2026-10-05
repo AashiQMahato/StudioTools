@@ -10,7 +10,7 @@ export interface PdfSource {
     pageCount: number;
 }
 
-export const MAX_PDF_BYTES = 50 * 1024 * 1024;
+const MAX_PDF_BYTES = 50 * 1024 * 1024;
 export const MAX_PDF_PAGES = 200;
 /** Pages are rendered with this long side: ~200–300 dpi for a normal page, plenty for small text. */
 const RENDER_LONG_SIDE = 2400;

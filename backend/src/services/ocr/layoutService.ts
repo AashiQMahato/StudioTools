@@ -71,7 +71,7 @@ function mergeRow(segments: RecognizedLine[]): RecognizedLine {
  * Pieces of one visual line (engines split a line where the gap is wide) become one line again:
  * they share a row (vertical overlap) and sit close enough horizontally.
  */
-export function reconstructLines(segments: RecognizedLine[]): RecognizedLine[] {
+function reconstructLines(segments: RecognizedLine[]): RecognizedLine[] {
     const sorted = [...segments].sort((a, b) => a.box.y + a.box.height / 2 - (b.box.y + b.box.height / 2));
     const rows: RecognizedLine[][] = [];
     for (const segment of sorted) {

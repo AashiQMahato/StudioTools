@@ -150,7 +150,7 @@ export async function loadDraftOcrIds(sourceId: string): Promise<string[]> {
     }
 }
 
-export async function clearDraftOcr() {
+async function clearDraftOcr() {
     try {
         for (const key of await ocrKeys()) await run("readwrite", (store) => store.delete(key));
         await run("readwrite", (store) => store.delete(PDF_KEY));
@@ -216,7 +216,7 @@ export function loadDraftEdits<T>(imageId: string): T | null {
     }
 }
 
-export function clearDraftEdits() {
+function clearDraftEdits() {
     try {
         localStorage.removeItem(EDITS_KEY);
     } catch {

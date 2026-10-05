@@ -46,7 +46,7 @@ export function paintPreview(canvas: HTMLCanvasElement, base: ImageData, filter:
 }
 
 /** Largest output we attempt (pixels). Mobile Safari refuses canvases much bigger than ~16 MP. */
-export const MAX_OUTPUT_PIXELS = 50_000_000;
+const MAX_OUTPUT_PIXELS = 50_000_000;
 
 /**
  * Render the final image at full resolution: one resample for crop + straighten + rotate + flip + resize,

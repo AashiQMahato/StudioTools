@@ -16,7 +16,7 @@ import type { ReadSettings } from "./settings";
 import { StageList } from "./StageList";
 import { useOcrJob } from "./useOcrJob";
 
-export const OCR_ACCEPT = `${UPLOAD_ACCEPT},application/pdf,.pdf`;
+const OCR_ACCEPT = `${UPLOAD_ACCEPT},application/pdf,.pdf`;
 
 interface Batch {
     page: number;

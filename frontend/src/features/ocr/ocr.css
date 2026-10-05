@@ -278,6 +278,54 @@
     background: rgb(0 0 0 / 0.04);
 }
 
+/*
+ * The text editor's page follows the app's dark mode (it holds your own writing, not a scanned
+ * document). Exports and print still come out on white paper.
+ */
+.dark-mode .text-page {
+    --page-bg: #1c1f2b;
+    --page-ink: #e6e8ef;
+    box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.06),
+        0 8px 28px -12px rgb(0 0 0 / 0.6);
+}
+.dark-mode .text-page .ProseMirror p.is-editor-empty:first-child::before {
+    color: rgb(255 255 255 / 0.38);
+}
+.dark-mode .text-page .ProseMirror blockquote {
+    border-left-color: rgb(255 255 255 / 0.2);
+    color: rgb(255 255 255 / 0.72);
+}
+.dark-mode .text-page .ProseMirror code {
+    background: rgb(255 255 255 / 0.08);
+}
+.dark-mode .text-page .ProseMirror pre {
+    background: #12141d;
+}
+.dark-mode .text-page .ProseMirror pre code {
+    background: none;
+}
+.dark-mode .text-page .ProseMirror a {
+    color: #7cb4ff;
+}
+.dark-mode .text-page .ProseMirror hr {
+    border-top-color: rgb(255 255 255 / 0.18);
+}
+.dark-mode .text-page .ProseMirror td,
+.dark-mode .text-page .ProseMirror th {
+    border-color: rgb(255 255 255 / 0.25);
+}
+.dark-mode .text-page .ProseMirror th {
+    background: rgb(255 255 255 / 0.05);
+}
+/*
+ * Highlights are light pastels: keep dark ink on them so the text stays readable. Tiptap writes
+ * `color: inherit` inline on each highlight, hence !important.
+ */
+.dark-mode .text-page .ProseMirror mark {
+    color: #1a1a1a !important;
+}
+
 /* A picture from the original page (PDF to Word), in its place among the text. */
 .ocr-page figure.doc-figure {
     margin: 0.75em 0;

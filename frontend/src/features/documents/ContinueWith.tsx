@@ -1,4 +1,4 @@
-import { ChevronDown, LoaderCircle } from "lucide-react";
+import { ChevronDown, ChevronRight, LoaderCircle } from "lucide-react";
 import { useId, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { TOOL_ICONS } from "@/components/layout/toolIcons";
@@ -14,7 +14,16 @@ import { type HandoffKind, NEXT } from "./handoff";
  * device. The files move in memory, never stored.
  */
 /** Shown before "More tools". */
-const FIRST = 6;
+const FIRST = 5;
+
+/** One list row. Feedback is on press (no delay), the highlight eases out on release. */
+const ROW =
+    "relative flex min-h-11 w-full cursor-pointer items-center gap-3 px-3 py-2 text-left outline-focus-ring -outline-offset-2 transition-colors duration-150 hover:bg-primary_hover focus-visible:outline-2 active:bg-secondary active:duration-0 disabled:cursor-wait disabled:opacity-70";
+
+/** The hairline between rows, inset to the label like a grouped list. */
+function Separator() {
+    return <span aria-hidden className="pointer-events-none absolute top-0 right-0 left-[3.25rem] h-px bg-[var(--card-line)]" />;
+}
 
 export function ContinueWith({ kind, current, files, className }: { kind: HandoffKind; current: ToolKey; files: () => Promise<File[]>; className?: string }) {
     const t = useT();
@@ -47,38 +56,41 @@ export function ContinueWith({ kind, current, files, className }: { kind: Handof
             <h3 id={titleId} className="text-sm font-semibold text-primary">
                 {copy.title}
             </h3>
-            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3">
-                {shown.map((tool) => {
+            {/* A grouped list, not a grid: one row per tool, so names never wrap at any panel width. */}
+            <ul className="overflow-hidden rounded-xl border border-[var(--card-line)] bg-primary">
+                {shown.map((tool, index) => {
                     const Icon = TOOL_ICONS[tool.key];
                     return (
                         <li key={tool.key}>
-                            <button
-                                type="button"
-                                disabled={busy !== null}
-                                onClick={() => void go(tool.key, tool.href)}
-                                className="flex min-h-12 w-full cursor-pointer items-center gap-2.5 rounded-xl border border-[var(--card-line)] bg-primary px-2.5 py-2 text-left outline-focus-ring transition-colors duration-150 hover:bg-primary_hover focus-visible:outline-2 disabled:cursor-wait disabled:opacity-70"
-                            >
-                                <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-secondary">
+                            <button type="button" disabled={busy !== null} onClick={() => void go(tool.key, tool.href)} className={ROW}>
+                                {index > 0 && <Separator />}
+                                <span className="grid size-7 shrink-0 place-items-center rounded-lg bg-secondary text-secondary">
                                     {busy === tool.key ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <Icon className="size-4" aria-hidden />}
                                 </span>
-                                <span className="min-w-0 text-sm leading-tight font-medium text-primary">{t.nav.toolItems[tool.key].title}</span>
+                                <span className="min-w-0 flex-1 truncate text-sm font-medium text-primary">{t.nav.toolItems[tool.key].title}</span>
+                                <ChevronRight className="size-4 shrink-0 text-quaternary" aria-hidden />
                             </button>
                         </li>
                     );
                 })}
+                {tools.length > FIRST && (
+                    <li>
+                        <button type="button" onClick={() => setMore((value) => !value)} aria-expanded={more} className={cn(ROW, "text-sm font-medium text-[var(--brand)]")}>
+                            <Separator />
+                            <span className="grid size-7 shrink-0 place-items-center">
+                                <ChevronDown className={cn("size-4 transition-transform duration-300 ease-[var(--ease-spring)] motion-reduce:transition-none", more && "rotate-180")} aria-hidden />
+                            </span>
+                            <span className="flex-1">{more ? copy.fewer : copy.more(tools.length - FIRST)}</span>
+                        </button>
+                    </li>
+                )}
             </ul>
-            {tools.length > FIRST && (
-                <button type="button" onClick={() => setMore((value) => !value)} aria-expanded={more} className="flex cursor-pointer items-center gap-1 self-start rounded-lg px-1 text-xs font-medium text-[var(--brand)] outline-focus-ring hover:underline focus-visible:outline-2">
-                    {more ? copy.fewer : copy.more(tools.length - FIRST)}
-                    <ChevronDown className={cn("size-3.5 transition-transform", more && "rotate-180")} aria-hidden />
-                </button>
-            )}
             {failed && (
-                <p role="alert" className="text-xs text-error-primary">
+                <p role="alert" className="px-1 text-xs text-error-primary">
                     {copy.failed}
                 </p>
             )}
-            <p className="text-xs text-tertiary">{copy.note}</p>
+            <p className="px-1 text-xs leading-relaxed text-tertiary">{copy.note}</p>
         </section>
     );
 }

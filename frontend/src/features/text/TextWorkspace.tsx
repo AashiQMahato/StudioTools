@@ -2,6 +2,7 @@ import type { JSONContent } from "@tiptap/core";
 import { EditorContent, type Editor, useEditorState } from "@tiptap/react";
 import { BrushCleaning, CaseSensitive, Copy, FilePlus, FolderOpen, Search, Share, Sigma } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { type Notice, PanelBody, PanelTabs, StudioNotice } from "@/components/studio/StudioParts";
 import { studioExportButton } from "@/components/studio/styles";
 import { DocumentStudio } from "@/features/documents/DocumentStudio";
@@ -48,7 +49,9 @@ function TextStudio({ tool, initialTab, content }: { tool: ToolKey; initialTab: 
     const update = useTextDocument((state) => state.update);
     const editor = useTextEditor({ content, label: copy.editorLabel, placeholder: copy.placeholder, spellcheck: true, onChange: update });
     const [tab, setTab] = useState<TextTab>(initialTab);
-    const [find, setFind] = useState<"find" | "replace" | null>(null);
+    // The menu's "Find & Replace" opens the editor with Replace showing (?find=replace).
+    const [params] = useSearchParams();
+    const [find, setFind] = useState<"find" | "replace" | null>(() => (params.get("find") === "replace" ? "replace" : params.has("find") ? "find" : null));
     const [notice, setNotice] = useState<Notice | null>(null);
     const [busy, setBusy] = useState<TextExport | null>(null);
     const workspace = useRef<HTMLDivElement>(null);

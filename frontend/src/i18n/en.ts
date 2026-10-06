@@ -91,6 +91,30 @@ export const en = {
             caseConverter: { title: "Case Converter", description: "UPPER, lower, Title and Sentence case" },
             wordCounter: { title: "Word Counter", description: "Words, characters and reading time" },
         },
+        imageMenu: {
+            sections: {
+                aiTools: { title: "AI tools", description: "Smart edits that do the hard work" },
+                editAdjust: { title: "Edit & adjust", description: "Fine-tune, crop and straighten" },
+                optimize: { title: "Optimize", description: "Lighter files, exact sizes" },
+            },
+            viewAll: "View all image tools",
+        },
+        documentMenu: {
+            sections: {
+                textOcr: { title: "Text & OCR", description: "Extract, edit and transform text" },
+                pdfTools: { title: "PDF tools", description: "Organize and optimize your PDFs" },
+                convert: { title: "Convert", description: "Convert between documents and formats" },
+                editSecure: { title: "Edit, sign & secure", description: "Edit, sign and protect documents" },
+            },
+            items: {
+                findReplace: { title: "Find & Replace", description: "Search and replace across your text" },
+                organizePdf: { title: "Organize PDF", description: "Reorder, rotate and delete pages" },
+                extractPages: { title: "Extract pages", description: "Save chosen pages as a new PDF" },
+                pdfToJpg: { title: "PDF to JPG", description: "Each page as a JPG image" },
+                pdfToPng: { title: "PDF to PNG", description: "Each page as a sharp PNG image" },
+            },
+            viewAll: "View all document tools",
+        },
     },
 
     footer: {
@@ -1809,16 +1833,30 @@ export const en = {
             },
         },
         landing: {
-            badge: "Documents",
-            title: "Work with documents, text and PDFs — all in one place.",
-            description: "Merge, split and organize PDFs, convert between images and PDFs, and turn scans into editable text — alongside every image tool.",
+            badge: "Documents & text tools",
+            titleLead: "Work with documents, text and PDFs —",
+            titleAccent: "all in one place.",
+            description: "Merge, split and organize PDFs, convert between formats, edit text and extract it with OCR. Everything you need, in one suite.",
             search: "Search tools…",
             searchLabel: "Search tools",
             clearSearch: "Clear search",
             categoriesLabel: "Categories",
-            categories: { all: "All", pdf: "PDF", text: "Text & OCR", convert: "Convert", organize: "Organize", edit: "Edit", image: "Image", ai: "AI" },
+            allTools: "All tools",
+            trust: ["Fast", "Secure", "Easy to use"],
+            artNote: "From image to editable document in seconds",
+            isNew: "New",
             groups: { documents: "Document tools", image: "Image tools" },
             noResults: (query: string) => `No tools match "${query}".`,
+        },
+    },
+
+    imageTools: {
+        landing: {
+            badge: "Image tools",
+            titleLead: "Edit, enhance and perfect your photos —",
+            titleAccent: "in seconds.",
+            description: "Remove backgrounds, upscale with AI, retouch, crop, resize and compress. Every image tool you need, free and private.",
+            artNote: "From snapshot to studio quality in one click",
         },
     },
 

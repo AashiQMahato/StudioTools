@@ -1,0 +1,153 @@
+import { ArrowLeftRight, Files, type LucideIcon, Replace, ScanText, ShieldCheck, SlidersHorizontal, Sparkles, Gauge, FileImage, FileOutput } from "lucide-react";
+import type { Dictionary } from "@/i18n";
+import type { ToolKey } from "@/lib/constants/navigation";
+import { type AppRoute, ROUTES } from "@/lib/constants/routes";
+import { TOOL_ICONS } from "./toolIcons";
+
+/*
+ * The navbar's tool menus, as data. Each menu (Image Tools, Documents) renders its desktop mega-menu,
+ * its mobile accordion and its overview page from one list, so a new tool is one entry here (plus its
+ * copy). Every item opens a page that exists. Entries that are a mode of another page (Resize, Rotate &
+ * Flip, Extract pages, PDF to JPG/PNG, Find & Replace) open that page, with a preset where it has one.
+ */
+
+/** Menu entries that aren't tools of their own, so their copy lives in `nav.documentMenu.items`. */
+type MenuExtraKey = keyof Dictionary["nav"]["documentMenu"]["items"];
+export type MenuItemKey = ToolKey | MenuExtraKey;
+export type DocumentMenuSectionKey = keyof Dictionary["nav"]["documentMenu"]["sections"];
+export type ImageMenuSectionKey = keyof Dictionary["nav"]["imageMenu"]["sections"];
+export type MenuSectionKey = DocumentMenuSectionKey | ImageMenuSectionKey;
+
+export interface MenuItem {
+    key: MenuItemKey;
+    icon: LucideIcon;
+    href: AppRoute;
+    /** A preset the page reads from its query, e.g. `?format=png`. */
+    search?: string;
+    /** Opens another tool's page, so it never reads as the current page itself. */
+    alias?: true;
+    /** Marked "New" on the overview page. */
+    isNew?: true;
+}
+
+export interface MenuSection<K extends MenuSectionKey = MenuSectionKey> {
+    key: K;
+    icon: LucideIcon;
+    items: readonly MenuItem[];
+}
+
+/** One menu: its sections, where their copy lives, and its overview page. */
+export interface ToolMenu<K extends MenuSectionKey = MenuSectionKey> {
+    sections: readonly MenuSection<K>[];
+    // Method syntax, so a menu with its own section keys still counts as a menu in general.
+    sectionCopy(t: Dictionary, key: K): { title: string; description: string };
+    viewAll(t: Dictionary): string;
+    href: AppRoute;
+}
+
+const tool = (key: ToolKey, href: AppRoute): MenuItem => ({ key, icon: TOOL_ICONS[key], href });
+
+export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
+    href: ROUTES.imageTools,
+    sectionCopy: (t, key) => t.nav.imageMenu.sections[key],
+    viewAll: (t) => t.nav.imageMenu.viewAll,
+    sections: [
+        {
+            key: "aiTools",
+            icon: Sparkles,
+            items: [
+                tool("removeBackground", ROUTES.removeBackground),
+                tool("upscaler", ROUTES.upscale),
+                tool("retouch", ROUTES.retouch),
+                tool("watermarkRemover", ROUTES.watermarkRemover),
+                tool("photoGenerator", ROUTES.photoGenerator),
+            ],
+        },
+        {
+            key: "editAdjust",
+            icon: SlidersHorizontal,
+            items: [
+                tool("editor", ROUTES.editor),
+                tool("crop", ROUTES.crop),
+                // The crop tool rotates, flips and straightens.
+                { ...tool("rotateFlip", ROUTES.crop), alias: true },
+            ],
+        },
+        {
+            key: "optimize",
+            icon: Gauge,
+            items: [
+                tool("compressor", ROUTES.compress),
+                // Resizing is a panel of the editor.
+                { ...tool("resize", ROUTES.editor), alias: true },
+            ],
+        },
+    ],
+};
+
+export const documentMenu: ToolMenu<DocumentMenuSectionKey> = {
+    href: ROUTES.documents,
+    sectionCopy: (t, key) => t.nav.documentMenu.sections[key],
+    viewAll: (t) => t.nav.documentMenu.viewAll,
+    sections: [
+        {
+            key: "textOcr",
+            icon: ScanText,
+            items: [
+                { ...tool("ocr", ROUTES.ocr), isNew: true },
+                tool("textEditor", ROUTES.textEditor),
+                tool("textCleaner", ROUTES.textCleaner),
+                { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true },
+                tool("wordCounter", ROUTES.wordCounter),
+                tool("caseConverter", ROUTES.caseConverter),
+            ],
+        },
+        {
+            key: "pdfTools",
+            icon: Files,
+            items: [
+                { key: "organizePdf", icon: TOOL_ICONS.pdfOrganize, href: ROUTES.pdfOrganize },
+                tool("pdfMerge", ROUTES.pdfMerge),
+                tool("pdfSplit", ROUTES.pdfSplit),
+                tool("pdfCompress", ROUTES.pdfCompress),
+                tool("pdfRotate", ROUTES.pdfRotate),
+                // Organize pages selects pages and extracts them into a new PDF.
+                { key: "extractPages", icon: FileOutput, href: ROUTES.pdfOrganize, alias: true },
+            ],
+        },
+        {
+            key: "convert",
+            icon: ArrowLeftRight,
+            items: [
+                tool("pdfToWord", ROUTES.pdfToWord),
+                tool("pdfToText", ROUTES.pdfToText),
+                tool("pdfToImages", ROUTES.pdfToImages),
+                tool("imagesToPdf", ROUTES.imagesToPdf),
+                { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true },
+                { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true },
+            ],
+        },
+        {
+            key: "editSecure",
+            icon: ShieldCheck,
+            items: [
+                tool("pdfEditor", ROUTES.pdfEditor),
+                tool("pdfSign", ROUTES.pdfSign),
+                tool("pdfWatermark", ROUTES.pdfWatermark),
+                tool("pdfPageNumbers", ROUTES.pdfPageNumbers),
+                tool("pdfProtect", ROUTES.pdfProtect),
+                tool("pdfUnlock", ROUTES.pdfUnlock),
+            ],
+        },
+    ],
+};
+
+/** Title and one-line description of a menu entry. */
+export function menuItemCopy(t: Dictionary, key: MenuItemKey) {
+    const extras = t.nav.documentMenu.items;
+    return key in extras ? extras[key as MenuExtraKey] : t.nav.toolItems[key as ToolKey];
+}
+
+/** The entry for the page you're on. An alias never is: it opens another entry's page. */
+export const isCurrentItem = (item: MenuItem, pathname: string) => !item.alias && pathname === item.href;
+

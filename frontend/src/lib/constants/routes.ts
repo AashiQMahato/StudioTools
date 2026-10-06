@@ -1,5 +1,6 @@
 export const ROUTES = {
     home: "/",
+    imageTools: "/image-tools",
     removeBackground: "/remove-background",
     upscale: "/upscale",
     crop: "/crop",

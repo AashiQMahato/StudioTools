@@ -86,6 +86,30 @@ export const ne: Dictionary = {
             caseConverter: { title: "केस बदल्ने", description: "UPPER, lower, Title र Sentence case" },
             wordCounter: { title: "शब्द गणना", description: "शब्द, अक्षर र पढ्ने समय" },
         },
+        imageMenu: {
+            sections: {
+                aiTools: { title: "AI उपकरण", description: "कठिन काम AI ले गर्छ" },
+                editAdjust: { title: "सम्पादन र मिलान", description: "मिलाउनुहोस्, क्रप र सिधा गर्नुहोस्" },
+                optimize: { title: "हल्का बनाउने", description: "सानो फाइल, ठ्याक्कै आकार" },
+            },
+            viewAll: "सबै तस्बिर उपकरण हेर्नुहोस्",
+        },
+        documentMenu: {
+            sections: {
+                textOcr: { title: "पाठ र OCR", description: "पाठ निकाल्नुहोस्, सम्पादन र रूपान्तरण गर्नुहोस्" },
+                pdfTools: { title: "PDF उपकरण", description: "PDF मिलाउनुहोस् र हल्का बनाउनुहोस्" },
+                convert: { title: "रूपान्तरण", description: "कागजात र ढाँचाबीच रूपान्तरण गर्नुहोस्" },
+                editSecure: { title: "सम्पादन, हस्ताक्षर र सुरक्षा", description: "कागजात सम्पादन, हस्ताक्षर र सुरक्षित गर्नुहोस्" },
+            },
+            items: {
+                findReplace: { title: "खोज्ने र बदल्ने", description: "पाठभरि खोजेर बदल्नुहोस्" },
+                organizePdf: { title: "PDF मिलाउने", description: "पाना क्रम मिलाउनुहोस्, घुमाउनुहोस् र हटाउनुहोस्" },
+                extractPages: { title: "पाना निकाल्ने", description: "छानेका पानाबाट नयाँ PDF बनाउनुहोस्" },
+                pdfToJpg: { title: "PDF बाट JPG", description: "हरेक पाना JPG तस्बिरमा" },
+                pdfToPng: { title: "PDF बाट PNG", description: "हरेक पाना स्पष्ट PNG तस्बिरमा" },
+            },
+            viewAll: "सबै कागजात उपकरण हेर्नुहोस्",
+        },
     },
 
     footer: {
@@ -1792,16 +1816,30 @@ export const ne: Dictionary = {
             },
         },
         landing: {
-            badge: "कागजात",
-            title: "कागजात, पाठ र PDF — सबै एकै ठाउँमा।",
-            description: "PDF जोड्नुहोस्, छुट्याउनुहोस् र मिलाउनुहोस्, तस्बिर र PDF बीच रूपान्तरण गर्नुहोस्, र स्क्यानलाई सम्पादनयोग्य पाठ बनाउनुहोस् — सबै तस्बिर टुलहरूसँगै।",
+            badge: "कागजात र पाठ टुलहरू",
+            titleLead: "कागजात, पाठ र PDF —",
+            titleAccent: "सबै एकै ठाउँमा।",
+            description: "PDF जोड्नुहोस्, छुट्याउनुहोस् र मिलाउनुहोस्, ढाँचा रूपान्तरण गर्नुहोस्, पाठ सम्पादन गर्नुहोस् र OCR ले निकाल्नुहोस्। चाहिने सबै, एउटै ठाउँमा।",
             search: "टुल खोज्नुहोस्…",
             searchLabel: "टुल खोज्नुहोस्",
             clearSearch: "खोज हटाउनुहोस्",
             categoriesLabel: "वर्गहरू",
-            categories: { all: "सबै", pdf: "PDF", text: "पाठ र OCR", convert: "रूपान्तरण", organize: "मिलाउने", edit: "सम्पादन", image: "तस्बिर", ai: "AI" },
+            allTools: "सबै टुल",
+            trust: ["छिटो", "सुरक्षित", "प्रयोग गर्न सजिलो"],
+            artNote: "तस्बिरबाट सम्पादनयोग्य कागजात, केही सेकेन्डमै",
+            isNew: "नयाँ",
             groups: { documents: "कागजात टुलहरू", image: "तस्बिर टुलहरू" },
             noResults: (query: string) => `"${query}" सँग मिल्ने टुल भेटिएन।`,
+        },
+    },
+
+    imageTools: {
+        landing: {
+            badge: "तस्बिर उपकरण",
+            titleLead: "तस्बिर सम्पादन, सुधार र परिष्कृत गर्नुहोस् —",
+            titleAccent: "केही सेकेन्डमै।",
+            description: "ब्याकग्राउन्ड हटाउनुहोस्, AI ले ठूलो बनाउनुहोस्, रिटच, क्रप, आकार परिवर्तन र कम्प्रेस गर्नुहोस्। चाहिने सबै तस्बिर उपकरण, निःशुल्क र निजी।",
+            artNote: "साधारण फोटोबाट स्टुडियो गुणस्तर, एकै क्लिकमा",
         },
     },
 

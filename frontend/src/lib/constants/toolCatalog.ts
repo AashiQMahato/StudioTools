@@ -44,29 +44,3 @@ export const TOOL_CATALOG: readonly CatalogTool[] = [
     { key: "crop", href: ROUTES.crop, categories: ["image"], keywords: ["crop", "rotate", "flip", "straighten", "aspect ratio"] },
     { key: "editor", href: ROUTES.editor, categories: ["image"], keywords: ["adjust", "resize", "filters", "brightness", "colour", "color", "convert", "export"] },
 ];
-
-export const DOCUMENT_CATEGORIES: readonly ToolCategory[] = ["pdf", "text", "convert", "organize", "edit"];
-export const isDocumentTool = (tool: CatalogTool) => tool.categories.some((category) => category === "pdf" || category === "text");
-
-const normalise = (value: string) => value.normalize("NFKD").replace(/[̀-ͯ]/g, "").toLowerCase();
-
-/**
- * Tools matching a search, best first: every word must match the name, description or keywords;
- * matches in the name rank first.
- */
-export function searchTools(query: string, tools: readonly CatalogTool[], text: (tool: CatalogTool) => { title: string; description: string }) {
-    const words = normalise(query).split(/\s+/).filter(Boolean);
-    if (!words.length) return [...tools];
-    return tools
-        .map((tool) => {
-            const { title, description } = text(tool);
-            const name = normalise(title);
-            const rest = normalise([description, ...tool.keywords].join(" "));
-            if (!words.every((word) => name.includes(word) || rest.includes(word))) return null;
-            const score = words.reduce((sum, word) => sum + (name.startsWith(word) ? 3 : name.includes(word) ? 2 : 1), 0);
-            return { tool, score };
-        })
-        .filter((match): match is { tool: CatalogTool; score: number } => match !== null)
-        .sort((a, b) => b.score - a.score)
-        .map((match) => match.tool);
-}

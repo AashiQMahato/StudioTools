@@ -39,6 +39,8 @@ export interface MenuSection<K extends MenuSectionKey = MenuSectionKey> {
 /** One menu: its sections, where their copy lives, and its overview page. */
 export interface ToolMenu<K extends MenuSectionKey = MenuSectionKey> {
     sections: readonly MenuSection<K>[];
+    /** The navbar's shorter list — the most used tools; the overview page and the studio list them all. */
+    featured?: readonly MenuSection<K>[];
     // Method syntax, so a menu with its own section keys still counts as a menu in general.
     sectionCopy(t: Dictionary, key: K): { title: string; description: string };
     viewAll(t: Dictionary): string;
@@ -47,98 +49,117 @@ export interface ToolMenu<K extends MenuSectionKey = MenuSectionKey> {
 
 const tool = (key: ToolKey, href: AppRoute): MenuItem => ({ key, icon: TOOL_ICONS[key], href });
 
+/** Tools from a menu's full list, by key (for its featured columns). */
+const pick = (sections: readonly MenuSection[], ...keys: MenuItemKey[]) => keys.map((key) => sections.flatMap((section) => section.items).find((item) => item.key === key)!);
+
+const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
+    {
+        key: "aiTools",
+        icon: Sparkles,
+        items: [
+            tool("removeBackground", ROUTES.removeBackground),
+            tool("upscaler", ROUTES.upscale),
+            tool("retouch", ROUTES.retouch),
+            tool("watermarkRemover", ROUTES.watermarkRemover),
+            tool("photoGenerator", ROUTES.photoGenerator),
+        ],
+    },
+    {
+        key: "editAdjust",
+        icon: SlidersHorizontal,
+        items: [
+            tool("editor", ROUTES.editor),
+            tool("crop", ROUTES.crop),
+            // The crop tool rotates, flips and straightens.
+            { ...tool("rotateFlip", ROUTES.crop), alias: true },
+        ],
+    },
+    {
+        key: "optimize",
+        icon: Gauge,
+        items: [
+            tool("compressor", ROUTES.compress),
+            // Resizing is a panel of the editor.
+            { ...tool("resize", ROUTES.editor), alias: true },
+        ],
+    },
+];
+
 export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
     href: ROUTES.imageTools,
     sectionCopy: (t, key) => t.nav.imageMenu.sections[key],
     viewAll: (t) => t.nav.imageMenu.viewAll,
-    sections: [
-        {
-            key: "aiTools",
-            icon: Sparkles,
-            items: [
-                tool("removeBackground", ROUTES.removeBackground),
-                tool("upscaler", ROUTES.upscale),
-                tool("retouch", ROUTES.retouch),
-                tool("watermarkRemover", ROUTES.watermarkRemover),
-                tool("photoGenerator", ROUTES.photoGenerator),
-            ],
-        },
-        {
-            key: "editAdjust",
-            icon: SlidersHorizontal,
-            items: [
-                tool("editor", ROUTES.editor),
-                tool("crop", ROUTES.crop),
-                // The crop tool rotates, flips and straightens.
-                { ...tool("rotateFlip", ROUTES.crop), alias: true },
-            ],
-        },
-        {
-            key: "optimize",
-            icon: Gauge,
-            items: [
-                tool("compressor", ROUTES.compress),
-                // Resizing is a panel of the editor.
-                { ...tool("resize", ROUTES.editor), alias: true },
-            ],
-        },
+    sections: IMAGE_SECTIONS,
+    // Two columns: the AI tools, and everything for editing and optimizing.
+    featured: [
+        { key: "aiTools", icon: Sparkles, items: pick(IMAGE_SECTIONS, "removeBackground", "upscaler", "retouch", "watermarkRemover", "photoGenerator") },
+        { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "crop", "rotateFlip", "compressor", "resize") },
     ],
 };
+
+const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
+    {
+        key: "textOcr",
+        icon: ScanText,
+        items: [
+            { ...tool("ocr", ROUTES.ocr), isNew: true },
+            tool("textEditor", ROUTES.textEditor),
+            tool("textCleaner", ROUTES.textCleaner),
+            { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true },
+            tool("wordCounter", ROUTES.wordCounter),
+            tool("caseConverter", ROUTES.caseConverter),
+        ],
+    },
+    {
+        key: "pdfTools",
+        icon: Files,
+        items: [
+            { key: "organizePdf", icon: TOOL_ICONS.pdfOrganize, href: ROUTES.pdfOrganize },
+            tool("pdfMerge", ROUTES.pdfMerge),
+            tool("pdfSplit", ROUTES.pdfSplit),
+            tool("pdfCompress", ROUTES.pdfCompress),
+            tool("pdfRotate", ROUTES.pdfRotate),
+            // Organize pages selects pages and extracts them into a new PDF.
+            { key: "extractPages", icon: FileOutput, href: ROUTES.pdfOrganize, alias: true },
+        ],
+    },
+    {
+        key: "convert",
+        icon: ArrowLeftRight,
+        items: [
+            tool("pdfToWord", ROUTES.pdfToWord),
+            tool("pdfToText", ROUTES.pdfToText),
+            tool("pdfToImages", ROUTES.pdfToImages),
+            tool("imagesToPdf", ROUTES.imagesToPdf),
+            { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true },
+            { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true },
+        ],
+    },
+    {
+        key: "editSecure",
+        icon: ShieldCheck,
+        items: [
+            tool("pdfEditor", ROUTES.pdfEditor),
+            tool("pdfSign", ROUTES.pdfSign),
+            tool("pdfWatermark", ROUTES.pdfWatermark),
+            tool("pdfPageNumbers", ROUTES.pdfPageNumbers),
+            tool("pdfProtect", ROUTES.pdfProtect),
+            tool("pdfUnlock", ROUTES.pdfUnlock),
+        ],
+    },
+];
+
 
 export const documentMenu: ToolMenu<DocumentMenuSectionKey> = {
     href: ROUTES.documents,
     sectionCopy: (t, key) => t.nav.documentMenu.sections[key],
     viewAll: (t) => t.nav.documentMenu.viewAll,
-    sections: [
-        {
-            key: "textOcr",
-            icon: ScanText,
-            items: [
-                { ...tool("ocr", ROUTES.ocr), isNew: true },
-                tool("textEditor", ROUTES.textEditor),
-                tool("textCleaner", ROUTES.textCleaner),
-                { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true },
-                tool("wordCounter", ROUTES.wordCounter),
-                tool("caseConverter", ROUTES.caseConverter),
-            ],
-        },
-        {
-            key: "pdfTools",
-            icon: Files,
-            items: [
-                { key: "organizePdf", icon: TOOL_ICONS.pdfOrganize, href: ROUTES.pdfOrganize },
-                tool("pdfMerge", ROUTES.pdfMerge),
-                tool("pdfSplit", ROUTES.pdfSplit),
-                tool("pdfCompress", ROUTES.pdfCompress),
-                tool("pdfRotate", ROUTES.pdfRotate),
-                // Organize pages selects pages and extracts them into a new PDF.
-                { key: "extractPages", icon: FileOutput, href: ROUTES.pdfOrganize, alias: true },
-            ],
-        },
-        {
-            key: "convert",
-            icon: ArrowLeftRight,
-            items: [
-                tool("pdfToWord", ROUTES.pdfToWord),
-                tool("pdfToText", ROUTES.pdfToText),
-                tool("pdfToImages", ROUTES.pdfToImages),
-                tool("imagesToPdf", ROUTES.imagesToPdf),
-                { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true },
-                { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true },
-            ],
-        },
-        {
-            key: "editSecure",
-            icon: ShieldCheck,
-            items: [
-                tool("pdfEditor", ROUTES.pdfEditor),
-                tool("pdfSign", ROUTES.pdfSign),
-                tool("pdfWatermark", ROUTES.pdfWatermark),
-                tool("pdfPageNumbers", ROUTES.pdfPageNumbers),
-                tool("pdfProtect", ROUTES.pdfProtect),
-                tool("pdfUnlock", ROUTES.pdfUnlock),
-            ],
-        },
+    sections: DOCUMENT_SECTIONS,
+    // Three columns of five: text, PDFs (organizing and converting together), editing and securing.
+    featured: [
+        { key: "textOcr", icon: ScanText, items: pick(DOCUMENT_SECTIONS, "ocr", "textEditor", "textCleaner", "findReplace", "wordCounter") },
+        { key: "pdfConvert", icon: Files, items: pick(DOCUMENT_SECTIONS, "pdfMerge", "pdfSplit", "pdfCompress", "pdfToWord", "pdfToImages") },
+        { key: "editSecure", icon: ShieldCheck, items: pick(DOCUMENT_SECTIONS, "pdfEditor", "pdfSign", "pdfWatermark", "pdfProtect", "pdfUnlock") },
     ],
 };
 
@@ -151,3 +172,6 @@ export function menuItemCopy(t: Dictionary, key: MenuItemKey) {
 /** The entry for the page you're on. An alias never is: it opens another entry's page. */
 export const isCurrentItem = (item: MenuItem, pathname: string) => !item.alias && pathname === item.href;
 
+
+/** What the navbar shows of a menu: its featured tools, or all of them. */
+export const navSections = <K extends MenuSectionKey>(menu: ToolMenu<K>) => menu.featured ?? menu.sections;

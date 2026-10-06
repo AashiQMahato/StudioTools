@@ -11,9 +11,11 @@ const SECTION_TONE: Record<MenuSectionKey, string> = {
     aiTools: "#7C3AED",
     editAdjust: "#2563EB",
     optimize: "#E11D48",
+    editOptimize: "#2563EB",
     textOcr: "#4F46E5",
     pdfTools: "#E11D48",
     convert: "#0284C7",
+    pdfConvert: "#E11D48",
     editSecure: "#7C3AED",
 };
 

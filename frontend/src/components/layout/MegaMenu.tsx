@@ -4,11 +4,12 @@ import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import type { NavPanelProps } from "./NavDropdown";
-import { isCurrentItem, type MenuSection, type MenuSectionKey, menuItemCopy, type ToolMenu } from "./toolMenus";
+import { isCurrentItem, type MenuSection, type MenuSectionKey, menuItemCopy, navSections, type ToolMenu } from "./toolMenus";
 
 /** Columns per menu size, and the panel's width to match. */
 const LAYOUT = {
-    3: { width: "w-[min(56rem,calc(100vw-2rem))]", grid: "grid-cols-3" },
+    2: { width: "w-[min(30rem,calc(100vw-2rem))]", grid: "grid-cols-2" },
+    3: { width: "w-[min(44rem,calc(100vw-2rem))]", grid: "grid-cols-3" },
     4: { width: "w-[min(70rem,calc(100vw-2rem))]", grid: "grid-cols-4" },
 } as const;
 
@@ -18,7 +19,8 @@ const LAYOUT = {
  */
 export function MegaMenu<K extends MenuSectionKey>({ menu, id, open, panelRef, onNavigate, onKeyDown }: NavPanelProps & { menu: ToolMenu<K> }) {
     const t = useT();
-    const layout = LAYOUT[menu.sections.length >= 4 ? 4 : 3];
+    const sections = navSections(menu);
+    const layout = LAYOUT[Math.min(Math.max(sections.length, 2), 4) as 2 | 3 | 4];
 
     // ↑ ↓ Home End move through every entry (the dropdown's own handling); ← → jump between columns.
     const onPanelKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -38,7 +40,7 @@ export function MegaMenu<K extends MenuSectionKey>({ menu, id, open, panelRef, o
             <div id={id} ref={panelRef} data-open={open || undefined} inert={!open} onKeyDown={onPanelKeyDown} className="nav-panel pt-5">
                 <div className="overflow-hidden rounded-[1.25rem] border border-secondary bg-primary shadow-xl">
                     <div className={cn("grid gap-x-1 p-2.5 xl:gap-x-3 xl:p-4", layout.grid)}>
-                        {menu.sections.map((section) => (
+                        {sections.map((section) => (
                             <Column key={section.key} section={section} copy={menu.sectionCopy(t, section.key)} onNavigate={onNavigate} />
                         ))}
                     </div>
@@ -72,9 +74,6 @@ function Column({ section, copy, onNavigate }: { section: MenuSection; copy: { t
                     <Icon className="size-3.5" strokeWidth={2} aria-hidden />
                     {copy.title}
                 </h2>
-                <p className="mt-1 truncate text-xs text-tertiary" title={copy.description}>
-                    {copy.description}
-                </p>
             </header>
             <ul className="flex flex-col gap-0.5">
                 {section.items.map((item) => {
@@ -96,11 +95,8 @@ function Column({ section, copy, onNavigate }: { section: MenuSection; copy: { t
                                 <span className="nav-tool-icon grid size-8 shrink-0 place-items-center rounded-lg border border-secondary bg-primary text-secondary">
                                     <ItemIcon className="size-4" strokeWidth={1.9} aria-hidden />
                                 </span>
-                                <span className="min-w-0 flex-1">
-                                    <span className="block truncate text-sm font-semibold text-primary">{itemCopy.title}</span>
-                                    {/* On narrower desktops the names alone keep the columns calm. */}
-                                    <span className="hidden truncate text-xs leading-4 text-tertiary xl:block">{itemCopy.description}</span>
-                                </span>
+                                {/* Names only: the overview page has the descriptions. */}
+                                <span className="min-w-0 flex-1 truncate text-sm font-semibold text-primary">{itemCopy.title}</span>
                             </Link>
                         </li>
                     );

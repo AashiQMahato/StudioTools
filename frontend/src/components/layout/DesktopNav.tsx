@@ -1,12 +1,13 @@
 import { useLocation } from "react-router-dom";
 import { SECTION_LINKS, type SectionKey, DOCUMENT_ROUTES, TOOL_ROUTES } from "@/lib/constants/navigation";
+import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import { NavDropdown } from "./NavDropdown";
 import { NavItem } from "./NavItem";
 import { scrollToSection, sectionHref } from "./sections";
-import { DocumentsMenu } from "./DocumentsMenu";
-import { ToolsMegaMenu } from "./ToolsMegaMenu";
+import { MegaMenu } from "./MegaMenu";
+import { documentMenu, imageMenu } from "./toolMenus";
 
 interface DesktopNavProps {
     activeSection: SectionKey | null;
@@ -22,14 +23,13 @@ export function DesktopNav({ activeSection, className }: DesktopNavProps) {
         <nav aria-label={t.nav.main} className={cn("relative", className)}>
             <ul className="flex items-center gap-1">
                 <li>
-                    <NavDropdown label={t.nav.tools} current={toolsCurrent}>
-                        {(panel) => <ToolsMegaMenu {...panel} />}
+                    <NavDropdown label={t.nav.tools} href={ROUTES.imageTools} current={toolsCurrent}>
+                        {(panel) => <MegaMenu menu={imageMenu} {...panel} />}
                     </NavDropdown>
                 </li>
-                {/* Positioned, so its (small) panel hangs from its own trigger rather than the whole bar. */}
-                <li className="relative">
-                    <NavDropdown label={t.nav.documents} current={(DOCUMENT_ROUTES as readonly string[]).includes(pathname)}>
-                        {(panel) => <DocumentsMenu {...panel} />}
+                <li>
+                    <NavDropdown label={t.nav.documents} href={ROUTES.documents} current={(DOCUMENT_ROUTES as readonly string[]).includes(pathname)}>
+                        {(panel) => <MegaMenu menu={documentMenu} {...panel} />}
                     </NavDropdown>
                 </li>
                 {SECTION_LINKS.map((link) => (

@@ -23,7 +23,7 @@ export interface NavToolGroup {
     items: readonly NavTool[];
 }
 
-export const TOOL_GROUPS: readonly NavToolGroup[] = [
+const TOOL_GROUPS: readonly NavToolGroup[] = [
     {
         key: "ai",
         items: [
@@ -68,7 +68,7 @@ const TEXT_EDITOR_PANELS: readonly NavTool[] = [
 ];
 
 /** The Documents menu: text tools; PDF (organizing and converting); editing, signing and securing. */
-export const DOCUMENT_GROUPS: readonly NavToolGroup[] = [
+const DOCUMENT_GROUPS: readonly NavToolGroup[] = [
     {
         key: "text",
         items: [
@@ -102,7 +102,7 @@ export const DOCUMENT_GROUPS: readonly NavToolGroup[] = [
 export const DOCUMENT_ROUTES: readonly AppRoute[] = [ROUTES.documents, ...DOCUMENT_GROUPS.flatMap((group) => group.items.flatMap((item) => [item.href, ...(item.members ?? []).map((member) => member.href)]))];
 
 /** Every route the Tools menu covers — the trigger reads as current on any of them. */
-export const TOOL_ROUTES: readonly AppRoute[] = [ROUTES.removeBackground, ROUTES.upscale, ROUTES.retouch, ROUTES.photoGenerator, ROUTES.watermarkRemover, ROUTES.crop, ROUTES.compress, ROUTES.editor];
+export const TOOL_ROUTES: readonly AppRoute[] = [ROUTES.imageTools, ROUTES.removeBackground, ROUTES.upscale, ROUTES.retouch, ROUTES.photoGenerator, ROUTES.watermarkRemover, ROUTES.crop, ROUTES.compress, ROUTES.editor];
 
 /** In-page sections of the home page. There is no About section or page, so there is no About link. */
 export const SECTION_LINKS = [

@@ -14,6 +14,12 @@
             "description": "Remove backgrounds, upscale photos with AI, extract English and Nepali text with OCR, and edit, sign, merge and convert PDFs. Free, private, no install.",
             "priority": 1.0
         },
+        "/image-tools": {
+            "title": "Free Image Tools Online — AI Background Remover & More | Studio Tools",
+            "heading": "Image tools",
+            "description": "Every image tool in one place: remove backgrounds, upscale with AI, retouch, crop, resize, compress and make passport photos. Free and private.",
+            "priority": 0.9
+        },
         "/documents": {
             "title": "Free PDF & Document Tools Online | Studio Tools",
             "heading": "PDF and document tools",

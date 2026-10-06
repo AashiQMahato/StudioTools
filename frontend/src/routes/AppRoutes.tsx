@@ -15,6 +15,7 @@ import { WatermarkRemoverPage } from "@/pages/WatermarkRemover/WatermarkRemoverP
 // The OCR editor brings a rich-text editor with it; only its own page loads that.
 const OcrPage = lazy(() => import("@/pages/Ocr/OcrPage").then((module) => ({ default: module.OcrPage })));
 // The document tools share pdf.js previews and their own components: loaded when one opens.
+const ImageToolsPage = lazy(() => import("@/pages/ImageTools/ImageToolsPage").then((module) => ({ default: module.ImageToolsPage })));
 const DocumentsPage = lazy(() => import("@/pages/Documents/DocumentsPage").then((module) => ({ default: module.DocumentsPage })));
 const MergePage = lazy(() => import("@/pages/Pdf/MergePage").then((module) => ({ default: module.MergePage })));
 const SplitPage = lazy(() => import("@/pages/Pdf/SplitPage").then((module) => ({ default: module.SplitPage })));
@@ -50,6 +51,7 @@ export function AppRoutes() {
                 <Route path={ROUTES.photoGenerator} element={<PhotoGeneratorPage />} />
                 <Route path={ROUTES.watermarkRemover} element={<WatermarkRemoverPage />} />
                 <Route path={ROUTES.ocr} element={later(<OcrPage />)} />
+                <Route path={ROUTES.imageTools} element={later(<ImageToolsPage />)} />
                 <Route path={ROUTES.documents} element={later(<DocumentsPage />)} />
                 <Route path={ROUTES.pdfMerge} element={later(<MergePage />)} />
                 <Route path={ROUTES.pdfSplit} element={later(<SplitPage />)} />

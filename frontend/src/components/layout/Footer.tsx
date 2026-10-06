@@ -1,6 +1,6 @@
 import { ArrowUp, ShieldCheck } from "lucide-react";
 import { Link } from "react-router-dom";
-import { LogoMark } from "@/components/common/Logo";
+import { LogoMark, Wordmark } from "@/components/common/Logo";
 import type { ToolKey } from "@/lib/constants/navigation";
 import { type AppRoute, ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
@@ -72,7 +72,7 @@ export function Footer() {
                         aria-label={t.common.homeAria}
                     >
                         <LogoMark className="size-7" />
-                        <span className="text-xs font-semibold tracking-[0.12em] text-secondary uppercase">{t.common.appName}</span>
+                        <Wordmark name={t.common.appName} className="text-sm" />
                     </Link>
                     <p className="mt-7 max-w-lg text-[1.75rem] leading-[1.15] font-semibold tracking-[-0.02em] text-balance text-primary sm:text-[2rem]">{copy.tagline}</p>
                     <p className="mt-4 max-w-md text-[0.9375rem] leading-relaxed text-pretty text-tertiary">{copy.blurb}</p>

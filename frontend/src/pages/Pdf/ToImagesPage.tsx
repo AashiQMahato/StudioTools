@@ -1,5 +1,6 @@
 import { FileImage } from "lucide-react";
 import { useMemo, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Segmented } from "@/components/common/Segmented";
 import { Range } from "@/features/background-removal/editor/RefinePanel";
 import { DocumentToolLayout } from "@/features/documents/DocumentToolLayout";
@@ -15,6 +16,7 @@ import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 
 type Format = "jpg" | "png" | "webp";
+const FORMATS: readonly Format[] = ["jpg", "png", "webp"];
 const RESOLUTIONS = [72, 150, 300] as const;
 const PREVIEW_LIMIT = 12;
 
@@ -23,7 +25,9 @@ export function ToImagesPage() {
     const copy = t.documents.toImages;
     const job = useDocumentJob();
     const pdf = useSinglePdf();
-    const [format, setFormat] = useState<Format>("jpg");
+    // "PDF to JPG" / "PDF to PNG" links open this page with the format already chosen (?format=png).
+    const [params] = useSearchParams();
+    const [format, setFormat] = useState<Format>(() => FORMATS.find((value) => value === params.get("format")) ?? "jpg");
     const [dpi, setDpi] = useState<(typeof RESOLUTIONS)[number]>(150);
     const [quality, setQuality] = useState(85);
     const count = pdf.ready?.sizes.length ?? 0;
@@ -79,7 +83,7 @@ export function ToImagesPage() {
                     <PageScopeControl scope={pages} pageCount={count} label={copy.pages} rangesLabel={copy.rangesLabel} />
                     <section className="flex flex-col gap-3">
                         <h3 className="text-sm font-semibold text-primary">{copy.format}</h3>
-                        <Segmented label={copy.format} value={format} onChange={setFormat} options={(["jpg", "png", "webp"] as const).map((value) => ({ value, label: value.toUpperCase() }))} />
+                        <Segmented label={copy.format} value={format} onChange={setFormat} options={FORMATS.map((value) => ({ value, label: value.toUpperCase() }))} />
                         {format !== "png" ? <Range label={copy.quality} value={quality} min={40} max={100} onChange={setQuality} format={(value) => `${value}%`} /> : <p className="text-xs text-tertiary">{copy.pngHint}</p>}
                     </section>
                     <section className="flex flex-col gap-3">

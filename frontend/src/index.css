@@ -1353,3 +1353,90 @@
         transition: opacity 150ms ease-out;
     }
 }
+
+/* ------------------------------------------------------------------ Documents page */
+
+/*
+ * A tool card, coloured by its own --accent: a faint tint from the corner, the icon tile and the arrow.
+ * Hover lifts it on a spring; pressing sinks it in at once (feedback on touch-down, not release).
+ */
+.tool-card {
+    border-color: color-mix(in srgb, var(--accent) 18%, var(--card-line));
+    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, var(--color-bg-primary)), var(--color-bg-primary) 62%);
+    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+    transition:
+        translate 450ms var(--ease-spring),
+        scale 450ms var(--ease-spring),
+        box-shadow 200ms ease-out,
+        border-color 200ms ease-out;
+
+    @media (hover: hover) {
+        &:hover {
+            translate: 0 -2px;
+            border-color: color-mix(in srgb, var(--accent) 38%, var(--card-line));
+            box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--accent) 50%, transparent);
+        }
+    }
+    &:active {
+        translate: 0 0;
+        scale: 0.985;
+        transition-duration: 90ms;
+    }
+}
+.tool-card-icon {
+    background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 72%, white), var(--accent) 70%);
+    box-shadow:
+        0 8px 18px -8px color-mix(in srgb, var(--accent) 75%, transparent),
+        inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.tool-card-arrow {
+    color: var(--accent);
+    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    transition:
+        background-color 200ms ease-out,
+        color 200ms ease-out,
+        translate 450ms var(--ease-spring);
+
+    .tool-card:focus-visible & {
+        color: white;
+        background: var(--accent);
+    }
+    @media (hover: hover) {
+        .tool-card:hover & {
+            color: white;
+            background: var(--accent);
+            translate: 2px 0;
+        }
+    }
+}
+
+/* The hero picture materializes once — scale and blur together, then it stays still. */
+.hero-art {
+    animation: hero-art-in 900ms var(--ease-spring) both;
+}
+@keyframes hero-art-in {
+    from {
+        opacity: 0;
+        scale: 0.94;
+        filter: blur(10px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .tool-card,
+    .tool-card:hover,
+    .tool-card:active,
+    .tool-card-arrow,
+    .tool-card:is(:hover, :focus-visible) .tool-card-arrow {
+        translate: none;
+        scale: none;
+    }
+    .hero-art {
+        animation: hero-art-fade 200ms ease-out both;
+    }
+    @keyframes hero-art-fade {
+        from {
+            opacity: 0;
+        }
+    }
+}

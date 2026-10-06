@@ -1,6 +1,6 @@
 import { ChevronDown } from "lucide-react";
 import { type FocusEvent, type KeyboardEvent, type PointerEvent, type ReactNode, type Ref, useCallback, useEffect, useId, useRef, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils/cn";
 
 /** Hover intent: long enough that sweeping across the bar doesn't flash the panel open. */
@@ -24,6 +24,11 @@ interface NavDropdownProps {
     label: ReactNode;
     /** The current page is one of this menu's. */
     current?: boolean;
+    /**
+     * The menu has a page of its own (Documents): the trigger is a link to it. Hover and ↓ still open
+     * the panel; a click goes to the page.
+     */
+    href?: string;
     children: (panel: NavPanelProps) => ReactNode;
 }
 
@@ -31,11 +36,11 @@ interface NavDropdownProps {
  * A navbar trigger with a panel: opens on hover (with intent), click or ↓, closes on leave, outside
  * press, Escape or navigation; arrow keys move between the panel's `[data-nav-item]` entries.
  */
-export function NavDropdown({ label, current = false, children }: NavDropdownProps) {
+export function NavDropdown({ label, current = false, href, children }: NavDropdownProps) {
     const { pathname } = useLocation();
     const panelId = useId();
     const wrapRef = useRef<HTMLDivElement>(null);
-    const triggerRef = useRef<HTMLButtonElement>(null);
+    const triggerRef = useRef<HTMLButtonElement & HTMLAnchorElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const openedBy = useRef<Opener | null>(null);
     const focusFirst = useRef(false);
@@ -136,25 +141,37 @@ export function NavDropdown({ label, current = false, children }: NavDropdownPro
         list[(next + list.length) % list.length]?.focus();
     };
 
+    const triggerProps = {
+        "aria-expanded": open,
+        "aria-haspopup": "true" as const,
+        "aria-controls": panelId,
+        onKeyDown: onTriggerKeyDown,
+        className: cn(
+            "flex h-9 cursor-pointer items-center gap-1 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
+            "outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2",
+            open || current ? "bg-primary_hover text-primary" : "text-secondary hover:bg-primary_hover hover:text-primary",
+        ),
+    };
+    const triggerContent = (
+        <>
+            {label}
+            <ChevronDown className="nav-chevron size-4 text-quaternary" aria-hidden />
+        </>
+    );
+
     return (
         <div ref={wrapRef} onPointerEnter={onPointerEnter} onPointerLeave={onPointerLeave} onBlur={onBlur}>
-            <button
-                ref={triggerRef}
-                type="button"
-                aria-expanded={open}
-                aria-haspopup="true"
-                aria-controls={panelId}
-                onClick={onTriggerClick}
-                onKeyDown={onTriggerKeyDown}
-                className={cn(
-                    "flex h-9 cursor-pointer items-center gap-1 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
-                    "outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2",
-                    open || current ? "bg-primary_hover text-primary" : "text-secondary hover:bg-primary_hover hover:text-primary",
-                )}
-            >
-                {label}
-                <ChevronDown className="nav-chevron size-4 text-quaternary" aria-hidden />
-            </button>
+            {href ? (
+                // Following it closes the panel by itself (it's open only for the page it opened on);
+                // on the page already, close it here.
+                <Link ref={triggerRef} to={href} {...triggerProps} onClick={hide}>
+                    {triggerContent}
+                </Link>
+            ) : (
+                <button ref={triggerRef} type="button" {...triggerProps} onClick={onTriggerClick}>
+                    {triggerContent}
+                </button>
+            )}
             {children({ id: panelId, open, panelRef, onNavigate: hide, onKeyDown: onPanelKeyDown })}
         </div>
     );

@@ -1440,3 +1440,86 @@
         }
     }
 }
+
+/* ------------------------------------------------------------------ Studio (tool workspace) */
+
+/* The empty state's target: a dashed outline over a faint wash; it warms when the pointer is on it. */
+.studio-drop {
+    border: 2px dashed color-mix(in srgb, #6366f1 22%, var(--card-line));
+    background:
+        radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, #6366f1 7%, transparent), transparent),
+        color-mix(in srgb, #6366f1 2.5%, var(--color-bg-primary));
+    transition:
+        border-color 200ms ease-out,
+        background-color 200ms ease-out;
+
+    @media (hover: hover) {
+        &:hover {
+            border-color: color-mix(in srgb, #6366f1 55%, transparent);
+        }
+    }
+}
+.studio-drop-art {
+    transition: translate 450ms var(--ease-spring);
+
+    @media (hover: hover) {
+        .studio-drop:hover & {
+            translate: 0 -3px;
+        }
+    }
+}
+
+/* The main action: blue into violet, pressed in at once (feedback on touch-down, not release). */
+.studio-cta {
+    background: linear-gradient(90deg, #2563eb, #4f46e5 55%, #7c3aed);
+    box-shadow:
+        0 10px 24px -12px rgb(79 70 229 / 0.7),
+        inset 0 1px 0 rgb(255 255 255 / 0.2);
+    transition:
+        scale 450ms var(--ease-spring),
+        box-shadow 200ms ease-out,
+        filter 200ms ease-out;
+
+    @media (hover: hover) {
+        :is(a, button):hover > &,
+        &:is(a, button):hover {
+            filter: brightness(1.06);
+            box-shadow:
+                0 14px 30px -12px rgb(79 70 229 / 0.8),
+                inset 0 1px 0 rgb(255 255 255 / 0.2);
+        }
+    }
+    :is(a, button):active > &,
+    &:is(a, button):active {
+        scale: 0.97;
+        transition-duration: 90ms;
+    }
+    &:is(button):disabled {
+        cursor: not-allowed;
+        filter: grayscale(0.6);
+        opacity: 0.5;
+        box-shadow: none;
+    }
+}
+
+.studio-nav-item {
+    transition:
+        background-color 150ms ease-out,
+        scale 450ms var(--ease-spring);
+
+    &:active {
+        scale: 0.98;
+        transition-duration: 90ms;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .studio-drop-art,
+    .studio-drop:hover .studio-drop-art {
+        translate: none;
+    }
+    .studio-cta,
+    .studio-nav-item {
+        scale: none !important;
+    }
+}

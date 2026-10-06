@@ -1,6 +1,6 @@
 import { ArrowLeftRight, Files, type LucideIcon, Replace, ScanText, ShieldCheck, SlidersHorizontal, Sparkles, Gauge, FileImage, FileOutput } from "lucide-react";
 import type { Dictionary } from "@/i18n";
-import type { ToolKey } from "@/lib/constants/navigation";
+import { ORGANIZE_MODES, type ToolKey } from "@/lib/constants/navigation";
 import { type AppRoute, ROUTES } from "@/lib/constants/routes";
 import { TOOL_ICONS } from "./toolIcons";
 
@@ -26,6 +26,13 @@ export interface MenuItem {
     search?: string;
     /** Opens another tool's page, so it never reads as the current page itself. */
     alias?: true;
+    /**
+     * A mode or panel of another tool (Word Counter of the Text Editor, Merge of Organize PDF): listed in
+     * the menus, but not in the studio sidebar, where that tool stands for it.
+     */
+    mode?: true;
+    /** Other pages of this tool: it reads as the current tool on any of them. */
+    members?: readonly AppRoute[];
     /** Marked "New" on the overview page. */
     isNew?: true;
 }
@@ -103,24 +110,26 @@ const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
         icon: ScanText,
         items: [
             { ...tool("ocr", ROUTES.ocr), isNew: true },
-            tool("textEditor", ROUTES.textEditor),
-            tool("textCleaner", ROUTES.textCleaner),
-            { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true },
-            tool("wordCounter", ROUTES.wordCounter),
-            tool("caseConverter", ROUTES.caseConverter),
+            // Cleaning, find & replace, word counts and case conversion are the Text Editor's own panels.
+            { ...tool("textEditor", ROUTES.textEditor), members: [ROUTES.textCleaner, ROUTES.wordCounter, ROUTES.caseConverter] },
+            { ...tool("textCleaner", ROUTES.textCleaner), mode: true },
+            { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true, mode: true },
+            { ...tool("wordCounter", ROUTES.wordCounter), mode: true },
+            { ...tool("caseConverter", ROUTES.caseConverter), mode: true },
         ],
     },
     {
         key: "pdfTools",
         icon: Files,
         items: [
-            { key: "organizePdf", icon: TOOL_ICONS.pdfOrganize, href: ROUTES.pdfOrganize },
-            tool("pdfMerge", ROUTES.pdfMerge),
-            tool("pdfSplit", ROUTES.pdfSplit),
-            tool("pdfCompress", ROUTES.pdfCompress),
-            tool("pdfRotate", ROUTES.pdfRotate),
+            // One feature in several modes (its mode bar moves between them).
+            { key: "organizePdf", icon: TOOL_ICONS.pdfOrganize, href: ROUTES.pdfOrganize, members: ORGANIZE_MODES.map((mode) => mode.href) },
+            { ...tool("pdfMerge", ROUTES.pdfMerge), mode: true },
+            { ...tool("pdfSplit", ROUTES.pdfSplit), mode: true },
+            { ...tool("pdfCompress", ROUTES.pdfCompress), mode: true },
+            { ...tool("pdfRotate", ROUTES.pdfRotate), mode: true },
             // Organize pages selects pages and extracts them into a new PDF.
-            { key: "extractPages", icon: FileOutput, href: ROUTES.pdfOrganize, alias: true },
+            { key: "extractPages", icon: FileOutput, href: ROUTES.pdfOrganize, alias: true, mode: true },
         ],
     },
     {
@@ -131,8 +140,8 @@ const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
             tool("pdfToText", ROUTES.pdfToText),
             tool("pdfToImages", ROUTES.pdfToImages),
             tool("imagesToPdf", ROUTES.imagesToPdf),
-            { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true },
-            { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true },
+            { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true, mode: true },
+            { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true, mode: true },
         ],
     },
     {
@@ -170,7 +179,11 @@ export function menuItemCopy(t: Dictionary, key: MenuItemKey) {
 }
 
 /** The entry for the page you're on. An alias never is: it opens another entry's page. */
-export const isCurrentItem = (item: MenuItem, pathname: string) => !item.alias && pathname === item.href;
+export const isCurrentItem = (item: MenuItem, pathname: string) => !item.alias && (pathname === item.href || Boolean(item.members?.includes(pathname as AppRoute)));
+
+/** The studio sidebar's list: each tool once — modes and presets of another tool are left to it. */
+export const sidebarSections = <K extends MenuSectionKey>(menu: ToolMenu<K>) =>
+    menu.sections.map((section) => ({ ...section, items: section.items.filter((item) => !item.mode) })).filter((section) => section.items.length > 0);
 
 
 /** What the navbar shows of a menu: its featured tools, or all of them. */

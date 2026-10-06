@@ -1,7 +1,7 @@
 import { ArrowLeft, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { documentMenu, imageMenu, isCurrentItem, menuItemCopy, type ToolMenu } from "@/components/layout/toolMenus";
+import { documentMenu, imageMenu, isCurrentItem, menuItemCopy, sidebarSections, type ToolMenu } from "@/components/layout/toolMenus";
 import { isDocumentTool, type ToolKey } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
@@ -97,7 +97,7 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
     return (
         <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2 xl:p-3", className)}>
             <div ref={list} className="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-1">
-                {menu.sections.map((section) => (
+                {sidebarSections(menu).map((section) => (
                     <section key={section.key} aria-labelledby={`studio-group-${section.key}`} className="flex flex-col gap-0.5">
                         <h2 id={`studio-group-${section.key}`} className="px-2 pb-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] text-quaternary uppercase lg:sr-only xl:not-sr-only">
                             {menu.sectionCopy(t, section.key).title}

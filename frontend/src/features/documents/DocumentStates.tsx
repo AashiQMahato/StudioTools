@@ -6,7 +6,7 @@ import { saveBlob } from "@/features/pdf-canvas/fileActions";
 import { fetchJobArchive, fetchJobFile, type Job, jobArchiveUrl, jobFileUrl } from "@/lib/api/jobsApi";
 import type { ToolKey } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
-import { downloadFile } from "@/lib/utils/download";
+import { downloadBlob, downloadFile } from "@/lib/utils/download";
 import { useT } from "@/i18n";
 import { ContinueWith } from "./ContinueWith";
 import { jobFiles, jobHandoffKind } from "./handoff";
@@ -77,6 +77,20 @@ export function JobResult({ job, title, tool, onStartOver, children }: { job: Jo
     const copy = t.documents.result;
     const [savingAs, setSavingAs] = useState(false);
     const single = job.files.length === 1 ? job.files[0]! : null;
+    /*
+     * Fetch, then save from memory — as Save as does. Handing the browser the file's address instead
+     * leaves the download to its download manager, which can refuse some files (an encrypted PDF it
+     * can't scan) and, with the API on another domain, ignores the file name. If the fetch fails, the
+     * address is still worth a try.
+     */
+    const download = async (file: Job["files"][number] | null) => {
+        const name = file ? file.name : `${job.operation === "to-images" ? "pages" : "documents"}.zip`;
+        try {
+            downloadBlob(file ? await fetchJobFile(job.id, file.id) : await fetchJobArchive(job.id), name);
+        } catch {
+            downloadFile(file ? jobFileUrl(job.id, file.id) : jobArchiveUrl(job.id), name);
+        }
+    };
     const extension = single ? (single.name.match(/\.([a-z0-9]+)$/i)?.[1] ?? "pdf") : "zip";
     const suggested = single ? single.name.replace(/\.[a-z0-9]+$/i, "") : "documents";
     const handoff = jobHandoffKind(job);
@@ -109,7 +123,7 @@ export function JobResult({ job, title, tool, onStartOver, children }: { job: Jo
                             {job.files.length > 1 && (
                             <button
                                 type="button"
-                                onClick={() => downloadFile(jobFileUrl(job.id, file.id), file.name)}
+                                onClick={() => void download(file)}
                                 className="flex h-9 shrink-0 cursor-pointer items-center gap-1.5 rounded-lg border border-[var(--card-line)] px-3 text-sm font-medium text-secondary outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 pointer-coarse:h-11"
                                 aria-label={copy.downloadFile(file.name)}
                             >
@@ -129,12 +143,12 @@ export function JobResult({ job, title, tool, onStartOver, children }: { job: Jo
                     {copy.saveAs}
                 </Button>
                 {job.files.length > 1 ? (
-                    <Button size="lg" color="primary" iconLeading={Archive} onPress={() => downloadFile(jobArchiveUrl(job.id), "")}>
+                    <Button size="lg" color="primary" iconLeading={Archive} onPress={() => void download(null)}>
                         {copy.downloadAll}
                     </Button>
                 ) : (
                     job.files[0] && (
-                        <Button size="lg" color="primary" iconLeading={Download} onPress={() => downloadFile(jobFileUrl(job.id, job.files[0]!.id), job.files[0]!.name)}>
+                        <Button size="lg" color="primary" iconLeading={Download} onPress={() => void download(job.files[0]!)}>
                             {copy.download}
                         </Button>
                     )

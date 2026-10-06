@@ -164,11 +164,7 @@ export function PhotoEditor({ mode }: PhotoEditorProps) {
     ) : null;
 
     const exportSlot =
-        ready && edit && original ? (
-            <ExportMenu source={decoded?.bitmap ?? null} edit={edit} defaultFormat={formatFromMime(original.mimeType)} baseName={baseName(original.name)} suffix={mode === "crop" ? "cropped" : "edited"} />
-        ) : (
-            <ExportMenu source={null} edit={null} defaultFormat="jpeg" baseName="" suffix="" />
-        );
+        ready && edit && original ? <ExportMenu source={decoded?.bitmap ?? null} edit={edit} defaultFormat={formatFromMime(original.mimeType)} baseName={baseName(original.name)} suffix={mode === "crop" ? "cropped" : "edited"} /> : null;
 
     const panel = (
         <>

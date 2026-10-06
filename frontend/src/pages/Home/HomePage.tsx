@@ -1,6 +1,5 @@
 import { EditorSection } from "@/components/landing/EditorSection";
 import { FaqSection } from "@/components/landing/FaqSection";
-import { FinalCTA } from "@/components/landing/FinalCTA";
 import { Hero } from "@/components/landing/Hero";
 import { ShowcaseSection } from "@/components/landing/ShowcaseSection";
 import { ToolsSection } from "@/components/landing/ToolsSection";
@@ -17,7 +16,6 @@ export function HomePage() {
             <EditorSection />
             <WhySection />
             <FaqSection />
-            <FinalCTA />
         </>
     );
 }

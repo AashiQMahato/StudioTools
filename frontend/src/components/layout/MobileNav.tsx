@@ -7,7 +7,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import { SECTION_LINKS, type SectionKey } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
 import { DICTIONARIES, LOCALES, useLocale, useT } from "@/i18n";
-import { documentMenu, imageMenu, isCurrentItem, type MenuSectionKey, menuItemCopy, type ToolMenu } from "./toolMenus";
+import { documentMenu, imageMenu, isCurrentItem, type MenuSectionKey, menuItemCopy, navSections, type ToolMenu } from "./toolMenus";
 import { NavItem } from "./NavItem";
 import { scrollToSection, sectionHref } from "./sections";
 
@@ -131,7 +131,7 @@ function MobileMenu<K extends MenuSectionKey>({ menu, idPrefix, onClose }: { men
 
     return (
         <div className="flex flex-col gap-0.5 px-1 pt-1 pb-3">
-            {menu.sections.map((section) => {
+            {navSections(menu).map((section) => {
                 const copy = menu.sectionCopy(t, section.key);
                 const open = openSection === section.key;
                 const panelId = `${idPrefix}-${section.key}`;

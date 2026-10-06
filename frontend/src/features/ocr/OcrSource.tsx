@@ -210,7 +210,7 @@ export function OcrSourceProvider({ image, children }: { image: ImageFile | null
 export function OcrShell({ children, ...props }: Omit<ComponentProps<typeof StudioShell>, "tool" | "interceptFile" | "accept">) {
     const source = useOcrSource();
     return (
-        <StudioShell tool="ocr" interceptFile={source.intercept} accept={OCR_ACCEPT} {...props}>
+        <StudioShell tool="ocr" interceptFile={source.intercept} accept={OCR_ACCEPT} hasWork={source.pdf ? true : undefined} {...props}>
             {children}
             {source.problem && <StudioNotice notice={{ tone: "error", text: source.problem }} />}
             {source.status && !source.problem && <StudioNotice notice={{ tone: "info", text: source.status }} />}

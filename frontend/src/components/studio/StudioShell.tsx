@@ -35,6 +35,11 @@ interface StudioShellProps {
     exportSlot?: ReactNode;
     /** The right-hand panel. */
     panel: ReactNode;
+    /**
+     * There's something to work on. Until there is, the panel and the export button stay hidden and the
+     * drop zone takes the width. Defaults to: an image is open.
+     */
+    hasWork?: boolean;
     panelLabel: string;
     /** The centre card: canvas, status and actions. */
     children: ReactNode;
@@ -59,7 +64,7 @@ interface StudioShellProps {
  * The frame every tool shares: a top bar, the tools on the left, the image in the middle and the
  * tool's controls on the right. An image can be dropped or pasted anywhere on it.
  */
-export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, children, dirty = false, mobilePanel = "stack", panelWidth = "default", onFiles, interceptFile, accept }: StudioShellProps) {
+export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, children, dirty = false, mobilePanel = "stack", panelWidth = "default", hasWork, onFiles, interceptFile, accept }: StudioShellProps) {
     useImmersiveLayout();
     const t = useT();
     const copy = t.studio;
@@ -85,6 +90,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
     const sidebarId = useId();
     const headingId = useId();
     const requestNewImage = () => (dirty ? setConfirming(true) : clearImage());
+    const working = hasWork ?? Boolean(original);
 
     // Closing or reloading the tab would throw the edits away too; let the browser ask first.
     useEffect(() => {
@@ -158,7 +164,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                         )}
                         {/* grid, not flex: the sun and moon share one cell and swap in place, as on the home page. */}
                         <ThemeToggle className="hidden sm:grid" />
-                        {exportSlot && <div className="ml-1">{exportSlot}</div>}
+                        {working && exportSlot && <div className="ml-1">{exportSlot}</div>}
                     </div>
                 </header>
 
@@ -174,11 +180,13 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                         {children}
                     </section>
 
-                    <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[18rem] xl:w-[19.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
-                        {/* The panel's own heading, so its sections' headings sit under it in the outline. */}
-                        <h2 className="sr-only">{panelLabel}</h2>
-                        {panel}
-                    </aside>
+                    {working && (
+                        <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[18rem] xl:w-[19.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
+                            {/* The panel's own heading, so its sections' headings sit under it in the outline. */}
+                            <h2 className="sr-only">{panelLabel}</h2>
+                            {panel}
+                        </aside>
+                    )}
                 </div>
 
                 {/* Drop anywhere: the whole studio is the target. */}

@@ -12,7 +12,7 @@ import { OrganizeModeBar } from "./OrganizeModeBar";
 export function DocumentStudio({ children, ...props }: ComponentProps<typeof StudioShell> & { onFiles: (files: File[]) => void; accept: string }) {
     return (
         <ImageStoreContext.Provider value={useNoImageStore}>
-            <StudioShell mobilePanel="stack" {...props}>
+            <StudioShell mobilePanel="stack" hasWork {...props}>
                 {/* Organize PDF is one feature in several modes: its mode bar heads each of them. */}
                 {isOrganizeMode(props.tool) && <OrganizeModeBar current={props.tool} />}
                 {children}

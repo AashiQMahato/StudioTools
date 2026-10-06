@@ -96,6 +96,7 @@ export const en = {
                 aiTools: { title: "AI tools", description: "Smart edits that do the hard work" },
                 editAdjust: { title: "Edit & adjust", description: "Fine-tune, crop and straighten" },
                 optimize: { title: "Optimize", description: "Lighter files, exact sizes" },
+                editOptimize: { title: "Edit & optimize", description: "Adjust, crop, compress and resize" },
             },
             viewAll: "View all image tools",
         },
@@ -104,6 +105,7 @@ export const en = {
                 textOcr: { title: "Text & OCR", description: "Extract, edit and transform text" },
                 pdfTools: { title: "PDF tools", description: "Organize and optimize your PDFs" },
                 convert: { title: "Convert", description: "Convert between documents and formats" },
+                pdfConvert: { title: "PDF & convert", description: "Organize, compress and convert PDFs" },
                 editSecure: { title: "Edit, sign & secure", description: "Edit, sign and protect documents" },
             },
             items: {
@@ -294,12 +296,6 @@ export const en = {
             { q: "What do I get when I download?", a: "Background removal gives a transparent PNG at the original size. Upscales keep your format. The editor exports JPG, PNG or WebP at the size you choose." },
             { q: "Does it work on my phone?", a: "Yes. Every tool works in mobile browsers, including touch gestures like pinch-to-zoom in the cropper." },
         ],
-    },
-
-    cta: {
-        badge: "Get started",
-        title: "Ready when your image is.",
-        description: "Upload a photo and try every tool — no sign-up, nothing stored.",
     },
 
     toolPage: {

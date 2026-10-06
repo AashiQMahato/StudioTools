@@ -146,7 +146,7 @@ export function CompressorPage() {
         );
 
     return (
-        <StudioShell tool="compressor" panel={panel} panelLabel={copy.controlsLabel} onFiles={(files) => void receive(files)}>
+        <StudioShell tool="compressor" hasWork={items.length > 0} panel={panel} panelLabel={copy.controlsLabel} onFiles={(files) => void receive(files)}>
             <StudioCanvas>
                 {selected ? <CompressionPreview key={selected.id} item={selected} mode={mode} onModeChange={setMode} /> : <StudioDropzone title={copy.dropTitle} hint={copy.dropHint} />}
             </StudioCanvas>

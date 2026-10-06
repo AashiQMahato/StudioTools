@@ -13,3 +13,10 @@ export function downloadFile(url: string, fileName: string) {
     anchor.click();
     anchor.remove();
 }
+
+/** Saves data already in memory under a file name (the object URL is released once the download has started). */
+export function downloadBlob(blob: Blob, fileName: string) {
+    const url = URL.createObjectURL(blob);
+    downloadFile(url, fileName);
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}

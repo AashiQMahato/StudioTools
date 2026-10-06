@@ -45,12 +45,13 @@ export function ViewerPage() {
             panel={details}
             mobilePanel={pdf.file ? "none" : "stack"}
             panelWidth="compact"
+            hasWork={Boolean(pdf.file)}
         >
             {pdf.file ? (
                 <SinglePdfWorkspace pdf={pdf}>{({ document, sizes }) => <PdfViewer key={pdf.id} file={pdf.file!} document={document} sizes={sizes} onDetails={() => setSheet(true)} />}</SinglePdfWorkspace>
             ) : (
                 <StudioCanvas>
-                    <StudioDropzone title={t.documents.dropPdf} hint={copy.hint} limits={t.documents.pdfLimits(MAX_PDF_MB)} />
+                    <StudioDropzone title={t.documents.dropPdf} hint={copy.hint} limits={t.documents.pdfLimits(MAX_PDF_MB)} kind="pdf" actionLabel={t.documents.uploadPdf} />
                 </StudioCanvas>
             )}
             {pdf.problem && <StudioNotice notice={{ tone: "error", text: pdf.problem }} />}

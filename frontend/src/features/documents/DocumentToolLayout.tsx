@@ -68,6 +68,7 @@ export function DocumentToolLayout({ tool, accept, onFiles, many = false, empty,
             accept={accept}
             onFiles={onFiles}
             dirty={!empty && !done}
+            hasWork={!empty}
             mobilePanel={sheet && !empty && !running && !done ? "none" : "stack"}
             panelLabel={t.nav.toolItems[tool].title}
             panel={
@@ -77,13 +78,12 @@ export function DocumentToolLayout({ tool, accept, onFiles, many = false, empty,
                 </PanelBody>
             }
         >
-            {working && (
+            {/* Empty, the drop zone is the one way in; the toolbar only appears early to offer quick settings. */}
+            {working && (!empty || quickSettings) && (
                 <CommandBar
-                    // Single-file tools: once a file is open, picking another would replace the work — that's
-                    // the header's New button (which asks first). Multi-file tools keep adding.
-                    upload={empty || many ? (empty ? uploadLabel : t.documents.addMore) : null}
-                    // On phones the empty drop zone has its own big button; the toolbar's would only repeat it.
-                    uploadOnPhones={!empty}
+                    // Multi-file tools keep adding. Single-file tools don't: picking another file would replace
+                    // the work — that's the header's New button, which asks first.
+                    upload={!empty && many ? t.documents.addMore : null}
                     settings={quickSettings}
                     secondary={empty ? undefined : secondary}
                     action={action}
@@ -135,17 +135,17 @@ export function DocumentToolLayout({ tool, accept, onFiles, many = false, empty,
  * The toolbar: add files on the left, the quick settings, and the main action on the right. On phones
  * the action lives at the bottom instead, so a toolbar with nothing else isn't shown there.
  */
-function CommandBar({ upload, uploadOnPhones, settings, secondary, action, actionDisabled }: { upload: string | null; uploadOnPhones: boolean; settings?: ReactNode; secondary?: ReactNode; action: DocumentToolLayoutProps["action"]; actionDisabled?: boolean }) {
+function CommandBar({ upload, settings, secondary, action, actionDisabled }: { upload: string | null; settings?: ReactNode; secondary?: ReactNode; action: DocumentToolLayoutProps["action"]; actionDisabled?: boolean }) {
     const { openPicker } = useStudio();
     const Icon = action.icon;
-    const phones = (upload && uploadOnPhones) || settings;
+    const phones = upload || settings;
     return (
         <div className={cn("flex-wrap items-center gap-2", phones ? "flex" : "hidden lg:flex")}>
             {upload && (
                 <button
                     type="button"
                     onClick={openPicker}
-                    className={cn(uploadOnPhones ? "flex" : "hidden sm:flex", "studio-nav-item h-12 cursor-pointer items-center gap-2 rounded-xl border border-[color-mix(in_srgb,var(--brand)_30%,transparent)] bg-[var(--brand-soft)] px-4 text-sm font-semibold text-[var(--brand)] outline-focus-ring hover:bg-[color-mix(in_srgb,var(--brand)_14%,transparent)] focus-visible:outline-2")}
+                    className={cn("studio-nav-item flex h-12 cursor-pointer items-center gap-2 rounded-xl border border-[color-mix(in_srgb,var(--brand)_30%,transparent)] bg-[var(--brand-soft)] px-4 text-sm font-semibold text-[var(--brand)] outline-focus-ring hover:bg-[color-mix(in_srgb,var(--brand)_14%,transparent)] focus-visible:outline-2")}
                 >
                     <CloudUpload className="size-[1.125rem]" aria-hidden />
                     {upload}

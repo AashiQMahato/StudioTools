@@ -1,7 +1,7 @@
-import { FileImage } from "lucide-react";
+import { FileImage, FileStack, Image as ImageIcon, Layers, Sparkles, Star } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { Segmented } from "@/components/common/Segmented";
+import { PanelArt, ToolbarSelect } from "@/components/studio/StudioParts";
 import { Range } from "@/features/background-removal/editor/RefinePanel";
 import { DocumentToolLayout } from "@/features/documents/DocumentToolLayout";
 import { MAX_PDF_MB, PDF_ACCEPT } from "@/features/documents/limits";
@@ -12,7 +12,6 @@ import { useSinglePdf } from "@/features/documents/useSinglePdf";
 import { PageScopeControl } from "@/features/documents/PageScopeControl";
 import { usePageScope } from "@/features/documents/usePageScope";
 import { jobFileUrl } from "@/lib/api/jobsApi";
-import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 
 type Format = "jpg" | "png" | "webp";
@@ -60,8 +59,25 @@ export function ToImagesPage() {
             accept={PDF_ACCEPT}
             onFiles={pdf.receive}
             empty={!pdf.file}
-            drop={{ title: t.documents.dropPdf, hint: copy.hint, limits: t.documents.pdfLimits(MAX_PDF_MB) }}
-            intro={copy.steps}
+            drop={{
+                title: t.documents.dropPdf,
+                hint: copy.intro,
+                limits: t.documents.pdfLimits(MAX_PDF_MB),
+                headline: copy.headline,
+                features: [
+                    { icon: Layers, ...copy.features[0]! },
+                    { icon: FileStack, ...copy.features[1]! },
+                    { icon: Sparkles, ...copy.features[2]! },
+                ],
+            }}
+            intro={copy.guide}
+            guide={{ art: <PanelArt from="pdf" to="images" />, formats: FORMATS.map((value) => (value === "webp" ? "WebP" : value.toUpperCase())), tip: copy.tip }}
+            quickSettings={
+                <>
+                    <ToolbarSelect icon={ImageIcon} label={copy.imageFormat} value={format} onChange={setFormat} options={FORMATS.map((value) => ({ value, label: value === "webp" ? "WebP" : value.toUpperCase() }))} />
+                    <ToolbarSelect icon={Star} label={copy.quality} value={dpi} onChange={setDpi} options={RESOLUTIONS.map((value) => ({ value, label: `${copy.qualityPresets[value]} · ${value} dpi` }))} />
+                </>
+            }
             job={job}
             runningTitle={copy.running}
             onStartOver={startOver}
@@ -82,37 +98,12 @@ export function ToImagesPage() {
                     <PdfFileSummary name={pdf.file?.name ?? ""} pages={count || null} />
                     <PageScopeControl scope={pages} pageCount={count} label={copy.pages} rangesLabel={copy.rangesLabel} />
                     <section className="flex flex-col gap-3">
-                        <h3 className="text-sm font-semibold text-primary">{copy.format}</h3>
-                        <Segmented label={copy.format} value={format} onChange={setFormat} options={FORMATS.map((value) => ({ value, label: value.toUpperCase() }))} />
                         {format !== "png" ? <Range label={copy.quality} value={quality} min={40} max={100} onChange={setQuality} format={(value) => `${value}%`} /> : <p className="text-xs text-tertiary">{copy.pngHint}</p>}
-                    </section>
-                    <section className="flex flex-col gap-3">
-                        <h3 className="text-sm font-semibold text-primary">{copy.resolution}</h3>
-                        <div role="radiogroup" aria-label={copy.resolution} className="flex flex-col gap-2">
-                            {RESOLUTIONS.map((value) => {
-                                const active = dpi === value;
-                                return (
-                                    <button
-                                        key={value}
-                                        type="button"
-                                        role="radio"
-                                        aria-checked={active}
-                                        onClick={() => setDpi(value)}
-                                        className={cn(
-                                            "flex min-h-12 cursor-pointer items-center justify-between gap-3 rounded-xl border px-3 py-2 text-left outline-focus-ring transition-colors duration-150 focus-visible:outline-2",
-                                            active ? "border-[var(--brand)] bg-[var(--brand-soft)]" : "border-[var(--card-line)] hover:bg-primary_hover",
-                                        )}
-                                    >
-                                        <span className={cn("text-sm font-medium", active ? "text-[var(--brand)]" : "text-primary")}>{copy.resolutions[value]}</span>
-                                        {first && <span className="text-xs text-tertiary tabular-nums">{copy.pixels(Math.round((first.width / 72) * value), Math.round((first.height / 72) * value))}</span>}
-                                    </button>
-                                );
-                            })}
-                        </div>
+                        {first && <p className="text-xs text-tertiary tabular-nums">{copy.resolutions[dpi]} · {copy.pixels(Math.round((first.width / 72) * dpi), Math.round((first.height / 72) * dpi))}</p>}
                     </section>
                 </>
             }
-            action={{ label: chosen ? copy.action(chosen) : copy.actionNone, icon: FileImage, onPress: convert, disabled: !pdf.ready || chosen === 0 }}
+            action={{ label: !pdf.file || chosen === count ? copy.convertAction : !chosen ? copy.actionNone : copy.action(chosen), icon: FileImage, onPress: convert, disabled: !pdf.ready || chosen === 0 }}
         >
             <SinglePdfWorkspace pdf={pdf}>
                 {({ document, sizes }) => (

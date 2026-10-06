@@ -118,6 +118,8 @@ export type SectionKey = (typeof SECTION_LINKS)[number]["key"];
  */
 const IMAGE_STUDIO_GROUPS: readonly NavToolGroup[] = TOOL_GROUPS.map((group) => ({ ...group, items: group.items.filter((item) => !item.alias) })).filter((group) => group.items.length > 0);
 
+/** A tool of the document suite (any PDF or text tool, Organize PDF's modes included). */
+export const isDocumentTool = (tool: ToolKey) => DOCUMENT_GROUPS.some((group) => group.items.some((item) => item.key === tool || item.members?.some((member) => member.key === tool)));
+
 /** Image tools and text tools are separate sections: inside one, the studio lists only that section's tools. */
-export const studioToolGroups = (tool: ToolKey): readonly NavToolGroup[] =>
-    DOCUMENT_GROUPS.some((group) => group.items.some((item) => item.key === tool || item.members?.some((member) => member.key === tool))) ? DOCUMENT_GROUPS : IMAGE_STUDIO_GROUPS;
+export const studioToolGroups = (tool: ToolKey): readonly NavToolGroup[] => (isDocumentTool(tool) ? DOCUMENT_GROUPS : IMAGE_STUDIO_GROUPS);

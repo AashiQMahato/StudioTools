@@ -1,9 +1,8 @@
 import { ArrowLeft, ShieldCheck, X } from "lucide-react";
 import { useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { TOOL_ICONS } from "@/components/layout/toolIcons";
-import { studioToolGroups, type ToolKey } from "@/lib/constants/navigation";
-import { ROUTES } from "@/lib/constants/routes";
+import { Link, useLocation } from "react-router-dom";
+import { documentMenu, imageMenu, isCurrentItem, menuItemCopy, type ToolMenu } from "@/components/layout/toolMenus";
+import { isDocumentTool, type ToolKey } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 
@@ -80,41 +79,49 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
     );
 }
 
-/** The tool list itself (the same in the column and the drawer). */
+/** The tool list itself (the same in the column and the drawer): the suite's sections, as in its menu. */
 function SidebarNav({ current, className, onNavigate }: { current: ToolKey; className?: string; onNavigate?: () => void }) {
     const t = useT();
     const copy = t.studio;
+    const { pathname } = useLocation();
+    const documents = isDocumentTool(current);
+    const menu: ToolMenu = documents ? documentMenu : imageMenu;
+    const back = documents ? copy.backToDocuments : copy.backToImageTools;
+    const list = useRef<HTMLDivElement>(null);
+
+    // The current tool may be further down a long list: bring it into view (no animation on arrival).
+    useEffect(() => {
+        list.current?.querySelector<HTMLElement>("[aria-current=page]")?.scrollIntoView({ block: "nearest" });
+    }, [pathname]);
 
     return (
         <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2 xl:p-3", className)}>
-            <div className="flex flex-1 flex-col gap-4 overflow-y-auto">
-                {studioToolGroups(current).map((group) => (
-                    <section key={group.key} aria-labelledby={`studio-group-${group.key}`} className="flex flex-col gap-1">
-                        <h2 id={`studio-group-${group.key}`} className="px-2 pb-1 text-[0.6875rem] font-semibold tracking-[0.06em] text-quaternary uppercase lg:sr-only xl:not-sr-only">
-                            {t.nav.groups[group.key]}
+            <div ref={list} className="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-1">
+                {menu.sections.map((section) => (
+                    <section key={section.key} aria-labelledby={`studio-group-${section.key}`} className="flex flex-col gap-0.5">
+                        <h2 id={`studio-group-${section.key}`} className="px-2 pb-1.5 text-[0.6875rem] font-semibold tracking-[0.08em] text-quaternary uppercase lg:sr-only xl:not-sr-only">
+                            {menu.sectionCopy(t, section.key).title}
                         </h2>
-                        {group.items.map((item) => {
-                            const Icon = TOOL_ICONS[item.key];
-                            const active = !item.alias && (item.key === current || Boolean(item.members?.some((member) => member.key === current)));
-                            const { title, description } = t.nav.toolItems[item.key];
+                        {section.items.map((item) => {
+                            const Icon = item.icon;
+                            const active = isCurrentItem(item, pathname);
+                            const { title, description } = menuItemCopy(t, item.key);
                             return (
                                 <Link
                                     key={item.key}
-                                    to={item.href}
+                                    to={{ pathname: item.href, search: item.search }}
                                     onClick={onNavigate}
                                     aria-current={active ? "page" : undefined}
                                     title={title}
                                     className={cn(
-                                        "group relative flex items-center gap-3 rounded-xl p-1.5 outline-focus-ring transition-colors duration-150 focus-visible:outline-2 lg:justify-center xl:justify-start xl:pr-2",
+                                        "studio-nav-item group relative flex items-center gap-3 rounded-xl p-1.5 outline-focus-ring focus-visible:outline-2 lg:justify-center xl:justify-start xl:pr-2",
                                         active ? "bg-[var(--brand-soft)]" : "hover:bg-secondary",
                                     )}
                                 >
-                                    {/* The active tool is marked by an indicator on the edge, not just a colour. */}
-                                    {active && <span aria-hidden className="absolute top-2 bottom-2 -left-2 w-1 rounded-r-full bg-[var(--brand)] xl:-left-3" />}
                                     <span
                                         className={cn(
-                                            "grid size-9 shrink-0 place-items-center rounded-lg transition-colors duration-150",
-                                            active ? "bg-brand-solid text-white" : "bg-secondary text-tertiary group-hover:text-primary",
+                                            "grid size-9 shrink-0 place-items-center rounded-[0.625rem] border transition-colors duration-150",
+                                            active ? "border-transparent bg-linear-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_10px_-4px_rgb(37_99_235/0.6)]" : "border-[var(--card-line)] bg-primary text-tertiary group-hover:text-primary",
                                         )}
                                     >
                                         <Icon className="size-[1.125rem]" strokeWidth={1.9} aria-hidden />
@@ -131,21 +138,21 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
             </div>
 
             <div className="mt-3 flex flex-col gap-2 border-t border-[var(--card-line)] pt-3">
-                <div className="flex items-start gap-2.5 rounded-xl bg-secondary p-3 lg:hidden xl:flex">
-                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-success-primary" aria-hidden />
+                <div className="flex items-start gap-2.5 rounded-xl border border-[color-mix(in_srgb,#10B981_22%,transparent)] bg-[color-mix(in_srgb,#10B981_8%,transparent)] p-3 lg:hidden xl:flex">
+                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#059669] dark:text-[#34D399]" aria-hidden />
                     <p className="text-xs leading-relaxed text-tertiary">
-                        <span className="block font-semibold text-secondary">{copy.privateTitle}</span>
+                        <span className="block text-sm font-semibold text-[#047857] dark:text-[#6EE7B7]">{copy.privateTitle}</span>
                         {copy.privateNote}
                     </p>
                 </div>
                 <Link
-                    to={ROUTES.home}
+                    to={menu.href}
                     onClick={onNavigate}
-                    title={copy.backHome}
-                    className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-sm font-medium text-tertiary outline-focus-ring hover:bg-secondary hover:text-primary focus-visible:outline-2 lg:justify-center xl:justify-start"
+                    title={back}
+                    className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-sm font-medium text-tertiary outline-focus-ring transition-colors duration-150 hover:bg-secondary hover:text-primary focus-visible:outline-2 lg:justify-center xl:justify-start"
                 >
                     <ArrowLeft className="size-4 shrink-0" aria-hidden />
-                    <span className="lg:sr-only xl:not-sr-only">{copy.backHome}</span>
+                    <span className="lg:sr-only xl:not-sr-only">{back}</span>
                 </Link>
             </div>
         </nav>

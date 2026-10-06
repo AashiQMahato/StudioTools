@@ -1,7 +1,6 @@
 import { Combine } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useOpenDocuments } from "@/store/useOpenDocuments";
-import { AddFilesButton } from "@/features/documents/AddFilesButton";
 import { DocumentToolLayout } from "@/features/documents/DocumentToolLayout";
 import { MAX_FILES, MAX_PDF_MB, PDF_ACCEPT } from "@/features/documents/limits";
 import { PdfCover } from "@/features/documents/PdfCover";
@@ -95,7 +94,7 @@ export function MergePage() {
                     <p className="text-xs text-tertiary">{copy.orderHint}</p>
                 </section>
             }
-            secondary={<AddFilesButton label={t.documents.addMore} />}
+            many
             action={{ label: copy.action, icon: Combine, onPress: merge, disabled: entries.length < 2 || blocked }}
         >
             {entries.map((entry) => (

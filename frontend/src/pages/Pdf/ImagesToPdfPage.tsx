@@ -2,7 +2,6 @@ import { FileText, RotateCw } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { Range } from "@/features/background-removal/editor/RefinePanel";
-import { AddFilesButton } from "@/features/documents/AddFilesButton";
 import { DocumentToolLayout } from "@/features/documents/DocumentToolLayout";
 import { DEFAULT_IMAGES_TO_PDF, type ImagesToPdfOptions, type PageSize, placeImage } from "@/features/documents/imageLayout";
 import { MAX_FILES } from "@/features/documents/limits";
@@ -108,7 +107,7 @@ export function ImagesToPdfPage() {
             runningTitle={copy.running}
             onStartOver={startOver}
             notice={notice}
-            secondary={<AddFilesButton label={t.documents.addMore} />}
+            many
             action={{ label: copy.action(entries.length), icon: FileText, onPress: create, disabled: !entries.length || !customValid }}
             options={
                 <>

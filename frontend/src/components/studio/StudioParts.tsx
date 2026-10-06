@@ -1,5 +1,5 @@
-import { AlertCircle, CheckCircle2, CircleAlert, Clipboard, ImagePlus, Info, Lock, RotateCcw, Trash2 } from "lucide-react";
-import { type KeyboardEvent, type PointerEvent, type ReactNode, useRef, useState } from "react";
+import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
+import { type KeyboardEvent, type PointerEvent, type ReactNode, useId, useRef, useState } from "react";
 import { CompareSlider } from "@/components/common/CompareSlider";
 import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
@@ -14,28 +14,78 @@ export function StudioCanvas({ children, className }: { children: ReactNode; cla
     return <div className={cn("relative flex h-[58svh] min-h-[20rem] flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-secondary lg:h-auto lg:min-h-0 lg:flex-1", className)}>{children}</div>;
 }
 
-/** The empty state every tool shares: one clear target, the limits, and the ways in (drop, paste, choose). */
-export function StudioDropzone({ title, hint, limits }: { title: string; hint: string; limits?: string }) {
+export interface DropFeature {
+    icon: LucideIcon;
+    title: string;
+    detail: string;
+}
+
+interface StudioDropzoneProps {
+    title: string;
+    hint: string;
+    limits?: string;
+    /** What the tool takes: picks the picture and the button's words. */
+    kind?: "image" | "pdf";
+    /** A headline with one word in the accent colour, instead of the plain title. */
+    headline?: { lead: string; accent: string; tail?: string };
+    /** The button's label (defaults to choosing an image). */
+    actionLabel?: string;
+    /** Several files at once (the drag hint says "files"). */
+    many?: boolean;
+    /** What the tool offers, as a row of chips under the button. */
+    features?: readonly DropFeature[];
+}
+
+/**
+ * The empty state every tool shares: a picture of what the tool does, one clear target, and the ways
+ * in (drop, paste, choose). The whole card is the target; the button is what it looks like.
+ */
+export function StudioDropzone({ title, hint, limits, kind = "image", headline, actionLabel, many = false, features }: StudioDropzoneProps) {
     const t = useT();
     const { openPicker, uploadError } = useStudio();
     return (
-        <div className="animate-enter flex flex-1 items-center justify-center p-4 [--i:-1] sm:p-8">
+        <div className="animate-enter flex flex-1 overflow-y-auto p-3 [--i:-1] sm:p-6">
             <button
                 type="button"
                 onClick={openPicker}
-                className="group flex w-full max-w-xl cursor-pointer flex-col items-center rounded-2xl border-2 border-dashed border-[var(--card-line)] bg-primary px-6 py-10 text-center transition-colors duration-200 outline-focus-ring hover:border-[var(--brand)] focus-visible:outline-2 focus-visible:outline-offset-4 sm:py-14"
+                className="studio-drop group m-auto flex w-full max-w-2xl cursor-pointer flex-col items-center rounded-3xl px-5 py-8 text-center outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-4 sm:px-10 sm:py-12"
             >
-                <span className="grid size-14 place-items-center rounded-2xl bg-brand-solid text-white transition-transform duration-300 ease-[var(--ease-out)] group-hover:-translate-y-0.5">
-                    <ImagePlus className="size-6" aria-hidden />
+                <DropArt kind={kind} />
+                <span className="mt-6 text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-balance text-primary sm:text-[2rem]">
+                    {headline ? (
+                        <>
+                            {headline.lead} <span className="bg-linear-to-r from-[#6366F1] to-[#A855F7] bg-clip-text text-transparent dark:from-[#818CF8] dark:to-[#C084FC]">{headline.accent}</span>
+                            {headline.tail && <span className="block">{headline.tail}</span>}
+                        </>
+                    ) : (
+                        title
+                    )}
                 </span>
-                <span className="mt-5 text-lg font-semibold text-primary">{title}</span>
-                <span className="mt-1 max-w-sm text-sm text-tertiary">{hint}</span>
-                <span className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg bg-brand-solid px-4 text-sm font-semibold text-white">
-                    <ImagePlus className="size-4" aria-hidden />
-                    {t.common.chooseImage}
+                <span className="mt-3 max-w-md text-sm leading-relaxed text-pretty text-tertiary sm:text-md">{hint}</span>
+                <span className="studio-cta mt-7 inline-flex h-12 items-center gap-2.5 rounded-xl px-6 text-md font-semibold text-white">
+                    {kind === "pdf" ? <CloudUpload className="size-5" aria-hidden /> : <ImagePlus className="size-5" aria-hidden />}
+                    {actionLabel ?? t.common.chooseImage}
                 </span>
-                <span className="mt-4 text-xs text-quaternary">{limits ?? t.common.uploadHint}</span>
-                <span className="mt-3 flex flex-wrap items-center justify-center gap-3 text-xs text-tertiary">
+                <span className="mt-3 text-sm text-tertiary [@media(hover:none)]:hidden">{many ? t.studio.dragHintMany : t.studio.dragHint}</span>
+
+                {features && features.length > 0 && (
+                    <span className="mt-8 grid w-full max-w-xl grid-cols-1 gap-3 rounded-2xl border border-[var(--card-line)] bg-primary/80 p-3 text-left sm:grid-cols-3 sm:p-4">
+                        {features.map(({ icon: Icon, title: featureTitle, detail }) => (
+                            <span key={featureTitle} className="flex items-center gap-3">
+                                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,#6366F1_12%,transparent)] text-[#4F46E5] dark:text-[#A5B4FC]">
+                                    <Icon className="size-[1.125rem]" strokeWidth={1.9} aria-hidden />
+                                </span>
+                                <span className="min-w-0">
+                                    <span className="block text-sm font-semibold text-primary">{featureTitle}</span>
+                                    <span className="block text-xs text-tertiary">{detail}</span>
+                                </span>
+                            </span>
+                        ))}
+                    </span>
+                )}
+
+                <span className="mt-5 flex flex-wrap items-center justify-center gap-x-3 gap-y-1 text-xs text-quaternary">
+                    <span>{limits ?? t.common.uploadHint}</span>
                     <span className="inline-flex items-center gap-1.5 [@media(hover:none)]:hidden">
                         <Clipboard className="size-3.5" aria-hidden />
                         {t.upload.pasteChip}
@@ -52,6 +102,44 @@ export function StudioDropzone({ title, hint, limits }: { title: string; hint: s
                 </p>
             )}
         </div>
+    );
+}
+
+/** The empty state's picture: a document becoming an image, or a photo being worked on. Decorative. */
+function DropArt({ kind }: { kind: "image" | "pdf" }) {
+    return (
+        <span aria-hidden className="studio-drop-art relative block h-32 w-56 sm:h-36 sm:w-64">
+            <span className="absolute top-6 left-6 size-20 rounded-full bg-[#BAE6FD]/60 blur-xl dark:bg-[#0EA5E9]/25" />
+            <span className="absolute right-6 bottom-2 size-20 rounded-full bg-[#DDD6FE]/70 blur-xl dark:bg-[#8B5CF6]/25" />
+            {kind === "pdf" ? (
+                <>
+                    <span className="absolute top-1 left-[22%] flex h-28 w-22 -rotate-6 flex-col rounded-xl border border-white/80 bg-white p-2.5 shadow-[0_16px_32px_-14px_rgb(30_41_59/0.4)] sm:h-30 dark:border-white/10 dark:bg-[#1c1f2b]">
+                        <span className="grid h-12 place-items-center rounded-lg bg-linear-to-br from-[#FB7185] to-[#E11D48] text-white">
+                            <FileText className="size-6" strokeWidth={1.8} />
+                        </span>
+                        <span className="mt-2.5 h-1.5 w-[80%] rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                        <span className="mt-1.5 h-1.5 w-[60%] rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                    </span>
+                    <span className="absolute top-10 right-[16%] grid h-18 w-22 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#60A5FA] to-[#2563EB] shadow-[0_16px_32px_-12px_rgb(37_99_235/0.55)] ring-4 ring-white dark:ring-[#1c1f2b]">
+                        <ImageIcon className="size-8 text-white" strokeWidth={1.6} />
+                    </span>
+                </>
+            ) : (
+                <>
+                    <span className="absolute top-2 left-[24%] h-26 w-36 -rotate-6 overflow-hidden rounded-xl shadow-[0_16px_32px_-14px_rgb(30_41_59/0.45)] ring-4 ring-white dark:ring-[#1c1f2b]">
+                        <span className="absolute inset-0 bg-linear-to-b from-[#FDE68A] via-[#F9A8D4] to-[#A5B4FC]" />
+                        <span className="absolute top-3 right-6 size-6 rounded-full bg-[#FEF3C7]" />
+                        <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[55%] w-full">
+                            <path d="M0 60V38l22-20 16 14 20-24 42 34v18z" fill="#6366F1" opacity="0.85" />
+                            <path d="M0 60V46l30-16 22 14 18-10 30 18v8z" fill="#4338CA" />
+                        </svg>
+                    </span>
+                    <span className="absolute top-12 right-[16%] grid size-14 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#A78BFA] to-[#7C3AED] text-white shadow-[0_16px_32px_-12px_rgb(124_58_237/0.55)]">
+                        <Sparkles className="size-6" strokeWidth={1.8} />
+                    </span>
+                </>
+            )}
+        </span>
     );
 }
 
@@ -172,19 +260,109 @@ export function PanelBody({ children, id }: { children: ReactNode; id?: string }
 }
 
 /** What the panel says before there's an image: the tool, in three steps. */
-export function PanelIntro({ title, steps }: { title: string; steps: readonly string[] }) {
+export type GuideStep = string | { title: string; detail: string };
+
+interface PanelIntroProps {
+    title: string;
+    steps: readonly GuideStep[];
+    /** A picture above the steps (decorative). */
+    art?: ReactNode;
+    /** The file types the tool takes or makes, as chips. */
+    formats?: readonly string[];
+    /** One practical tip, which can be dismissed. */
+    tip?: string;
+}
+
+/** The panel before there's anything to work on: how the tool works, what it takes, and a tip. */
+export function PanelIntro({ title, steps, art, formats, tip }: PanelIntroProps) {
+    const t = useT();
+    const [tipShown, setTipShown] = useState(true);
     return (
-        <section>
-            <h3 className="text-sm font-semibold text-primary">{title}</h3>
-            <ol className="mt-3 flex flex-col gap-3">
-                {steps.map((step, index) => (
-                    <li key={step} className="flex gap-3 text-sm text-secondary">
-                        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-[var(--brand-soft)] text-xs font-semibold text-[var(--brand)] tabular-nums">{index + 1}</span>
-                        <span className="pt-0.5">{step}</span>
-                    </li>
-                ))}
-            </ol>
-        </section>
+        <>
+            {art}
+            <section>
+                <h3 className="text-md font-semibold text-primary">{title}</h3>
+                <ol className="mt-4 flex flex-col gap-4">
+                    {steps.map((step, index) => {
+                        const { title: stepTitle, detail } = typeof step === "string" ? { title: step, detail: null } : step;
+                        return (
+                            <li key={stepTitle} className="flex gap-3">
+                                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-linear-to-b from-[#818CF8] to-[#6366F1] text-xs font-semibold text-white tabular-nums shadow-[0_3px_8px_-3px_rgb(99_102_241/0.7)]">{index + 1}</span>
+                                <span className="min-w-0 pt-0.5">
+                                    <span className={cn("block text-sm", detail ? "font-semibold text-primary" : "text-secondary")}>{stepTitle}</span>
+                                    {detail && <span className="mt-0.5 block text-sm leading-relaxed text-tertiary">{detail}</span>}
+                                </span>
+                            </li>
+                        );
+                    })}
+                </ol>
+            </section>
+            {formats && formats.length > 0 && (
+                <section>
+                    <h3 className="text-sm font-semibold text-primary">{t.studio.supportedFormats}</h3>
+                    <ul className="mt-3 flex flex-wrap gap-2">
+                        {formats.map((format, index) => (
+                            <li key={format} className="flex items-center gap-1.5 rounded-lg border border-[var(--card-line)] bg-primary px-2.5 py-1.5 text-xs font-semibold text-secondary">
+                                <FileImage className="size-3.5" style={{ color: FORMAT_TONES[index % FORMAT_TONES.length] }} aria-hidden />
+                                {format}
+                            </li>
+                        ))}
+                    </ul>
+                </section>
+            )}
+            {tip && tipShown && (
+                <aside className="relative rounded-2xl border border-[color-mix(in_srgb,#A855F7_18%,transparent)] bg-[color-mix(in_srgb,#A855F7_7%,transparent)] p-4 pr-10">
+                    <p className="flex items-center gap-2 text-sm font-semibold text-primary">
+                        <Lightbulb className="size-4 text-[#F59E0B]" aria-hidden />
+                        {t.studio.proTip}
+                    </p>
+                    <p className="mt-1.5 text-sm leading-relaxed text-tertiary">{tip}</p>
+                    <button type="button" onClick={() => setTipShown(false)} aria-label={t.studio.dismissTip} className="absolute top-3 right-3 grid size-7 cursor-pointer place-items-center rounded-lg text-quaternary outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 pointer-coarse:size-10">
+                        <X className="size-4" aria-hidden />
+                    </button>
+                </aside>
+            )}
+        </>
+    );
+}
+
+const FORMAT_TONES = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B"];
+
+/** A picture for the panel's top: what goes in, an arrow, what comes out. Decorative. */
+export function PanelArt({ from, to }: { from: "pdf" | "image"; to: "pdf" | "images" | "text" }) {
+    const tile = "grid place-items-center rounded-xl text-white";
+    return (
+        <div aria-hidden className="flex h-32 items-center justify-center gap-4 rounded-2xl bg-linear-to-br from-[color-mix(in_srgb,#6366F1_8%,var(--color-bg-primary))] to-[color-mix(in_srgb,#0EA5E9_8%,var(--color-bg-primary))]">
+            {from === "pdf" ? (
+                <span className="flex h-20 w-16 -rotate-3 flex-col items-center justify-center gap-1.5 rounded-lg border border-white/80 bg-white shadow-md dark:border-white/10 dark:bg-[#1c1f2b]">
+                    <span className="rounded-md bg-linear-to-br from-[#FB7185] to-[#E11D48] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">PDF</span>
+                    <span className="h-1 w-8 rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                    <span className="h-1 w-6 rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                </span>
+            ) : (
+                <span className={cn(tile, "size-16 -rotate-3 bg-linear-to-br from-[#60A5FA] to-[#2563EB] shadow-md")}>
+                    <ImageIcon className="size-7" strokeWidth={1.6} />
+                </span>
+            )}
+            <ArrowRight className="size-6 text-[#818CF8]" strokeWidth={2.4} />
+            {to === "images" ? (
+                <span className="relative h-20 w-20">
+                    <span className={cn(tile, "absolute top-0 left-0 size-11 bg-linear-to-br from-[#93C5FD] to-[#3B82F6] shadow-md")}>
+                        <ImageIcon className="size-5" />
+                    </span>
+                    <span className={cn(tile, "absolute top-3 right-0 size-11 bg-linear-to-br from-[#A5B4FC] to-[#6366F1] shadow-md")}>
+                        <ImageIcon className="size-5" />
+                    </span>
+                    <span className={cn(tile, "absolute bottom-0 left-4 size-11 bg-linear-to-br from-[#7DD3FC] to-[#0EA5E9] shadow-md")}>
+                        <ImageIcon className="size-5" />
+                    </span>
+                </span>
+            ) : (
+                <span className={cn(tile, "size-16 rotate-3 shadow-md", to === "pdf" ? "bg-linear-to-br from-[#FB7185] to-[#E11D48]" : "bg-linear-to-br from-[#5EEAD4] to-[#0D9488]")}>
+                    <FileText className="size-7" strokeWidth={1.6} />
+                </span>
+            )}
+        </div>
     );
 }
 
@@ -260,5 +438,50 @@ export function CompareView({
                 />
             </div>
         </div>
+    );
+}
+
+// ------------------------------------------------------------------ toolbar
+
+interface ToolbarSelectProps<T extends string | number> {
+    icon: LucideIcon;
+    label: string;
+    value: T;
+    options: readonly { value: T; label: string }[];
+    onChange: (value: T) => void;
+}
+
+/**
+ * A quick setting in a tool's toolbar: its name above its value, opening the platform's own picker
+ * (a native select underneath — familiar on every device, and accessible as is).
+ */
+export function ToolbarSelect<T extends string | number>({ icon: Icon, label, value, options, onChange }: ToolbarSelectProps<T>) {
+    const id = useId();
+    const current = options.find((option) => option.value === value);
+    return (
+        <span className="studio-select relative flex h-12 min-w-[8.5rem] items-center gap-2.5 rounded-xl border border-[var(--card-line)] bg-primary pr-9 pl-3 focus-within:outline-2 focus-within:outline-focus-ring hover:bg-primary_hover">
+            <Icon className="size-[1.125rem] shrink-0 text-tertiary" strokeWidth={1.9} aria-hidden />
+            <span aria-hidden className="flex min-w-0 flex-col leading-tight">
+                <span className="text-[0.6875rem] text-tertiary">{label}</span>
+                <span className="truncate text-sm font-semibold text-primary">{current?.label}</span>
+            </span>
+            <ChevronDown className="pointer-events-none absolute right-3 size-4 text-quaternary" aria-hidden />
+            <select
+                id={id}
+                aria-label={label}
+                value={String(value)}
+                onChange={(event) => {
+                    const next = options.find((option) => String(option.value) === event.target.value);
+                    if (next) onChange(next.value);
+                }}
+                className="absolute inset-0 cursor-pointer appearance-none rounded-xl opacity-0"
+            >
+                {options.map((option) => (
+                    <option key={String(option.value)} value={String(option.value)}>
+                        {option.label}
+                    </option>
+                ))}
+            </select>
+        </span>
     );
 }

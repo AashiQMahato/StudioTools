@@ -20,7 +20,7 @@ export interface Box {
 }
 
 export type TextAnnotation = Base & Box & { kind: "text"; rotation: number; text: string; size: number; color: string; bold: boolean };
-export type ImageAnnotation = Base & Box & { kind: "image"; rotation: number; image: string; opacity: number; signature?: boolean };
+export type ImageAnnotation = Base & Box & { kind: "image"; rotation: number; image: string; opacity: number; signature?: boolean; /** Recoloured: the picture it was made from, and the ink. */ source?: string; ink?: string };
 export type InkAnnotation = Base & { kind: "ink"; strokes: [number, number][][]; color: string; width: number; opacity: number };
 export type MarkupAnnotation = Base & { kind: "highlight" | "underline" | "strike"; rects: Box[]; color: string };
 export type ShapeAnnotation = Base & Box & { kind: "rect" | "ellipse"; stroke: string; strokeWidth: number; fill: string | null; opacity: number };
@@ -160,7 +160,7 @@ export function toPayload(items: readonly Annotation[]) {
             case "arrow":
                 return { ...rest, x1: round(rest.x1), y1: round(rest.y1), x2: round(rest.x2), y2: round(rest.y2) };
             case "image": {
-                const { signature: _signature, ...image } = rest;
+                const { signature: _signature, source: _source, ink: _ink, ...image } = rest;
                 return { ...image, x: round(image.x), y: round(image.y), width: round(image.width), height: round(image.height), rotation: round(image.rotation) };
             }
             default:

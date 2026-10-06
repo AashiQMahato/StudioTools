@@ -5,6 +5,7 @@ import { Range } from "@/features/background-removal/editor/RefinePanel";
 import { Button } from "@/components/ui/base/buttons/button";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
+import { inkPixels } from "./recolour";
 
 export interface SignatureImage {
     blob: Blob;
@@ -330,6 +331,8 @@ function UploadPad({ register, onReady }: PadProps) {
     const [problem, setProblem] = useState<string | null>(null);
     const [clean, setClean] = useState(true);
     const [threshold, setThreshold] = useState(70);
+    // Null keeps the photo's own colours.
+    const [ink, setInk] = useState<string | null>(null);
     const preview = useRef<HTMLCanvasElement>(null);
 
     // The result, redrawn as the settings change: what you see is what's placed.
@@ -352,9 +355,11 @@ function UploadPad({ register, onReady }: PadProps) {
                 const light = 0.299 * pixels[index]! + 0.587 * pixels[index + 1]! + 0.114 * pixels[index + 2]!;
                 if (light > low) pixels[index + 3] = Math.round(pixels[index + 3]! * Math.max(0, (high - light) / (high - low)));
             }
+            // Recoloured once the paper is gone (with the paper, the whole picture would take the ink).
+            if (ink) inkPixels(pixels, ink);
             context.putImageData(data, 0, 0);
         }
-    }, [image, clean, threshold]);
+    }, [image, clean, threshold, ink]);
 
     useEffect(() => {
         register(async () => (preview.current ? trimmed(preview.current) : null));
@@ -396,6 +401,19 @@ function UploadPad({ register, onReady }: PadProps) {
                         </span>
                     </label>
                     {clean && <Range label={copy.strength} value={threshold} min={20} max={140} onChange={setThreshold} format={(value) => `${Math.round(((value - 20) / 120) * 100)}%`} />}
+                    {clean && (
+                        <div role="radiogroup" aria-label={copy.ink} className="flex flex-wrap items-center gap-2">
+                            <span className="text-xs font-medium text-secondary">{copy.ink}</span>
+                            <button type="button" role="radio" aria-checked={ink === null} onClick={() => setInk(null)} className={cn("h-7 cursor-pointer rounded-full border px-2.5 text-xs font-medium outline-focus-ring focus-visible:outline-2", ink === null ? "border-[var(--brand)] text-[var(--brand)]" : "border-[var(--card-line)] text-secondary hover:bg-primary_hover")}>
+                                {copy.original}
+                            </button>
+                            {INKS.map((colour, index) => (
+                                <button key={colour} type="button" role="radio" aria-checked={ink === colour} aria-label={copy.inks[index]} onClick={() => setInk(colour)} className={cn("size-7 cursor-pointer rounded-full border-2 outline-focus-ring focus-visible:outline-2", ink === colour ? "border-[var(--brand)]" : "border-transparent")}>
+                                    <span className="m-auto block size-5 rounded-full" style={{ background: colour }} />
+                                </button>
+                            ))}
+                        </div>
+                    )}
                 </>
             )}
         </div>

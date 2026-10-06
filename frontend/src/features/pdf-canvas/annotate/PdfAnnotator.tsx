@@ -18,7 +18,7 @@ import {
     Undo2,
 } from "lucide-react";
 import type { PDFDocumentProxy } from "pdfjs-dist";
-import type { ReactNode } from "react";
+import { type ReactNode, useRef } from "react";
 import { Range } from "@/features/background-removal/editor/RefinePanel";
 import { ColourPicker } from "@/features/documents/StampPreview";
 import { Button } from "@/components/ui/base/buttons/button";
@@ -29,7 +29,8 @@ import type { usePageScroller } from "../usePageScroller";
 import type { useZoom } from "../useZoom";
 import { PageNav, Toolbar, ToolbarButton, ToolbarDivider, ZoomControl } from "../ViewerControls";
 import { AnnotationLayer } from "./AnnotationLayer";
-import { type Annotation, refit, type Tool } from "./model";
+import { type Annotation, type ImageAnnotation, refit, type Tool } from "./model";
+import { recolourPicture } from "./recolour";
 import { EDIT_TOOLS, MARKUP, SIGN_TOOLS, TOOL_KEYS } from "./tools";
 import type { Annotator } from "./useAnnotator";
 
@@ -186,6 +187,7 @@ export function AnnotatorPanel({ annotator, mode, children }: { annotator: Annot
             case "image":
                 return (
                     <>
+                        {selected.signature && <SignatureInk key={selected.id} annotator={annotator} item={selected} />}
                         <Range label={copy.opacity} value={selected.opacity * 100} min={5} max={100} onChange={(value) => set("opacity", (item) => ({ ...item, opacity: value / 100 }) as Annotation)} format={percent} />
                         <Range label={copy.rotation} value={selected.rotation + 180} min={0} max={360} onChange={(value) => set("rotation", (item) => ({ ...item, rotation: value - 180 }) as Annotation)} format={(value) => degrees(value - 180)} />
                         <p className="text-xs text-tertiary">{copy.imageHint}</p>
@@ -298,6 +300,45 @@ function FillControl({ value, onChange }: { value: string | null; onChange: (val
                 {copy.fill}
             </label>
             {value !== null && <ColourPicker label={copy.fill} value={value} onChange={onChange} />}
+        </div>
+    );
+}
+
+/**
+ * A placed signature's ink: Original, or any colour. Each colour is made from the original picture
+ * (never from the last recolouring), so switching back and forth loses nothing; only the newest pick
+ * is applied while the colour picker is being dragged.
+ */
+function SignatureInk({ annotator, item }: { annotator: Annotator; item: ImageAnnotation }) {
+    const copy = useT().documents.editor;
+    const latest = useRef(0);
+    const source = item.source ?? item.image;
+
+    const recolour = async (ink: string | null) => {
+        const run = ++latest.current;
+        if (!ink) return annotator.update(item.id, (current) => ({ ...current, image: source, source: undefined, ink: undefined }) as Annotation, "ink");
+        const picture = annotator.pictures.get(source);
+        if (!picture) return;
+        const result = await recolourPicture(picture.blob, ink);
+        if (run !== latest.current) return;
+        const key = annotator.addPicture(result);
+        annotator.update(item.id, (current) => ({ ...current, image: key, source, ink }) as Annotation, "ink");
+    };
+
+    return (
+        <div className="flex flex-col gap-2">
+            <span className="text-sm font-medium text-secondary">{copy.signatureInk}</span>
+            <div className="flex flex-wrap items-center gap-2">
+                <button
+                    type="button"
+                    aria-pressed={!item.ink}
+                    onClick={() => void recolour(null)}
+                    className={cn("h-7 cursor-pointer rounded-full border px-2.5 text-xs font-medium outline-focus-ring focus-visible:outline-2", !item.ink ? "border-[var(--brand)] text-[var(--brand)]" : "border-[var(--card-line)] text-secondary hover:bg-primary_hover")}
+                >
+                    {copy.signatureOriginal}
+                </button>
+                <ColourPicker label={copy.signatureInk} value={item.ink ?? "#000000"} onChange={(value) => void recolour(value)} />
+            </div>
         </div>
     );
 }

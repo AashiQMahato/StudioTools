@@ -1,5 +1,5 @@
 import { AppError, type ErrorCode } from "../../utils/AppError.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 
 /**
@@ -8,7 +8,7 @@ import { fetchBuffered } from "../../utils/fetchBuffered.js";
  * text is never passed through.
  */
 export async function postToImageService(path: string, image: Buffer, fileName: string, signal: AbortSignal, timeoutMs: number, unavailable: { code: ErrorCode; message: string }): Promise<Response> {
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw new AppError(unavailable.message, 503, unavailable.code);
 
     const form = new FormData();

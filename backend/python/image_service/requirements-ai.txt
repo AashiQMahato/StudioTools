@@ -1,0 +1,12 @@
+# Background removal: BiRefNet-Massive on PyTorch (MPS on Apple Silicon, CUDA, or the CPU).
+# Installed on top of requirements.txt by scripts/setup-ml.sh (skip it with BACKGROUND_REMOVAL=off).
+-r requirements.txt
+torch==2.14.1
+torchvision==0.29.1
+transformers==5.19.0
+huggingface_hub==1.33.0
+safetensors==0.8.0
+# BiRefNet's model code (pinned revision, loaded with trust_remote_code) imports these.
+timm==1.0.30
+kornia==0.8.3
+einops==0.8.2

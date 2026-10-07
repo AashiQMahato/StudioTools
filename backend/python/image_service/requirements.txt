@@ -1,0 +1,15 @@
+# Internal image service (Python >=3.11,<3.14): the base that every server installs.
+# Background removal's models are in requirements-ai.txt, so a small server can run without PyTorch.
+fastapi==0.141.1
+uvicorn==0.53.0
+python-multipart==0.0.32
+numpy==2.5.3
+# LaMa inpainting (ONNX).
+onnxruntime==1.30.0
+# Face detection (YuNet via OpenCV), masks, and HEIC/HEIF decoding for the photo generator.
+opencv-python-headless==5.0.0.93
+pillow-heif==1.8.0
+# PDF page rendering (PDFium) for the document tools.
+pypdfium2==5.13.0
+# PDF compression and protection: qpdf, through pikepdf.
+pikepdf==10.15.0

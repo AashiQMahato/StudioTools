@@ -6,6 +6,8 @@ export const ACCEPTED_IMAGE_TYPES = ["image/jpeg", "image/png", "image/webp"] as
  */
 export const CONVERTIBLE_IMAGE_TYPES = ["image/heic", "image/heif", "image/heic-sequence", "image/heif-sequence", "image/avif", "image/tiff", "image/bmp", "image/gif"] as const;
 export const CONVERTIBLE_EXTENSIONS = [".heic", ".heif", ".avif", ".tif", ".tiff", ".bmp", ".gif"] as const;
+/** Extensions of the formats used as is — so a picker offers them even when the system has no type for them. */
+const ACCEPTED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp"] as const;
 /** For file pickers. */
-export const UPLOAD_ACCEPT = [...ACCEPTED_IMAGE_TYPES, ...CONVERTIBLE_IMAGE_TYPES, ...CONVERTIBLE_EXTENSIONS].join(",");
+export const UPLOAD_ACCEPT = [...ACCEPTED_IMAGE_TYPES, ...ACCEPTED_EXTENSIONS, ...CONVERTIBLE_IMAGE_TYPES, ...CONVERTIBLE_EXTENSIONS].join(",");
 export const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;

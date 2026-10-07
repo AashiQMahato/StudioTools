@@ -17,6 +17,8 @@ export interface ImageOutput {
     extension: string;
     width: number;
     height: number;
+    /** The processor's stage timings (Server-Timing header value), when it reports them. */
+    timing?: string;
 }
 
 export type UpscaleScale = 2 | 4;
@@ -31,12 +33,6 @@ export interface ProcessingContext {
 }
 
 /** Contract every background-removal provider must implement, so providers can be swapped. */
-export interface BackgroundRemovalProvider {
-    readonly name: string;
-    isAvailable(): boolean;
-    removeBackground(input: ImageInput, context: ProcessingContext): Promise<ImageOutput>;
-}
-
 /** Contract every upscaling provider must implement, so providers can be swapped. */
 export interface UpscaleProvider {
     readonly name: string;

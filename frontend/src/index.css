@@ -1523,3 +1523,54 @@
         scale: none !important;
     }
 }
+
+/* ---------------------------------------------------------------- subject selection (background removal) */
+
+/* The selected subject's outline: a soft glow that breathes, never a hard flashing line. */
+.subject-outline {
+    filter: drop-shadow(0 0 1.5px rgb(255 255 255 / 0.9)) drop-shadow(0 0 6px color-mix(in srgb, var(--brand) 70%, transparent));
+    animation: subject-breathe 2.4s ease-in-out infinite;
+}
+@keyframes subject-breathe {
+    0%,
+    100% {
+        opacity: 0.95;
+    }
+    50% {
+        opacity: 0.55;
+    }
+}
+
+/* While the image is analysed: one light band sweeping down. */
+.subject-scan::after {
+    content: "";
+    position: absolute;
+    inset-inline: 0;
+    height: 30%;
+    top: -30%;
+    background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--brand) 22%, transparent) 70%, rgb(255 255 255 / 0.35));
+    animation: subject-sweep 1.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+@keyframes subject-sweep {
+    to {
+        top: 100%;
+    }
+}
+
+.subject-marker {
+    animation: subject-pop 220ms cubic-bezier(0.2, 0.9, 0.3, 1.3) both;
+}
+@keyframes subject-pop {
+    from {
+        transform: translate(-50%, -50%) scale(0.4);
+        opacity: 0;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .subject-outline,
+    .subject-scan::after,
+    .subject-marker {
+        animation: none;
+    }
+}

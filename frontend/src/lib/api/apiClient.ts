@@ -11,7 +11,7 @@ export const AI_API_BASE_URL = (import.meta.env.VITE_AI_API_BASE_URL ?? "").repl
 /** The AI tools run on their own server (which may be offline while the main API is up). */
 export const SEPARATE_AI_SERVER = AI_API_BASE_URL !== API_BASE_URL;
 // Processor health is asked by the AI tools only, about the server that runs them.
-const AI_PATHS = ["/remove-background", "/upscale", "/photo-generator", "/health/processors"];
+const AI_PATHS = ["/remove-background", "/remove-bg/", "/upscale", "/photo-generator", "/health/processors"];
 /** The server an API path belongs to. */
 export const apiBase = (path: string) => (AI_PATHS.some((prefix) => path.startsWith(prefix)) ? AI_API_BASE_URL : API_BASE_URL);
 
@@ -135,3 +135,4 @@ export function postFormForBlob(path: string, form: FormData, { signal, onUpload
         xhr.send(form);
     });
 }
+

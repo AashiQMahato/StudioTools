@@ -14,7 +14,7 @@ export interface Endpoint {
 interface PythonServiceConfig {
     /** For logs and messages, e.g. "Background removal". */
     name: string;
-    /** Prefix for the child's log lines, e.g. "[rembg]". */
+    /** Prefix for the child's log lines, e.g. "[image-service]". */
     tag: string;
     pythonPath: () => string;
     /** Directory holding app.py. */

@@ -1,7 +1,9 @@
 """
-Internal image service for Studio Tools: background removal, format conversion and face detection.
+Internal image service for Studio Tools: background removal, format conversion, face and
+watermark detection, inpainting and PDF work.
 
-- Loads one rembg session at startup and reuses it for every request.
+- Background removal: BiRefNet-Massive (see background_removal/), loaded once at startup and kept;
+  nothing is downloaded on a request.
 - Converts formats the Node side can't decode (HEIC/HEIF, BMP…) to JPEG, orientation applied.
 - Detects faces with OpenCV's YuNet model (boxes, eye/nose/mouth landmarks, sharpness, brightness).
 - Accepts direct image uploads only (no URL fetching).
@@ -31,40 +33,27 @@ try:  # HEIC/HEIF (and AVIF) decoding for Pillow.
 except ImportError:  # pragma: no cover — conversion of those formats is then reported as unsupported
     pillow_heif = None
 
-# Models this service may load. The model is chosen by the server operator (REMBG_MODEL), never by a request.
-ALLOWED_MODELS = {
-    "bria-rmbg",
-    "birefnet-general",
-    "birefnet-general-lite",
-    "birefnet-portrait",
-    "isnet-general-use",
-    "u2net",
-    "u2netp",
-    "silueta",
-}
-
-MODEL_NAME = os.environ.get("REMBG_MODEL", "bria-rmbg").strip()
+# BACKGROUND_REMOVAL=off: a small server runs the rest of the service without the models' memory.
+BACKGROUND_REMOVAL = os.environ.get("BACKGROUND_REMOVAL", "on").strip().lower() not in ("off", "false", "0", "none")
 TOKEN = os.environ.get("INTERNAL_SERVICE_TOKEN", "")
 MAX_BYTES = int(float(os.environ.get("MAX_IMAGE_SIZE_MB", "10")) * 1024 * 1024)
 MAX_PIXELS = int(os.environ.get("MAX_IMAGE_PIXELS", str(40_000_000)))
-CONCURRENCY = max(1, int(os.environ.get("BACKGROUND_REMOVAL_CONCURRENCY", "2")))
-# Decontamination removes background colour bleeding into semi-transparent edges.
-DEFAULT_DECONTAMINATE = os.environ.get("REMBG_DECONTAMINATE", "true").lower() == "true"
-DEFAULT_ALPHA_MATTING = os.environ.get("REMBG_ALPHA_MATTING", "false").lower() == "true"
-# CPU by default: on macOS, onnxruntime's CoreML provider takes minutes to compile these graphs and runs
-# them slower than the CPU. Set REMBG_PROVIDERS (comma-separated onnxruntime providers) to override.
-PROVIDERS = [p.strip() for p in os.environ.get("REMBG_PROVIDERS", "CPUExecutionProvider").split(",") if p.strip()]
+# onnxruntime providers for the ONNX models (LaMa). CPU by default: on macOS, CoreML takes minutes to
+# compile these graphs and runs them slower than the CPU.
+PROVIDERS = [p.strip() for p in os.environ.get("ONNX_PROVIDERS", "CPUExecutionProvider").split(",") if p.strip()]
+# Where the ONNX models live (scripts/setup-ml.sh).
+MODELS_DIR = os.environ.get("MODELS_DIR", "")
 
 ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
 # What /convert accepts. Decided by Pillow from the file's content, never from its name.
 CONVERTIBLE_FORMATS = ALLOWED_FORMATS | {"HEIF", "AVIF", "TIFF", "BMP", "GIF", "MPO"}
 
 # OpenCV YuNet face detector (downloaded by scripts/setup-ml.sh).
-FACE_MODEL = os.environ.get("FACE_DETECTOR_MODEL") or os.path.join(os.environ.get("U2NET_HOME", ""), "face_detection_yunet_2023mar.onnx")
+FACE_MODEL = os.environ.get("FACE_DETECTOR_MODEL") or os.path.join(MODELS_DIR, "face_detection_yunet_2023mar.onnx")
 # Faces are found on a copy no larger than this; coordinates are reported at full size.
 FACE_DETECT_MAX_SIDE = 1280
 # PP-OCRv3 text detector (downloaded by scripts/setup-ml.sh), used to find text watermarks.
-TEXT_MODEL = os.environ.get("TEXT_DETECTOR_MODEL") or os.path.join(os.environ.get("U2NET_HOME", ""), "text_detection_en_ppocrv3_2023may.onnx")
+TEXT_MODEL = os.environ.get("TEXT_DETECTOR_MODEL") or os.path.join(MODELS_DIR, "text_detection_en_ppocrv3_2023may.onnx")
 # Watermark text is often small and faint; it needs more pixels than faces do.
 WATERMARK_DETECT_MAX_SIDE = 1920
 # How much brighter than its surroundings a stroke must be to count as an overlaid mark (0–1).
@@ -72,7 +61,7 @@ MARK_MIN_STRENGTH = 0.17
 # Logo-only candidates (no text found in them) never score above this.
 LOGO_MAX_CONFIDENCE = 0.5
 # LaMa inpainting (ONNX, downloaded by scripts/setup-ml.sh). Works at a fixed 512 × 512.
-INPAINT_MODEL = os.environ.get("INPAINT_MODEL") or os.path.join(os.environ.get("U2NET_HOME", ""), "lama_fp32.onnx")
+INPAINT_MODEL = os.environ.get("INPAINT_MODEL") or os.path.join(MODELS_DIR, "lama_fp32.onnx")
 INPAINT_SIDE = 512
 # Regions larger than this are filled tile by tile (stride < tile, so tiles overlap).
 INPAINT_TILE = 768
@@ -85,11 +74,11 @@ INPAINT_GROUP = 1024
 # Pillow refuses images above this many pixels (decompression-bomb protection).
 Image.MAX_IMAGE_PIXELS = MAX_PIXELS
 
-logging.basicConfig(level=logging.INFO, format="[rembg] %(levelname)s %(message)s")
-log = logging.getLogger("rembg_service")
+logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
+log = logging.getLogger("image_service")
 
-state: dict[str, object] = {"session": None, "error": None, "loaded_at": None}
-slots = threading.BoundedSemaphore(CONCURRENCY)
+# The background remover (BiRefNet-Massive, loaded once at startup) and why it isn't there, if it isn't.
+state: dict[str, object] = {"remover": None, "error": None}
 
 
 def error(status: int, code: str, message: str) -> JSONResponse:
@@ -115,24 +104,25 @@ def watch_parent() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     watch_parent()
-    if MODEL_NAME == "none":
-        # No background removal (a small server): the rest of the service — PDFs, conversion,
-        # detection — runs without the model's memory.
-        log.info("background removal is off (REMBG_MODEL=none)")
-    elif MODEL_NAME not in ALLOWED_MODELS:
-        state["error"] = "unsupported-model"
-        log.error("REMBG_MODEL '%s' is not in the allowed list", MODEL_NAME)
+    if not BACKGROUND_REMOVAL:
+        log.info("background removal is off (BACKGROUND_REMOVAL=off)")
     else:
         started = time.perf_counter()
         try:
-            from rembg import new_session
+            from background_removal.background_removal_service import BackgroundRemover
+            from background_removal.birefnet_service import ModelUnavailable
+            from background_removal.model_config import load_settings
 
-            state["session"] = await run_in_threadpool(lambda: new_session(MODEL_NAME, providers=PROVIDERS))
-            state["loaded_at"] = time.time()
-            log.info("model '%s' ready in %.1fs", MODEL_NAME, time.perf_counter() - started)
+            remover = BackgroundRemover(load_settings())
+            await run_in_threadpool(remover.load)
+            state["remover"] = remover
+            log.info("background removal ready in %.1fs: %s", time.perf_counter() - started, remover.status())
+        except ModelUnavailable:
+            state["error"] = "model-missing"
+            log.error("BiRefNet-Massive isn't installed: run scripts/setup-ml.sh")
         except Exception:  # noqa: BLE001 — logged server-side, reported generically
             state["error"] = "model-load-failed"
-            log.exception("failed to load model '%s'", MODEL_NAME)
+            log.exception("failed to load BiRefNet-Massive")
     yield
 
 
@@ -147,77 +137,81 @@ def authorised(token: str | None) -> bool:
 async def health(x_internal_token: str | None = Header(default=None)):
     if not authorised(x_internal_token):
         return error(401, "UNAUTHORIZED", "Unauthorized.")
+    remover = state["remover"]
     return {
-        "ready": state["session"] is not None or MODEL_NAME == "none",
-        "model": MODEL_NAME,
+        "ready": remover is not None or not BACKGROUND_REMOVAL,
+        "backgroundRemoval": remover.status() if remover is not None else None,
         "error": state["error"],
     }
 
 
-def decode(data: bytes) -> Image.Image:
-    """Fully decode the upload, reject anything that isn't a real JPEG/PNG/WebP, and apply EXIF orientation."""
-    with Image.open(io.BytesIO(data)) as probe:
-        if probe.format not in ALLOWED_FORMATS:
-            raise ValueError("format")
-        probe.verify()
-    image = Image.open(io.BytesIO(data))
-    image.load()
-    image = ImageOps.exif_transpose(image)
-    return image.convert("RGBA") if image.mode not in ("RGB", "RGBA") else image
+
+def remover_or_error():
+    """The background remover, or the response saying why it isn't available."""
+    remover = state["remover"]
+    if remover is None:
+        if not BACKGROUND_REMOVAL:
+            return None, error(503, "BACKGROUND_REMOVAL_DISABLED", "Background removal isn't available on this server.")
+        return None, error(503, "BACKGROUND_REMOVAL_UNAVAILABLE", "Background removal is temporarily unavailable.")
+    return remover, None
 
 
-def process(image: Image.Image, alpha_matting: bool, decontaminate: bool) -> bytes:
-    from rembg import remove
-
-    result = remove(
-        image,
-        session=state["session"],
-        alpha_matting=alpha_matting,
-        decontaminate=decontaminate,
-        post_process_mask=False,
-    )
-    buffer = io.BytesIO()
-    result.save(buffer, format="PNG", optimize=False, compress_level=6)
-    return buffer.getvalue()
+@app.get("/remove-background/status")
+async def remove_background_status(x_internal_token: str | None = Header(default=None)):
+    """Which model, where, whether it's loaded — no paths."""
+    if not authorised(x_internal_token):
+        return error(401, "UNAUTHORIZED", "Unauthorized.")
+    remover = state["remover"]
+    if remover is None:
+        return {"available": False, "model": "BiRefNet-Massive", "loaded": False, "disabled": not BACKGROUND_REMOVAL, "reason": state["error"]}
+    return {"available": True, **remover.status()}
 
 
 @app.post("/remove-background")
-async def remove_background(
-    file: UploadFile = File(...),
-    alpha_matting: bool = Form(DEFAULT_ALPHA_MATTING),
-    decontaminate: bool = Form(DEFAULT_DECONTAMINATE),
-    x_internal_token: str | None = Header(default=None),
-):
+async def remove_background(file: UploadFile = File(...), x_internal_token: str | None = Header(default=None)):
+    """The subject on transparency (RGBA PNG at the original resolution), by BiRefNet-Massive."""
+    from background_removal.image_preprocessor import ImageTooLarge, InvalidImage, open_image
+
     if not authorised(x_internal_token):
         return error(401, "UNAUTHORIZED", "Unauthorized.")
-    if state["session"] is None:
-        return error(503, "BACKGROUND_REMOVAL_UNAVAILABLE", "Background removal is temporarily unavailable.")
+    remover, failure = remover_or_error()
+    if failure:
+        return failure
 
     data = await file.read(MAX_BYTES + 1)
     if len(data) > MAX_BYTES:
         return error(413, "FILE_TOO_LARGE", "The image is too large.")
-
     try:
-        image = await run_in_threadpool(decode, data)
-    except (UnidentifiedImageError, ValueError, OSError, Image.DecompressionBombError):
+        image = await run_in_threadpool(open_image, data, MAX_PIXELS)
+    except ImageTooLarge:
+        return error(413, "IMAGE_TOO_LARGE", "The image has too many pixels.")
+    except InvalidImage:
         return error(422, "INVALID_IMAGE", "The file could not be read as an image.")
 
-    # Bound concurrent model runs; wait for a slot off the event loop.
-    await run_in_threadpool(slots.acquire)
-    started = time.perf_counter()
     try:
-        png = await run_in_threadpool(process, image, alpha_matting, decontaminate)
+        result = await run_in_threadpool(remover.remove, image)
+    except MemoryError:
+        log.exception("out of memory")
+        return error(503, "INSUFFICIENT_MEMORY", "The server ran out of memory.")
+    except RuntimeError as failure_:
+        # Out of (GPU) memory surfaces as a RuntimeError; anything else is a plain failure. Never the text.
+        log.exception("background removal failed")
+        if "out of memory" in str(failure_).lower():
+            return error(503, "INSUFFICIENT_MEMORY", "The server ran out of memory.")
+        return error(500, "PROCESSING_FAILED", "Background removal failed.")
     except Exception:  # noqa: BLE001
         log.exception("background removal failed")
         return error(500, "PROCESSING_FAILED", "Background removal failed.")
-    finally:
-        slots.release()
 
-    log.info("processed %sx%s in %.2fs", image.width, image.height, time.perf_counter() - started)
     return Response(
-        content=png,
+        content=result.png,
         media_type="image/png",
-        headers={"X-Image-Width": str(image.width), "X-Image-Height": str(image.height)},
+        headers={
+            "X-Image-Width": str(result.width),
+            "X-Image-Height": str(result.height),
+            "X-Model": "BiRefNet-Massive",
+            "Server-Timing": ", ".join(f"{name};dur={value:.0f}" for name, value in result.timings.items()),
+        },
     )
 
 

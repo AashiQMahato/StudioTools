@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { AppError } from "../../utils/AppError.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 import { safeDocumentName } from "../../utils/http.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import type { JobContext } from "../jobs/jobService.js";
 import { type LineInk, measureLine } from "../ocr/formattingService.js";
 import { analyzeLayout } from "../ocr/layoutService.js";
@@ -50,7 +50,7 @@ const FIGURE_BUDGET = 8 * 1024 * 1024;
 const DEVANAGARI = /[ऀ-ॿ]/;
 
 async function segments(path: string, page: number, signal: AbortSignal): Promise<{ width: number; height: number; segments: Segment[] }> {
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw renderingUnavailable();
     const form = new FormData();
     form.append("path", path);

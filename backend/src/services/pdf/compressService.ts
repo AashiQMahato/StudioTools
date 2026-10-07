@@ -2,7 +2,7 @@ import { copyFile, stat } from "node:fs/promises";
 import { AppError } from "../../utils/AppError.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 import { safeDocumentName } from "../../utils/http.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import type { JobContext } from "../jobs/jobService.js";
 import { loadPdf } from "./pdfDocument.js";
 import { renderingUnavailable } from "./renderService.js";
@@ -24,7 +24,7 @@ export const PRESETS: Record<Exclude<CompressPreset, "custom">, { quality: numbe
 export async function compressPdf(input: { path: string; name: string }, settings: { quality: number; maxSide: number }, context: JobContext) {
     context.progress("reading");
     await loadPdf(input.path);
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw renderingUnavailable();
     context.progress("compressing");
     const output = context.workspace.file("pdf");

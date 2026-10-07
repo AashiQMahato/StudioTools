@@ -11,7 +11,7 @@ import { INITIAL_DOC } from "@/features/background-removal/editor/document";
 import { backgroundSessionFor, rememberRemoval, rememberResult } from "@/features/background-removal/resume";
 import { baseName } from "@/features/image-processing/format";
 import { useProcessingJob } from "@/features/image-processing/useProcessingJob";
-import { removeBackground } from "@/lib/api/backgroundRemovalApi";
+import { getBackgroundRemovalStatus, removeBackground } from "@/lib/api/backgroundRemovalApi";
 import { useImageStore, useToolImage } from "@/store/useImageStore";
 import type { ImageFile } from "@/types/image";
 import { errorMessage, useT } from "@/i18n";
@@ -82,6 +82,8 @@ function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onC
     const copy = t.studio;
     const intro = copy.intros.removeBackground;
     const busy = finishing || job.status === "uploading" || job.status === "processing";
+    const stage = useStage(job.status === "processing", finishing, job.status === "uploading");
+    const stageLabel = t.bgStages[stage];
     const ready = job.status === "selected";
     const failed = job.status === "error" || job.status === "unsupported";
 
@@ -119,7 +121,7 @@ function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onC
                                     alt={t.workspace.selectedAlt(original.name)}
                                     size={size}
                                     status={finishing ? "finishing" : "processing"}
-                                    label={t.studio.processing}
+                                    label={stageLabel}
                                     uploading={job.status === "uploading"}
                                     uploadProgress={job.uploadProgress}
                                     startedAt={job.startedAt}
@@ -140,7 +142,7 @@ function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onC
                         finishing
                             ? { tone: "success", text: t.bgEditor.removedSuccess }
                             : busy
-                              ? { tone: "info", text: copy.removingBackground }
+                              ? { tone: "info", text: t.bgStages.notice }
                               : { tone: "info", text: cancelled ? copy.cancelled : alreadyEdited ? copy.alreadyRemoved : copy.readyToRemove }
                     }
                 />
@@ -157,4 +159,35 @@ function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onC
             )}
         </StudioShell>
     );
+}
+
+type Stage = "uploading" | "analyzing" | "removing" | "refining" | "finishing";
+
+/**
+ * Which step the cut-out is on. The upload and the finish are known exactly; in between the server works
+ * in one go, so the steps follow how long cut-outs have actually been taking on it (its own measured
+ * median, from /remove-bg/status) — never a fixed animation.
+ */
+function useStage(processing: boolean, finishing: boolean, uploading: boolean): Stage {
+    const [typical, setTypical] = useState<number | null>(null);
+    /** Seconds since the upload finished and the server started working. */
+    const [elapsed, setElapsed] = useState(0);
+    useEffect(() => {
+        if (!processing) return;
+        const controller = new AbortController();
+        getBackgroundRemovalStatus(controller.signal)
+            .then((status) => setTypical(status.typicalSeconds ?? null))
+            .catch(() => undefined);
+        const since = Date.now();
+        const timer = window.setInterval(() => setElapsed((Date.now() - since) / 1000), 250);
+        return () => {
+            controller.abort();
+            window.clearInterval(timer);
+            setElapsed(0);
+        };
+    }, [processing]);
+    if (finishing) return "finishing";
+    if (uploading || !processing) return "uploading";
+    const share = elapsed / (typical ?? 4);
+    return share < 0.15 ? "analyzing" : share < 0.8 ? "removing" : "refining";
 }

@@ -3,7 +3,7 @@ import sharp from "sharp";
 import { env } from "../../../config/env.js";
 import type { ProcessingContext, RawImage, RawMask, RetouchMode, RetouchOptions, RetouchProvider } from "../../../types/image.js";
 import { AppError } from "../../../utils/AppError.js";
-import { rembgProcess } from "../../background-removal/rembgProcess.js";
+import { imageService } from "../../image-service/imageServiceProcess.js";
 import { fetchBuffered } from "../../../utils/fetchBuffered.js";
 
 const failed = () => new AppError("We couldn't process this image. Please try again.", 502, "PROCESSING_FAILED");
@@ -18,7 +18,7 @@ class LamaProvider implements RetouchProvider {
     readonly name = "lama-onnx";
 
     isAvailable() {
-        return rembgProcess.connection !== null && existsSync(env.retouch.lamaModelPath);
+        return imageService.connection !== null && existsSync(env.retouch.lamaModelPath);
     }
 
     supports(mode: RetouchMode) {
@@ -26,7 +26,7 @@ class LamaProvider implements RetouchProvider {
     }
 
     async retouch(image: RawImage, mask: RawMask, _options: RetouchOptions, { signal }: ProcessingContext): Promise<RawImage> {
-        const connection = rembgProcess.connection;
+        const connection = imageService.connection;
         if (!connection) throw unavailable();
         const { width, height } = image;
         const [imagePng, maskPng] = await Promise.all([

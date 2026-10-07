@@ -332,7 +332,7 @@ export const en = {
             formatSpec: "Format",
             formatValue: "PNG · transparent",
             engineSpec: "Engine",
-            engineValue: "rembg",
+            engineValue: "BiRefNet-Massive",
             backgroundLabel: "Background",
             colourLabel: "Colour",
             noBackground: "Transparent",
@@ -530,6 +530,7 @@ export const en = {
         PROCESSING_TIMEOUT: "Processing took too long. Please try a smaller image.",
         PROCESSING_FAILED: "Processing failed. Please try again.",
         BACKGROUND_REMOVAL_UNAVAILABLE: "Background removal is temporarily unavailable. Please try again.",
+        INSUFFICIENT_MEMORY: "Background removal failed. Please try a smaller image.",
         AI_SERVER_OFFLINE: "This tool runs on a separate server that's offline right now. Please try again later.",
         BACKGROUND_REMOVAL_DISABLED: "Background removal isn't available on this server.",
         PHOTO_GENERATOR_DISABLED: "Passport and MRP photos aren't available on this server.",
@@ -727,6 +728,15 @@ export const en = {
             },
         },
     },
+    bgStages: {
+        uploading: "Uploading",
+        analyzing: "Analysing image",
+        removing: "Removing background",
+        refining: "Refining edges",
+        finishing: "Finalising",
+        notice: "AI is removing the background…",
+    },
+
     bgEditor: {
         controlsLabel: "Editing controls",
         tabs: { background: "Background", refine: "Refine", export: "Export" },

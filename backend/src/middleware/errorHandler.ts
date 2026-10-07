@@ -20,9 +20,12 @@ function fromMulter(error: multer.MulterError): AppError {
     }
 }
 
+/** A JSON body that doesn't parse (express.json's own error). */
+const isBadJson = (err: unknown) => err instanceof SyntaxError && (err as { type?: string }).type === "entity.parse.failed";
+
 /** Every error leaves as a safe, user-facing message. Anything unexpected is logged and reported generically. */
 export const errorHandler: ErrorRequestHandler = (err: unknown, _req, res, _next) => {
-    const error = err instanceof AppError ? err : err instanceof multer.MulterError ? fromMulter(err) : null;
+    const error = err instanceof AppError ? err : err instanceof multer.MulterError ? fromMulter(err) : isBadJson(err) ? new AppError("The request couldn't be read.", 400, "INVALID_REQUEST") : null;
 
     if (!error) console.error(err);
     // The client has gone; there is no one to answer.

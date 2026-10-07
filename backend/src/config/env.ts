@@ -53,19 +53,28 @@ export const env = {
     /** Largest decoded image accepted (pixels). Guards against decompression bombs. */
     maxImagePixels: parsePositive(env_.MAX_IMAGE_PIXELS, 40_000_000),
 
-    rembg: {
-        model: env_.REMBG_MODEL?.trim() || "bria-rmbg",
-        /** Launch the Python service as a managed child process. Disable to run it separately (set REMBG_SERVICE_URL). */
-        autostart: parseBoolean(env_.REMBG_AUTOSTART, true),
-        serviceUrl: env_.REMBG_SERVICE_URL?.trim() || "",
-        serviceToken: env_.REMBG_SERVICE_TOKEN?.trim() || "",
-        pythonPath: resolvePath(env_.REMBG_PYTHON_PATH, "python/.venv/bin/python"),
-        serviceDir: resolvePath(undefined, "python/rembg_service"),
-        modelsDir: resolvePath(env_.REMBG_MODELS_DIR, "python/.models"),
-        timeoutMs: parsePositive(env_.REMBG_TIMEOUT_MS, 120_000),
-        concurrency: Math.floor(parsePositive(env_.BACKGROUND_REMOVAL_CONCURRENCY, 2)),
-        decontaminate: parseBoolean(env_.REMBG_DECONTAMINATE, true),
-        alphaMatting: parseBoolean(env_.REMBG_ALPHA_MATTING, false),
+    /** The internal Python image service (background removal, conversion, detection, inpainting, PDFs). */
+    imageService: {
+        /** Launch it as a managed child process. Disable to run it separately (set IMAGE_SERVICE_URL). */
+        autostart: parseBoolean(env_.IMAGE_SERVICE_AUTOSTART ?? env_.REMBG_AUTOSTART, true),
+        serviceUrl: (env_.IMAGE_SERVICE_URL ?? env_.REMBG_SERVICE_URL)?.trim() || "",
+        serviceToken: (env_.IMAGE_SERVICE_TOKEN ?? env_.REMBG_SERVICE_TOKEN)?.trim() || "",
+        pythonPath: resolvePath(env_.IMAGE_SERVICE_PYTHON_PATH ?? env_.REMBG_PYTHON_PATH, "python/.venv/bin/python"),
+        serviceDir: resolvePath(undefined, "python/image_service"),
+        /** ONNX models (faces, text, LaMa). */
+        modelsDir: resolvePath(env_.MODELS_DIR ?? env_.REMBG_MODELS_DIR, "python/.models"),
+        /** BiRefNet-Massive's folder (put there once by scripts/setup-ml.sh, then only read). */
+        birefnetPath: resolvePath(env_.BIREFNET_MODEL_PATH, "python/.models/birefnet-massive"),
+    },
+
+    backgroundRemoval: {
+        /** Off on a small server (the models need a few GB). REMBG_MODEL=none is the old way to say it. */
+        enabled: parseBoolean(env_.BACKGROUND_REMOVAL, env_.REMBG_MODEL?.trim() !== "none"),
+        /** auto (CUDA, then Apple MPS, then CPU) | cuda | mps | cpu */
+        device: parseChoice(env_.BIREFNET_DEVICE, ["auto", "cuda", "mps", "cpu"] as const, "auto"),
+        timeoutMs: parsePositive(env_.BACKGROUND_REMOVAL_TIMEOUT_MS ?? env_.REMBG_TIMEOUT_MS, 120_000),
+        /** Cut-outs made at once (the models run one at a time in the service; this bounds the queue). */
+        concurrency: Math.floor(parsePositive(env_.BACKGROUND_REMOVAL_CONCURRENCY, 1)),
     },
 
     upscayl: {

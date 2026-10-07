@@ -1,6 +1,6 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
-import { rembgProcess } from "./services/background-removal/rembgProcess.js";
+import { imageService } from "./services/image-service/imageServiceProcess.js";
 import { ocrProcess } from "./services/ocr/providers/paddleProvider.js";
 import { upscaylProvider } from "./services/upscaling/upscaylProvider.js";
 import { resetWorkspaces } from "./services/files/workspace.js";
@@ -14,7 +14,7 @@ const app = createApp();
 const server = app.listen(env.port, () => {
     console.log(`Studio Tools API listening on http://localhost:${env.port}`);
     // Bring processors up in the background; the API answers immediately and reports readiness via /api/health.
-    void rembgProcess.start();
+    void imageService.start();
     void upscaylProvider.probe();
 });
 
@@ -35,7 +35,7 @@ function shutdown(signal: string) {
     if (shuttingDown) return;
     shuttingDown = true;
     console.log(`${signal} received, shutting down...`);
-    rembgProcess.stop();
+    imageService.stop();
     ocrProcess.stop();
     void deleteAllJobs();
     server.close(() => process.exit(0));
@@ -46,6 +46,6 @@ function shutdown(signal: string) {
 process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 process.on("exit", () => {
-    rembgProcess.stop();
+    imageService.stop();
     ocrProcess.stop();
 });

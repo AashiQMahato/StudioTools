@@ -327,7 +327,7 @@ export const ne: Dictionary = {
             formatSpec: "ढाँचा",
             formatValue: "PNG · पारदर्शी",
             engineSpec: "इन्जिन",
-            engineValue: "rembg",
+            engineValue: "BiRefNet-Massive",
             backgroundLabel: "ब्याकग्राउन्ड",
             colourLabel: "रङ",
             noBackground: "पारदर्शी",
@@ -524,6 +524,7 @@ export const ne: Dictionary = {
         PROCESSING_TIMEOUT: "प्रशोधनमा धेरै समय लाग्यो। कृपया सानो तस्बिर प्रयास गर्नुहोस्।",
         PROCESSING_FAILED: "प्रशोधन असफल भयो। कृपया फेरि प्रयास गर्नुहोस्।",
         BACKGROUND_REMOVAL_UNAVAILABLE: "ब्याकग्राउन्ड हटाउने सुविधा अहिले उपलब्ध छैन। कृपया फेरि प्रयास गर्नुहोस्।",
+        INSUFFICIENT_MEMORY: "पृष्ठभूमि हटाउन सकिएन। कृपया सानो तस्बिर प्रयास गर्नुहोस्।",
         AI_SERVER_OFFLINE: "यो टुल छुट्टै सर्भरमा चल्छ, जुन अहिले अफलाइन छ। कृपया पछि फेरि प्रयास गर्नुहोस्।",
         BACKGROUND_REMOVAL_DISABLED: "यो सर्भरमा ब्याकग्राउन्ड हटाउने सुविधा उपलब्ध छैन।",
         PHOTO_GENERATOR_DISABLED: "यो सर्भरमा पासपोर्ट र MRP फोटो सुविधा उपलब्ध छैन।",
@@ -721,6 +722,15 @@ export const ne: Dictionary = {
             },
         },
     },
+    bgStages: {
+        uploading: "अपलोड हुँदै",
+        analyzing: "तस्बिर विश्लेषण हुँदै",
+        removing: "पृष्ठभूमि हटाउँदै",
+        refining: "किनारा मिलाउँदै",
+        finishing: "अन्तिम रूप दिँदै",
+        notice: "AI ले पृष्ठभूमि हटाउँदैछ…",
+    },
+
     bgEditor: {
         controlsLabel: "सम्पादन नियन्त्रणहरू",
         tabs: { background: "ब्याकग्राउन्ड", refine: "परिमार्जन", export: "निर्यात" },

@@ -38,7 +38,8 @@ export type ErrorCode =
     | "TOO_MANY_PAGES"
     | "RENDERING_UNAVAILABLE"
     | "JOB_EXPIRED"
-    | "WRONG_PASSWORD";
+    | "WRONG_PASSWORD"
+    | "INSUFFICIENT_MEMORY";
 
 /** An error whose message is safe to show to users. Internal details belong in logs, never here. */
 export class AppError extends Error {

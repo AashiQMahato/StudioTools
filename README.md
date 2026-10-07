@@ -122,7 +122,13 @@ The live site runs as two Render services:
 - `FRONTEND_URL` is the browser origin the backend allows (CORS). It must match exactly, with no trailing `/`. You can list several, separated by commas.
 - Don't set `PORT` on Render. Render sets it.
 - The backend is on Render's free plan, so it sleeps when idle. The first request after a while can take up to a minute.
-- **Python isn't available on Render's Node runtime.** On the live site, only the browser and Node features work. The tools that need Python (see the Features table) show as unavailable. Running them needs a Docker deploy with the Python services, and more memory than the free plan has.
+- **Python on the free plan: the "lite" Docker image.** Render's Node runtime has no Python, so the backend runs from [`deploy/render/Dockerfile`](deploy/render/Dockerfile) (a Docker web service, build context = repository root). It fits in 512 MB by leaving the heavy AI out:
+  - PDF to images, compress, protect, unlock, PDF to text/Word: full quality.
+  - OCR: Tesseract (English and Nepali) instead of PaddleOCR.
+  - Background removal and passport photos: off (`REMBG_MODEL=none`; the model alone needs ~400 MB).
+  - Retouch and watermark removal: the built-in engine. Upscaling: off (needs a GPU).
+
+  Everything runs at full quality on a machine with ~4 GB of memory using `scripts/setup-ml.sh`.
 
 Check what the live backend can run: https://studiotools.onrender.com/api/health/processors
 

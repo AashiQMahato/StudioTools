@@ -3,6 +3,7 @@ import type { RequestHandler } from "express";
 import { env } from "../config/env.js";
 import { backgroundRemoval } from "../services/background-removal/backgroundRemovalService.js";
 import { rembgProcess } from "../services/background-removal/rembgProcess.js";
+import { backgroundRemovalDisabled } from "../services/background-removal/rembgProvider.js";
 import { ocrProcess } from "../services/ocr/providers/paddleProvider.js";
 import { getOcrProvider } from "../services/ocr/providers/index.js";
 import { retouching } from "../services/retouch/retouchService.js";
@@ -32,6 +33,9 @@ export const getProcessorHealth: RequestHandler = async (_req, res) => {
         data: {
             backgroundRemoval: {
                 available: backgroundRemoval.isAvailable(),
+                // Switched off on this server (not just starting up): the site says so instead of offering it.
+                disabled: backgroundRemovalDisabled(),
+                message: backgroundRemovalDisabled() ? "Background removal isn't available on this server." : null,
                 status: rembg.status,
                 engine: "rembg",
                 model: rembg.model,
@@ -53,6 +57,8 @@ export const getProcessorHealth: RequestHandler = async (_req, res) => {
                 // Needs the image service (background removal, face detection, conversion) and the face model.
                 available: backgroundRemoval.isAvailable() && existsSync(env.photoGenerator.faceModelPath),
                 faceModelInstalled: existsSync(env.photoGenerator.faceModelPath),
+                disabled: backgroundRemovalDisabled(),
+                message: backgroundRemovalDisabled() ? "Passport and MRP photos aren't available on this server." : null,
             },
             ocr: {
                 // PaddleOCR starts on the first request, so "disabled" here just means "not started yet".

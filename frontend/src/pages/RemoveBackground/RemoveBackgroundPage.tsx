@@ -3,6 +3,8 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/base/buttons/button";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
 import { ClearImageButton, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
+import { ToolUnavailable } from "@/components/studio/ToolUnavailable";
+import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { BackgroundRemovalEditor } from "@/features/background-removal/editor/BackgroundRemovalEditor";
 import { INITIAL_DOC } from "@/features/background-removal/editor/document";
@@ -18,6 +20,8 @@ const fileNameFor = (image: ImageFile) => `${baseName(image.name)}-no-background
 
 export function RemoveBackgroundPage() {
     const tool = useToolImage();
+    const off = useToolOffOnServer("backgroundRemoval");
+    if (off) return <ToolUnavailable tool="removeBackground" error={off} />;
     // Each image gets its own studio; a result published from inside it doesn't count as a new image.
     return <RemoveBackgroundStudio key={tool.image?.id ?? "none"} original={tool.image} session={tool.session} />;
 }

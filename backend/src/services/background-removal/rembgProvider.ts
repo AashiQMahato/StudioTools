@@ -5,15 +5,20 @@ import { AppError } from "../../utils/AppError.js";
 import { rembgProcess } from "./rembgProcess.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 
+/** Switched off on this server (REMBG_MODEL=none: the service runs without the model, to save memory). */
+export const backgroundRemovalDisabled = () => env.rembg.model === "none";
+
 const unavailable = () =>
-    new AppError("Background removal is temporarily unavailable. Please try again.", 503, "BACKGROUND_REMOVAL_UNAVAILABLE");
+    backgroundRemovalDisabled()
+        ? new AppError("Background removal isn't available on this server.", 503, "BACKGROUND_REMOVAL_DISABLED")
+        : new AppError("Background removal is temporarily unavailable. Please try again.", 503, "BACKGROUND_REMOVAL_UNAVAILABLE");
 
 /** Background removal through the internal rembg service (Python, one persistent model session). */
 export const rembgProvider: BackgroundRemovalProvider = {
     name: "rembg",
 
     // REMBG_MODEL=none: the service runs (for PDFs and the rest) without the background-removal model.
-    isAvailable: () => env.rembg.model !== "none" && rembgProcess.connection !== null,
+    isAvailable: () => !backgroundRemovalDisabled() && rembgProcess.connection !== null,
 
     async removeBackground(input: ImageInput, { signal }: ProcessingContext): Promise<ImageOutput> {
         const connection = rembgProcess.connection;

@@ -115,7 +115,11 @@ def watch_parent() -> None:
 @asynccontextmanager
 async def lifespan(_: FastAPI):
     watch_parent()
-    if MODEL_NAME not in ALLOWED_MODELS:
+    if MODEL_NAME == "none":
+        # No background removal (a small server): the rest of the service — PDFs, conversion,
+        # detection — runs without the model's memory.
+        log.info("background removal is off (REMBG_MODEL=none)")
+    elif MODEL_NAME not in ALLOWED_MODELS:
         state["error"] = "unsupported-model"
         log.error("REMBG_MODEL '%s' is not in the allowed list", MODEL_NAME)
     else:
@@ -144,7 +148,7 @@ async def health(x_internal_token: str | None = Header(default=None)):
     if not authorised(x_internal_token):
         return error(401, "UNAUTHORIZED", "Unauthorized.")
     return {
-        "ready": state["session"] is not None,
+        "ready": state["session"] is not None or MODEL_NAME == "none",
         "model": MODEL_NAME,
         "error": state["error"],
     }

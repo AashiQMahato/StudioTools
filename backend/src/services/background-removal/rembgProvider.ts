@@ -12,7 +12,8 @@ const unavailable = () =>
 export const rembgProvider: BackgroundRemovalProvider = {
     name: "rembg",
 
-    isAvailable: () => rembgProcess.connection !== null,
+    // REMBG_MODEL=none: the service runs (for PDFs and the rest) without the background-removal model.
+    isAvailable: () => env.rembg.model !== "none" && rembgProcess.connection !== null,
 
     async removeBackground(input: ImageInput, { signal }: ProcessingContext): Promise<ImageOutput> {
         const connection = rembgProcess.connection;

@@ -28,7 +28,7 @@ cleanup() {
 }
 trap cleanup EXIT INT TERM
 
-echo "Starting the API on port $PORT…"
+echo "Starting the API on port ${PORT}…"
 (
   cd "$ROOT/backend"
   # backend/.env still applies (models, limits); these settings are for serving the live site.
@@ -42,8 +42,8 @@ for _ in $(seq 1 60); do
 done
 curl -fs "http://localhost:$PORT/api/health" >/dev/null || { echo "The API didn't start; see the messages above." >&2; exit 1; }
 
-echo "Opening the tunnel…"
-"$TS" funnel --bg "$PORT" >/dev/null
+echo "Opening the tunnel… (the first time, Tailscale may print a link to allow Funnel — open it, approve, then run this again)"
+"$TS" funnel --bg "$PORT"
 ADDRESS="$("$TS" funnel status 2>/dev/null | grep -Eo 'https://[^ ]+' | head -1 | sed 's#/$##')"
 
 echo

@@ -1,9 +1,8 @@
 import { existsSync } from "node:fs";
 import type { RequestHandler } from "express";
 import { env } from "../config/env.js";
-import { backgroundRemoval } from "../services/background-removal/backgroundRemovalService.js";
-import { rembgProcess } from "../services/background-removal/rembgProcess.js";
-import { backgroundRemovalDisabled } from "../services/background-removal/rembgProvider.js";
+import { imageService } from "../services/image-service/imageServiceProcess.js";
+import { BACKGROUND_REMOVAL_MODEL, backgroundRemoval, backgroundRemovalDisabled } from "../services/background-removal/backgroundRemovalService.js";
 import { ocrProcess } from "../services/ocr/providers/paddleProvider.js";
 import { getOcrProvider } from "../services/ocr/providers/index.js";
 import { retouching } from "../services/retouch/retouchService.js";
@@ -26,7 +25,7 @@ export const getHealth: RequestHandler = (_req, res) => {
 /** Processor details for operators and the frontend. No paths, tokens or raw errors. */
 export const getProcessorHealth: RequestHandler = async (_req, res) => {
     const ocrProvider = await getOcrProvider().catch(() => null);
-    const rembg = rembgProcess.state;
+    const service = imageService.state;
     const upscayl = upscaylProvider.state;
     res.json({
         success: true,
@@ -36,9 +35,9 @@ export const getProcessorHealth: RequestHandler = async (_req, res) => {
                 // Switched off on this server (not just starting up): the site says so instead of offering it.
                 disabled: backgroundRemovalDisabled(),
                 message: backgroundRemovalDisabled() ? "Background removal isn't available on this server." : null,
-                status: rembg.status,
-                engine: "rembg",
-                model: rembg.model,
+                status: service.status,
+                engine: "birefnet",
+                model: BACKGROUND_REMOVAL_MODEL,
                 queue: backgroundRemoval.stats(),
             },
             upscaling: {

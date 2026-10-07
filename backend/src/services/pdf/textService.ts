@@ -2,7 +2,7 @@ import { writeFile } from "node:fs/promises";
 import { AppError } from "../../utils/AppError.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 import { safeDocumentName } from "../../utils/http.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import type { JobContext } from "../jobs/jobService.js";
 import { ocr } from "../ocr/ocrService.js";
 import type { OcrDocument, OcrLanguage } from "../ocr/types.js";
@@ -77,7 +77,7 @@ function documentText(document: OcrDocument) {
 }
 
 async function textLayer(path: string, signal: AbortSignal): Promise<{ text: string; images: number; fonts: string[] }[]> {
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw renderingUnavailable();
     const form = new FormData();
     form.append("path", path);

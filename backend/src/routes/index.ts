@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { removeBackgroundHandler } from "../controllers/backgroundRemovalController.js";
+import { removeBackgroundHandler, removeBackgroundStatusHandler } from "../controllers/backgroundRemovalController.js";
 import { compressHandler } from "../controllers/compressionController.js";
 import { annotateHandler, protectHandler, toWordHandler, unlockHandler, compressHandler as compressPdfHandler, deleteJobHandler, fromImagesHandler, pageNumbersHandler, toTextHandler, watermarkHandler, getJobHandler, jobArchiveHandler, jobFileHandler, mergeHandler, organizeHandler, splitHandler, toImagesHandler } from "../controllers/documentController.js";
 import { getHealth, getProcessorHealth } from "../controllers/healthController.js";
@@ -17,6 +17,7 @@ export const apiRouter = Router();
 apiRouter.get("/health", getHealth);
 apiRouter.get("/health/processors", getProcessorHealth);
 apiRouter.post("/remove-background", processingRateLimiter, uploadImage, removeBackgroundHandler);
+apiRouter.get("/remove-bg/status", removeBackgroundStatusHandler);
 apiRouter.post("/upscale", processingRateLimiter, uploadImage, upscaleHandler);
 apiRouter.post("/retouch", processingRateLimiter, uploadRetouch, retouchHandler);
 apiRouter.post("/convert", processingRateLimiter, uploadPhoto, convertHandler);

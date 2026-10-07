@@ -22,6 +22,27 @@ function conversionFor(file: File): string | null {
     return FORMAT_NAMES[extension] ?? (file.type.split("/")[1]?.replace("-sequence", "").toUpperCase() || "image");
 }
 
+/**
+ * The image's real type, from its first bytes. Browsers report a file's type from its name and the
+ * system's settings — and sometimes report none (an upper-case ".JPG" from some apps, files copied off
+ * a phone or a camera card). The content doesn't lie, so it decides.
+ */
+async function sniffType(file: File): Promise<(typeof ACCEPTED_IMAGE_TYPES)[number] | null> {
+    const head = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+    const ascii = (from: number, to: number) => String.fromCharCode(...head.slice(from, to));
+    if (head[0] === 0xff && head[1] === 0xd8 && head[2] === 0xff) return "image/jpeg";
+    if (head[0] === 0x89 && ascii(1, 4) === "PNG") return "image/png";
+    if (ascii(0, 4) === "RIFF" && ascii(8, 12) === "WEBP") return "image/webp";
+    return null;
+}
+
+/** The file with its true type when the browser got it wrong or left it out (it's the same bytes). */
+async function withTrueType(file: File): Promise<File> {
+    if (acceptedTypes.includes(file.type) || conversionFor(file)) return file;
+    const type = await sniffType(file).catch(() => null);
+    return type ? new File([file], file.name, { type, lastModified: file.lastModified }) : file;
+}
+
 function validate(file: File, t: Dictionary): string | null {
     if (!acceptedTypes.includes(file.type) && !conversionFor(file)) return t.upload.wrongType;
     if (file.size > MAX_UPLOAD_BYTES) return t.upload.tooLarge;
@@ -43,7 +64,8 @@ export type PreparedImage = { ok: true; file: File; dimensions: ImageDimensions;
  * server when the browser can't open it (HEIC…), and decoded once to prove it's readable.
  * `onStatus` hears what's happening (e.g. "HEIC detected — converting to JPEG…"), then null.
  */
-export async function prepareImageFile(picked: File, t: Dictionary, onStatus?: (status: string | null) => void): Promise<PreparedImage> {
+export async function prepareImageFile(original: File, t: Dictionary, onStatus?: (status: string | null) => void): Promise<PreparedImage> {
+    const picked = await withTrueType(original);
     const problem = validate(picked, t);
     if (problem) return { ok: false, error: problem };
     // Phones save HEIC; nobody should have to convert it themselves. The server turns it into an

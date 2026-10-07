@@ -4,7 +4,7 @@ import { env } from "../../config/env.js";
 import { AppError } from "../../utils/AppError.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 import { safeDocumentName } from "../../utils/http.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import type { JobContext } from "../jobs/jobService.js";
 import { loadPdf } from "./pdfDocument.js";
 import { pagesIn, parsePageRanges } from "./pageRanges.js";
@@ -24,7 +24,7 @@ export const renderingUnavailable = () => new AppError("Page rendering is tempor
  * from the job's workspace (it only accepts paths inside the documents temp root).
  */
 export async function renderPage(path: string, page: number, dpi: number, signal: AbortSignal): Promise<Buffer> {
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw renderingUnavailable();
     const form = new FormData();
     form.append("path", path);

@@ -2,13 +2,13 @@ import { randomBytes } from "node:crypto";
 import { AppError } from "../../utils/AppError.js";
 import { fetchBuffered } from "../../utils/fetchBuffered.js";
 import { safeDocumentName } from "../../utils/http.js";
-import { rembgProcess } from "../background-removal/rembgProcess.js";
+import { imageService } from "../image-service/imageServiceProcess.js";
 import type { JobContext } from "../jobs/jobService.js";
 import { loadPdf } from "./pdfDocument.js";
 import { renderingUnavailable } from "./renderService.js";
 
 async function call(path: string, fields: Record<string, string>, signal: AbortSignal) {
-    const connection = rembgProcess.connection;
+    const connection = imageService.connection;
     if (!connection) throw renderingUnavailable();
     const form = new FormData();
     for (const [key, value] of Object.entries(fields)) form.append(key, value);

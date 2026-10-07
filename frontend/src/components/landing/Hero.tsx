@@ -54,7 +54,8 @@ export function Hero() {
                     </ul>
                 </div>
 
-                <HeroShowcase className="animate-enter [--i:4] lg:-mr-4 lg:ml-0 lg:w-auto lg:max-w-none xl:-mr-20 2xl:-mr-28" />
+                {/* Large screens: the reel reaches past the column toward the edge — never past the side gutter. */}
+                <HeroShowcase className="animate-enter [--i:4] lg:-mr-4 lg:ml-0 lg:w-auto lg:max-w-none xl:-mr-[min(5rem,calc((100vw-var(--page-max))/2+var(--page-gutter)-1rem))] 2xl:-mr-[min(7rem,calc((100vw-var(--page-max))/2+var(--page-gutter)-1rem))]" />
             </div>
         </section>
     );

@@ -177,8 +177,9 @@ export function HeroShowcase({ className }: { className?: string }) {
                         const inner = (
                             <>
                                 <Icon className="size-3.5 shrink-0 sm:size-4" aria-hidden />
-                                {/* Small laptops: beside the text, only the lit step is named (the rest stay icons, named for screen readers). */}
-                                <span className={cn(!lit && "lg:max-xl:sr-only")}>{copy.steps[step.key]}</span>
+                                {/* Phones, and small laptops beside the text: only the lit step is named, so the bar fits
+                                    without scrolling (the rest stay icons, named for screen readers). */}
+                                <span className={cn(!lit && "max-sm:sr-only lg:max-xl:sr-only")}>{copy.steps[step.key]}</span>
                             </>
                         );
                         const classes = cn(

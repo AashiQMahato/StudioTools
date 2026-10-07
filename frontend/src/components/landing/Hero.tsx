@@ -20,8 +20,9 @@ export function Hero() {
     return (
         <section aria-labelledby="hero-title" className="hero-premium relative isolate -mt-18 overflow-x-clip pt-18">
             {/* Wide screens: the words on the left, the product running on the right — both in the first view.
-                Narrow screens: words first, then the reel. */}
-            <div className="page-container grid items-center gap-12 pt-6 pb-16 md:pt-10 md:pb-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:gap-10 xl:grid-cols-[minmax(0,33rem)_minmax(0,1fr)] lg:pt-12 lg:pb-12 xl:gap-16">
+                Narrow screens: words first, then the reel, in one column exactly the screen's width (an
+                auto-sized column would grow to the reel's step bar and push the text off-screen). */}
+            <div className="page-container grid grid-cols-1 items-center gap-12 pt-6 pb-16 md:pt-10 md:pb-16 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.12fr)] lg:gap-10 xl:grid-cols-[minmax(0,33rem)_minmax(0,1fr)] lg:pt-12 lg:pb-12 xl:gap-16">
                 <div className="mx-auto flex max-w-2xl flex-col items-center text-center lg:mx-0 lg:max-w-none lg:items-start lg:text-left">
                     <p className="animate-enter hero-badge inline-flex items-center gap-2 rounded-full px-3.5 py-1.5 text-xs font-medium text-secondary [--i:1] sm:text-sm">
                         <span aria-hidden className="size-2 rounded-full bg-[var(--brand)] shadow-[0_0_0_3px_rgb(3_105_161/0.15)]" />

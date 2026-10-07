@@ -530,6 +530,8 @@ export const en = {
         PROCESSING_TIMEOUT: "Processing took too long. Please try a smaller image.",
         PROCESSING_FAILED: "Processing failed. Please try again.",
         BACKGROUND_REMOVAL_UNAVAILABLE: "Background removal is temporarily unavailable. Please try again.",
+        BACKGROUND_REMOVAL_DISABLED: "Background removal isn't available on this server.",
+        PHOTO_GENERATOR_DISABLED: "Passport and MRP photos aren't available on this server.",
         UPSCALING_UNAVAILABLE: "Upscaling is unavailable on this server.",
         INVALID_MODE: "Choose what you'd like to fix, then try again.",
         INVALID_MASK: "The selection couldn't be read. Please paint the area again.",

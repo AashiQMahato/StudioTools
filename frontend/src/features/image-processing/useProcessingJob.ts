@@ -65,7 +65,7 @@ export function useProcessingJob(original: ImageFile | null, fallbackName: (imag
                 });
             } catch (error) {
                 if (abort.signal.aborted || (error instanceof DOMException && error.name === "AbortError")) return;
-                const unsupported = error instanceof ApiError && error.code === "UPSCALING_UNAVAILABLE";
+                const unsupported = error instanceof ApiError && (error.code === "UPSCALING_UNAVAILABLE" || error.code === "BACKGROUND_REMOVAL_DISABLED");
                 setJob({
                     ...initial,
                     status: unsupported ? "unsupported" : "error",

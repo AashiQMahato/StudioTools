@@ -1,6 +1,8 @@
 import { Check, Crop, Download, FileImage, IdCard, Printer, RotateCcw } from "lucide-react";
 import { useEffect, useState } from "react";
 import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
+import { ToolUnavailable } from "@/components/studio/ToolUnavailable";
+import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { Button } from "@/components/ui/base/buttons/button";
 import { baseName, formatBytes, formatDimensions } from "@/features/image-processing/format";
@@ -23,6 +25,7 @@ type Tab = "photo" | "sheet";
 
 export function PhotoGeneratorPage() {
     const { image } = useToolImage();
+    const off = useToolOffOnServer("photoGenerator");
     // The photo types come from the server (sizes, DPI) — the page only displays them.
     const [presets, setPresets] = useState<PhotoPreset[] | null>(null);
     const [presetsFailed, setPresetsFailed] = useState(false);
@@ -38,6 +41,7 @@ export function PhotoGeneratorPage() {
         return () => controller.abort();
     }, []);
 
+    if (off) return <ToolUnavailable tool="photoGenerator" error={off} />;
     // A new image starts afresh; the chosen photo type carries over.
     return <PhotoStudio key={image?.id ?? "none"} image={image} presets={presets} presetsFailed={presetsFailed} presetId={presetId} onPresetChange={setPresetId} />;
 }

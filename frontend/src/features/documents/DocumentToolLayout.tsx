@@ -91,7 +91,7 @@ export function DocumentToolLayout({ tool, accept, onFiles, many = false, empty,
                 />
             )}
             {!empty && working && toolbar}
-            <StudioCanvas className={cn(empty && "max-lg:h-auto")}>
+            <StudioCanvas>
                 {empty ? (
                     <StudioDropzone title={drop.title} hint={drop.hint} limits={drop.limits} kind={pdf ? "pdf" : "image"} headline={drop.headline} features={drop.features} actionLabel={uploadLabel} many={many} />
                 ) : running ? (

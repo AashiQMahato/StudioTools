@@ -9,9 +9,13 @@ import type { ImageDimensions } from "@/types/image";
 import { useT } from "@/i18n";
 import { useStudio } from "./StudioShell";
 
-/** The bordered box the image lives in. Fills the centre card on desktop; a fixed share of the screen on phones. */
+/**
+ * The bordered box the image lives in. Fills the centre card on desktop; a fixed share of the screen on
+ * phones — except while it holds the upload card: then it fills the card, however tall the upload card
+ * is (no clipped picture, no scrolling inside a box, no empty space below).
+ */
 export function StudioCanvas({ children, className }: { children: ReactNode; className?: string }) {
-    return <div className={cn("relative flex h-[58svh] min-h-[20rem] flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-secondary lg:h-auto lg:min-h-0 lg:flex-1", className)}>{children}</div>;
+    return <div className={cn("relative flex h-[58svh] min-h-[20rem] flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-secondary has-[.studio-drop]:max-lg:h-auto has-[.studio-drop]:max-lg:min-h-0 has-[.studio-drop]:max-lg:flex-1 lg:h-auto lg:min-h-0 lg:flex-1", className)}>{children}</div>;
 }
 
 export interface DropFeature {

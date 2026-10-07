@@ -11,8 +11,8 @@ export function createApp() {
     const app = express();
 
     app.disable("x-powered-by");
-    // Uncomment when deployed behind a reverse proxy so rate limiting sees real client IPs.
-    // app.set("trust proxy", 1);
+    // Behind a proxy (TRUST_PROXY = how many), rate limits count each visitor by their own address.
+    if (env.trustProxy > 0) app.set("trust proxy", env.trustProxy);
 
     // The site may live on another origin (FRONTEND_URL): it shows result images straight from here
     // (<img>), which the default same-origin resource policy would block.

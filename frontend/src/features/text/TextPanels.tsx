@@ -43,7 +43,6 @@ export function CleanPanel({ rules, onRules, counts, previewing, onPreview, onAp
                                         {copy.rules[rule].title}
                                         {previewing && counts && <span className={cn("text-xs tabular-nums", counts[rule] ? "font-semibold text-[var(--brand)]" : "text-quaternary")}>{counts[rule]}</span>}
                                     </span>
-                                    <span className="block text-xs text-tertiary">{copy.rules[rule].description}</span>
                                 </span>
                             </label>
                         </li>
@@ -140,10 +139,10 @@ export type TextExport = "copy" | "txt" | "docx" | "pdf" | "html";
 export function ExportList({ busy, onExport }: { busy: TextExport | null; onExport: (kind: TextExport) => void }) {
     const copy = useT().text.export;
     const items: [TextExport, typeof Copy, string, string][] = [
-        ["copy", Copy, copy.copy, copy.copyHint],
+        ["copy", Copy, copy.copy, ""],
         ["txt", FileText, copy.txt, ".txt"],
         ["docx", FileDown, copy.docx, ".docx"],
-        ["pdf", Printer, copy.pdf, copy.pdfHint],
+        ["pdf", Printer, copy.pdf, ".pdf"],
         ["html", FileCode2, copy.html, ".html"],
     ];
     return (
@@ -160,7 +159,7 @@ export function ExportList({ busy, onExport }: { busy: TextExport | null; onExpo
                             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-secondary">{busy === kind ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <Icon className="size-4" aria-hidden />}</span>
                             <span className="min-w-0">
                                 <span className="block text-sm font-semibold text-primary">{label}</span>
-                                <span className="block text-xs text-tertiary">{hint}</span>
+                                {hint && <span className="block text-xs text-tertiary">{hint}</span>}
                             </span>
                         </button>
                     </li>

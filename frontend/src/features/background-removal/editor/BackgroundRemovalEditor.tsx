@@ -1,4 +1,4 @@
-import { ChevronDown, Download, FileDown, Image as ImageIcon, LoaderCircle, PencilLine, Redo2, RotateCcw, Undo2, Wand2 } from "lucide-react";
+import { ChevronDown, Download, Image as ImageIcon, LoaderCircle, PencilLine, Redo2, RotateCcw, Undo2, Wand2 } from "lucide-react";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Segmented } from "@/components/common/Segmented";
@@ -24,7 +24,7 @@ import { ExportPanel } from "./ExportPanel";
 import { RefineCard, RefinePanel } from "./RefinePanel";
 import { useMaskEngine } from "./useMaskEngine";
 
-type Tab = "background" | "refine" | "export";
+type Tab = "background" | "refine";
 
 interface BackgroundRemovalEditorProps {
     /** The photo, the model's cut-out and the edits so far — reopened exactly as they were left. */
@@ -294,7 +294,7 @@ export function BackgroundRemovalEditor({ background, session }: BackgroundRemov
         return () => window.removeEventListener("keydown", onKeyDown);
     }, [undo, redo, shortSide, maxBrush]);
 
-    /** The same export controls in the top-bar menu and in the Export tab. */
+    /** The export controls, in the top-bar menu. */
     const exportPanel = (onContinue: () => void) => (
         <ExportPanel
             doc={doc}
@@ -361,7 +361,6 @@ export function BackgroundRemovalEditor({ background, session }: BackgroundRemov
                 tabs={[
                     { id: "background" as Tab, label: copy.tabs.background, icon: <ImageIcon className="size-4" aria-hidden /> },
                     { id: "refine" as Tab, label: copy.tabs.refine, icon: <Wand2 className="size-4" aria-hidden /> },
-                    { id: "export" as Tab, label: copy.tabs.export, icon: <FileDown className="size-4" aria-hidden /> },
                 ]}
             />
             <PanelBody id={tab}>
@@ -372,8 +371,6 @@ export function BackgroundRemovalEditor({ background, session }: BackgroundRemov
                             <RefineCard brush={brush} onBrushChange={changeBrush} maxSize={maxBrush} strokeCount={doc.strokes.length} onResetMask={resetMask} />
                         </div>
                     </>
-                ) : tab === "export" ? (
-                    exportPanel(() => changeTab("background"))
                 ) : (
                     <RefinePanel
                         brush={brush}

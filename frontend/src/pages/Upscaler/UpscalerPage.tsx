@@ -1,4 +1,4 @@
-import { ChevronDown, Download, FileDown, LoaderCircle, RotateCcw, ZoomIn } from "lucide-react";
+import { ChevronDown, Download, LoaderCircle, RotateCcw, ZoomIn } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/base/buttons/button";
 import { CompareView, Fitted, type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice } from "@/components/studio/StudioParts";
@@ -24,7 +24,7 @@ import { type AppErrorInfo, errorMessage, useT } from "@/i18n";
 /** Mirrors the API's default output limit, so impossible choices are disabled up front. */
 const MAX_OUTPUT_PIXELS = 40_000_000;
 
-type Tab = "upscale" | "export";
+type Tab = "upscale";
 
 export function UpscalerPage() {
     const t = useT();
@@ -145,49 +145,41 @@ export function UpscalerPage() {
                 onChange={setTab}
                 tabs={[
                     { id: "upscale" as Tab, label: copy.tabs.upscale, icon: <ZoomIn className="size-4" aria-hidden /> },
-                    { id: "export" as Tab, label: copy.tabs.export, icon: <FileDown className="size-4" aria-hidden />, disabled: !done },
                 ]}
             />
             <PanelBody id={tab}>
-                {tab === "upscale" ? (
-                    <>
-                        {engineOk !== null && (
-                            <p className="flex items-center gap-2 text-xs font-medium text-tertiary">
-                                <span aria-hidden className={cn("size-2 rounded-full", engineOk ? "bg-success-solid" : "bg-warning-solid")} />
-                                {engineOk ? up.engineReady : up.engineDown}
-                            </p>
-                        )}
-                        {original ? (
-                            <>
-                                <section>
-                                    <ScaleCards disabledScales={tooLarge} availableScales={serverScales} dimensions={original.dimensions} />
-                                    <p className="mt-2 text-xs text-tertiary">{up.configNote}</p>
-                                </section>
-                                <section>
-                                    <h3 className="mb-2 text-sm font-semibold text-primary">{up.outputLabel}</h3>
-                                    <dl className="divide-y divide-[var(--card-line)] rounded-xl border border-[var(--card-line)] px-3 text-sm">
-                                        <div className="flex justify-between py-2.5">
-                                            <dt className="text-tertiary">{up.inputSpec}</dt>
-                                            <dd className="text-secondary tabular-nums">{formatDimensions(original.dimensions)}</dd>
-                                        </div>
-                                        <div className="flex justify-between py-2.5">
-                                            <dt className="text-tertiary">{up.targetSpec}</dt>
-                                            <dd className="font-semibold text-primary tabular-nums">{target ? `${formatDimensions(target)} · ${up.megapixels(megapixels(target))}` : "—"}</dd>
-                                        </div>
-                                    </dl>
-                                </section>
-                            </>
-                        ) : (
-                            <PanelIntro title={copy.howItWorks} steps={copy.intros.upscaler.steps} />
-                        )}
-                    </>
-                ) : (
-                    <section>
-                        <h3 className="mb-1 text-sm font-semibold text-primary">{copy.exportTitle}</h3>
-                        <p className="mb-4 text-xs text-tertiary">{t.bgEditor.exportHint}</p>
-                        {exportOptions}
-                    </section>
-                )}
+                <>
+                    {engineOk !== null && (
+                        <p className="flex items-center gap-2 text-xs font-medium text-tertiary">
+                            <span aria-hidden className={cn("size-2 rounded-full", engineOk ? "bg-success-solid" : "bg-warning-solid")} />
+                            {engineOk ? up.engineReady : up.engineDown}
+                        </p>
+                    )}
+                    {original ? (
+                        <>
+                            <section>
+                                <ScaleCards disabledScales={tooLarge} availableScales={serverScales} dimensions={original.dimensions} />
+                                <p className="mt-2 text-xs text-tertiary">{up.configNote}</p>
+                            </section>
+                            <section>
+                                <h3 className="mb-2 text-sm font-semibold text-primary">{up.outputLabel}</h3>
+                                <dl className="divide-y divide-[var(--card-line)] rounded-xl border border-[var(--card-line)] px-3 text-sm">
+                                    <div className="flex justify-between py-2.5">
+                                        <dt className="text-tertiary">{up.inputSpec}</dt>
+                                        <dd className="text-secondary tabular-nums">{formatDimensions(original.dimensions)}</dd>
+                                    </div>
+                                    <div className="flex justify-between py-2.5">
+                                        <dt className="text-tertiary">{up.targetSpec}</dt>
+                                        <dd className="font-semibold text-primary tabular-nums">{target ? `${formatDimensions(target)} · ${up.megapixels(megapixels(target))}` : "—"}</dd>
+                                    </div>
+                                </dl>
+                            </section>
+                        </>
+                    ) : (
+                        <PanelIntro title={copy.howItWorks} steps={copy.intros.upscaler.steps} />
+                    )}
+                </>
+
             </PanelBody>
         </>
     );

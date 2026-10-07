@@ -1,4 +1,4 @@
-import { API_BASE_URL, ApiError } from "./apiClient";
+import { ApiError, apiBase } from "./apiClient";
 
 /**
  * POSTs a form and reads a newline-delimited JSON stream: every event before the end goes to
@@ -16,7 +16,7 @@ export async function postNdjson<Result, Event>(path: string, form: FormData, on
 
     let response: Response;
     try {
-        response = await fetch(`${API_BASE_URL}/api${path}`, { method: "POST", body: form, signal: combined });
+        response = await fetch(`${apiBase(path)}/api${path}`, { method: "POST", body: form, signal: combined });
     } catch (error) {
         throw failure(error);
     }

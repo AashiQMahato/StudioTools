@@ -44,6 +44,8 @@ const env_ = process.env;
 export const env = {
     nodeEnv: env_.NODE_ENV ?? "development",
     port: parsePort(env_.PORT, 5000),
+    /** Proxies in front of the API (a tunnel, a host's load balancer): set so each visitor is counted on their own address, not the proxy's. */
+    trustProxy: Math.floor(parsePositive(env_.TRUST_PROXY, 0)),
     /** Allowed CORS origins. FRONTEND_URL may be a comma-separated list. */
     frontendOrigins: parseOrigins(env_.FRONTEND_URL),
 

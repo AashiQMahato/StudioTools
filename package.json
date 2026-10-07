@@ -5,7 +5,8 @@
   "scripts": {
     "install:all": "npm install --prefix frontend && npm install --prefix backend",
     "dev": "concurrently -n api,web -c blue,magenta \"npm run dev --prefix backend\" \"npm run dev --prefix frontend\"",
-    "build": "npm run build --prefix backend && npm run build --prefix frontend"
+    "build": "npm run build --prefix backend && npm run build --prefix frontend",
+    "ai-server": "bash scripts/ai-server.sh"
   },
   "devDependencies": {
     "concurrently": "^10.0.5"

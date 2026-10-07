@@ -1,4 +1,4 @@
-import { API_BASE_URL, apiClient } from "./apiClient";
+import { AI_API_BASE_URL, apiClient } from "./apiClient";
 import { postNdjson } from "./ndjson";
 
 /** A physical size in the unit the requirement uses (e.g. 1.1 × 1.322 in, 35 × 45 mm). */
@@ -73,7 +73,8 @@ export type ProgressEvent =
     | { type: "warning"; code: WarningCode };
 
 /** Server paths → URLs the browser can load (the API may live on another origin). */
-export const apiUrl = (path: string) => `${API_BASE_URL}${path}`;
+/** A photo-generator file (served by the AI server, which made it). */
+export const apiUrl = (path: string) => `${AI_API_BASE_URL}${path}`;
 
 export const getPhotoPresets = (signal?: AbortSignal) => apiClient.get<PhotoPreset[]>("/photo-generator/presets", { signal });
 

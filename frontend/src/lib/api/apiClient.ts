@@ -3,6 +3,18 @@ import type { ApiResponse } from "@/types/api";
 /** Empty in development (Vite proxies `/api`); set VITE_API_BASE_URL when the backend is deployed elsewhere. */
 export const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? "").replace(/\/$/, "");
 
+/**
+ * Where the heavy AI tools (background removal, passport photos, upscaling) go: a separate, stronger
+ * server when VITE_AI_API_BASE_URL is set (e.g. a Mac reached through a tunnel), else the main API.
+ */
+export const AI_API_BASE_URL = (import.meta.env.VITE_AI_API_BASE_URL ?? "").replace(/\/$/, "") || API_BASE_URL;
+/** The AI tools run on their own server (which may be offline while the main API is up). */
+export const SEPARATE_AI_SERVER = AI_API_BASE_URL !== API_BASE_URL;
+// Processor health is asked by the AI tools only, about the server that runs them.
+const AI_PATHS = ["/remove-background", "/upscale", "/photo-generator", "/health/processors"];
+/** The server an API path belongs to. */
+export const apiBase = (path: string) => (AI_PATHS.some((prefix) => path.startsWith(prefix)) ? AI_API_BASE_URL : API_BASE_URL);
+
 export class ApiError extends Error {
     readonly status: number;
     readonly code?: string;
@@ -22,7 +34,7 @@ interface RequestOptions extends Omit<RequestInit, "body"> {
 async function request<T>(path: string, { body, headers, ...init }: RequestOptions = {}): Promise<T> {
     const isJsonBody = body !== undefined && !(body instanceof FormData) && !(body instanceof Blob) && typeof body === "object";
 
-    const response = await fetch(`${API_BASE_URL}/api${path}`, {
+    const response = await fetch(`${apiBase(path)}/api${path}`, {
         ...init,
         headers: {
             Accept: "application/json",
@@ -94,7 +106,7 @@ export function postFormForBlob(path: string, form: FormData, { signal, onUpload
         if (signal?.aborted) return reject(new DOMException("Aborted", "AbortError"));
 
         const xhr = new XMLHttpRequest();
-        xhr.open("POST", `${API_BASE_URL}/api${path}`);
+        xhr.open("POST", `${apiBase(path)}/api${path}`);
         xhr.responseType = "blob";
 
         xhr.upload.onprogress = (event) => {

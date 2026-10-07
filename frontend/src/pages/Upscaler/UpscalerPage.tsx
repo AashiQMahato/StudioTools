@@ -2,6 +2,8 @@ import { ChevronDown, Download, LoaderCircle, RotateCcw, ZoomIn } from "lucide-r
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/base/buttons/button";
 import { CompareView, Fitted, type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice } from "@/components/studio/StudioParts";
+import { ToolUnavailable } from "@/components/studio/ToolUnavailable";
+import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { studioExportButton } from "@/components/studio/styles";
@@ -26,7 +28,13 @@ const MAX_OUTPUT_PIXELS = 40_000_000;
 
 type Tab = "upscale";
 
+/** The upscaler, or — when it runs on its own server and that's offline — a plain note saying so. */
 export function UpscalerPage() {
+    const off = useToolOffOnServer("upscaling");
+    return off ? <ToolUnavailable tool="upscaler" error={off} /> : <UpscalerStudio />;
+}
+
+function UpscalerStudio() {
     const t = useT();
     const copy = t.studio;
     const up = t.pages.upscale;

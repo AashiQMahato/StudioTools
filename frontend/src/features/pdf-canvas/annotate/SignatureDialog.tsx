@@ -395,10 +395,7 @@ function UploadPad({ register, onReady }: PadProps) {
                 <>
                     <label className="flex cursor-pointer items-start gap-2.5 text-sm text-secondary">
                         <input type="checkbox" checked={clean} onChange={(event) => setClean(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />
-                        <span>
-                            {copy.removePaper}
-                            <span className="block text-xs text-tertiary">{copy.removePaperHint}</span>
-                        </span>
+                        <span>{copy.removePaper}</span>
                     </label>
                     {clean && <Range label={copy.strength} value={threshold} min={20} max={140} onChange={setThreshold} format={(value) => `${Math.round(((value - 20) / 120) * 100)}%`} />}
                     {clean && (

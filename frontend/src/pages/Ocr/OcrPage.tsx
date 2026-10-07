@@ -2,11 +2,10 @@ import { getHTMLFromFragment, type JSONContent } from "@tiptap/core";
 import type { Node as PMNode } from "@tiptap/pm/model";
 import { TextSelection } from "@tiptap/pm/state";
 import { useEditorState } from "@tiptap/react";
-import { Copy, GitCompareArrows, PenLine, ScanText, Search, Share, X } from "lucide-react";
+import { GitCompareArrows, PenLine, ScanText, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioNotice, ClearImageButton } from "@/components/studio/StudioParts";
-import { studioExportButton } from "@/components/studio/styles";
 import { Button } from "@/components/ui/base/buttons/button";
 import { baseName } from "@/features/image-processing/format";
 import { type EditorMode, fitFontSizes, pageColours, plainText, toEditorContent } from "@/features/ocr/convert";
@@ -16,6 +15,7 @@ import { ImagePane } from "@/features/ocr/ImagePane";
 import { OcrPageView } from "@/features/ocr/OcrPageView";
 import { BatchProgress, OcrShell, OcrSourceProvider, PdfPager, useOcrSource } from "@/features/ocr/OcrSource";
 import { pageId, pageOf, turnImage } from "@/features/ocr/pdf";
+import { ExportPopover } from "@/components/studio/ExportPopover";
 import { ExportDialog } from "@/features/documents/ExportDialog";
 import { EditPanel, type ExportKind, ExportPanel, ReadSettingsPanel } from "@/features/ocr/OcrPanels";
 import { DEFAULT_SETTINGS, type ReadSettings } from "@/features/ocr/settings";
@@ -220,7 +220,7 @@ function OcrStudio({ image }: { image: ImageFile }) {
 }
 
 type View = "image" | "split" | "text";
-type PanelTab = "edit" | "export" | "read";
+type PanelTab = "edit" | "read";
 
 interface ReadingStudioProps {
     image: ImageFile;
@@ -289,7 +289,8 @@ function ReadingStudio({ image, reading, settings, onSettings, job, onExtract, f
     // Choosing an area to read again needs the image in view.
     const wanted: View = drawing && view === "text" ? (desktop ? "split" : "image") : view;
     const shownView: View = !desktop && wanted === "split" ? "text" : wanted;
-    const [mode, setMode] = useState<EditorMode>("document");
+    // The original layout first: the page as it was scanned; Document is the clean, flowing version.
+    const [mode, setMode] = useState<EditorMode>("layout");
     const [overlay, setOverlay] = useState<number | null>(null);
     const [showUncertain, setShowUncertain] = useState(true);
     const [findOpen, setFindOpen] = useState(false);
@@ -460,7 +461,6 @@ function ReadingStudio({ image, reading, settings, onSettings, job, onExtract, f
     const tabs = useMemo(
         () => [
             { id: "edit" as const, label: copy.tabs.edit, icon: <PenLine className="size-4" aria-hidden /> },
-            { id: "export" as const, label: copy.tabs.export, icon: <Share className="size-4" aria-hidden /> },
             { id: "read" as const, label: copy.tabs.read, icon: <ScanText className="size-4" aria-hidden /> },
         ],
         [copy.tabs],
@@ -471,10 +471,20 @@ function ReadingStudio({ image, reading, settings, onSettings, job, onExtract, f
         <OcrShell
             dirty={edited}
             exportSlot={
-                <button type="button" className={studioExportButton} onClick={() => void runExport("copy")} disabled={exporting !== null} aria-label={copy.export.copy}>
-                    <Copy className="size-4" aria-hidden />
-                    <span className="hidden sm:inline">{copy.export.copy}</span>
-                </button>
+                <ExportPopover label={copy.tabs.export} title={copy.tabs.export} heading={false}>
+                    {(close) => (
+                        <ExportPanel
+                            busy={exporting}
+                            onExport={(kind) => {
+                                close();
+                                if (kind === "copy" || kind === "editor") void runExport(kind);
+                                else setExportAs(kind);
+                            }}
+                            scope={source.pdf ? scope : null}
+                            onScope={setScope}
+                        />
+                    )}
+                </ExportPopover>
             }
             panel={
                 <>
@@ -498,7 +508,6 @@ function ReadingStudio({ image, reading, settings, onSettings, job, onExtract, f
                                 result={result}
                             />
                         )}
-                        {tab === "export" && <ExportPanel busy={exporting} onExport={(kind) => (kind === "copy" || kind === "editor" ? void runExport(kind) : setExportAs(kind))} scope={source.pdf ? scope : null} onScope={setScope} />}
                         {tab === "read" && (
                             <>
                                 <ReadSettingsPanel settings={settings} onChange={onSettings} disabled={running} />

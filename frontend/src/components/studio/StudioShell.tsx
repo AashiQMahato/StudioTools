@@ -5,7 +5,7 @@ import { LogoMark } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { TOOL_ICONS } from "@/components/layout/toolIcons";
 import { useImageUpload } from "@/hooks/useImageUpload";
-import { studioToolGroups, type ToolKey } from "@/lib/constants/navigation";
+import { isDocumentTool, studioToolGroups, type ToolKey } from "@/lib/constants/navigation";
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useHandoff } from "@/store/useHandoff";
@@ -181,7 +181,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                     </section>
 
                     {working && (
-                        <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[18rem] xl:w-[19.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
+                        <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[17rem] xl:w-[18rem]" : isDocumentTool(tool) ? "lg:w-[20rem] xl:w-[21.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
                             {/* The panel's own heading, so its sections' headings sit under it in the outline. */}
                             <h2 className="sr-only">{panelLabel}</h2>
                             {panel}

@@ -17,14 +17,12 @@ function PanelSection({ title, children, className }: { title: string; children:
     );
 }
 
-function Checkbox({ checked, onChange, label, hint }: { checked: boolean; onChange: (value: boolean) => void; label: string; hint?: string }) {
+/** A setting: just its name (the panels keep to names, no explanations under them). */
+function Checkbox({ checked, onChange, label }: { checked: boolean; onChange: (value: boolean) => void; label: string }) {
     return (
         <label className="flex cursor-pointer items-start gap-2.5 text-sm text-secondary">
             <input type="checkbox" checked={checked} onChange={(event) => onChange(event.target.checked)} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />
-            <span>
-                {label}
-                {hint && <span className="mt-0.5 block text-xs text-tertiary">{hint}</span>}
-            </span>
+            <span>{label}</span>
         </label>
     );
 }
@@ -57,7 +55,6 @@ export function ReadSettingsPanel({ settings, onChange, disabled }: { settings: 
                         );
                     })}
                 </div>
-                <p className="text-xs text-tertiary">{copy.languageHint}</p>
             </PanelSection>
 
             <PanelSection title={copy.regionLabel}>
@@ -68,7 +65,7 @@ export function ReadSettingsPanel({ settings, onChange, disabled }: { settings: 
                     options={(Object.keys(copy.regions) as RegionTool[]).map((tool) => ({ value: tool, label: copy.regions[tool], disabled }))}
                     scrollable
                 />
-                <p className="text-xs text-tertiary">{settings.tool !== "full" && settings.region ? copy.regionSet : copy.regionHints[settings.tool]}</p>
+                {settings.tool !== "full" && settings.region && <p className="text-xs text-tertiary">{copy.regionSet}</p>}
                 {settings.tool !== "full" && settings.region && (
                     <button type="button" onClick={() => set({ region: null })} className="self-start text-sm font-medium text-[var(--brand)] underline-offset-4 outline-focus-ring hover:underline focus-visible:outline-2">
                         {copy.clearRegion}
@@ -76,7 +73,7 @@ export function ReadSettingsPanel({ settings, onChange, disabled }: { settings: 
                 )}
             </PanelSection>
 
-            <Checkbox checked={settings.detectLayout} onChange={(detectLayout) => set({ detectLayout })} label={copy.detectLayout} hint={copy.detectLayoutHint} />
+            <Checkbox checked={settings.detectLayout} onChange={(detectLayout) => set({ detectLayout })} label={copy.detectLayout} />
         </>
     );
 }
@@ -112,8 +109,7 @@ export function EditPanel({
     return (
         <>
             <PanelSection title={copy.modeLabel}>
-                <Segmented label={copy.modeLabel} value={mode} onChange={onMode} options={(["document", "layout"] as const).map((value) => ({ value, label: copy.modes[value] }))} />
-                <p className="text-xs text-tertiary">{copy.modeHints[mode]}</p>
+                <Segmented label={copy.modeLabel} value={mode} onChange={onMode} options={(["layout", "document"] as const).map((value) => ({ value, label: copy.modes[value] }))} />
                 {mode === "layout" && (
                     <div className="animate-enter flex flex-col gap-3 [--i:-1]">
                         <Checkbox checked={overlay !== null} onChange={(on) => onOverlay(on ? 0.5 : null)} label={copy.overlay} />
@@ -123,13 +119,13 @@ export function EditPanel({
             </PanelSection>
 
             <PanelSection title={copy.uncertain.count(uncertainCount)}>
-                <Checkbox checked={showUncertain} onChange={onShowUncertain} label={copy.uncertain.toggle} hint={copy.uncertain.hint} />
+                <Checkbox checked={showUncertain} onChange={onShowUncertain} label={copy.uncertain.toggle} />
                 {uncertainCount > 0 && (
                     <button type="button" onClick={onNextUncertain} className="h-10 cursor-pointer self-start rounded-lg border border-[var(--card-line)] px-3 text-sm font-medium text-secondary outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 pointer-coarse:h-11">
                         {copy.uncertain.next}
                     </button>
                 )}
-                <Checkbox checked={spellcheck} onChange={onSpellcheck} label={copy.spellcheck} hint={copy.spellcheckHint} />
+                <Checkbox checked={spellcheck} onChange={onSpellcheck} label={copy.spellcheck} />
             </PanelSection>
 
             <PanelSection title={copy.stats.title}>
@@ -164,7 +160,7 @@ export type ExportKind = "copy" | "txt" | "docx" | "pdf" | "png" | "jpeg" | "web
 export function ExportPanel({ busy, onExport, scope, onScope }: { busy: ExportKind | null; onExport: (kind: ExportKind) => void; scope: "page" | "all" | null; onScope: (scope: "page" | "all") => void }) {
     const t = useT();
     const copy = t.ocr.export;
-    const item = (kind: ExportKind, icon: ReactNode, label: string, hint?: string) => (
+    const item = (kind: ExportKind, icon: ReactNode, label: string) => (
         <button
             key={kind}
             type="button"
@@ -173,10 +169,7 @@ export function ExportPanel({ busy, onExport, scope, onScope }: { busy: ExportKi
             className="flex min-h-12 w-full cursor-pointer items-center gap-3 rounded-xl border border-[var(--card-line)] px-3 py-2 text-left outline-focus-ring transition-colors duration-150 hover:bg-primary_hover focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-60"
         >
             <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-secondary text-secondary">{busy === kind ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden /> : icon}</span>
-            <span className="min-w-0">
-                <span className="block text-sm font-semibold text-primary">{label}</span>
-                {hint && <span className="block text-xs text-tertiary">{hint}</span>}
-            </span>
+            <span className="min-w-0 text-sm font-semibold text-primary">{label}</span>
         </button>
     );
     return (
@@ -187,7 +180,7 @@ export function ExportPanel({ busy, onExport, scope, onScope }: { busy: ExportKi
                     <Segmented label={t.ocr.pdf.scope} value={scope} onChange={onScope} options={(["page", "all"] as const).map((value) => ({ value, label: t.ocr.pdf.scopes[value] }))} />
                 </div>
             )}
-            {item("editor", <FilePenLine className="size-4" aria-hidden />, copy.editor, copy.editorHint)}
+            {item("editor", <FilePenLine className="size-4" aria-hidden />, copy.editor)}
             {item("copy", <Copy className="size-4" aria-hidden />, copy.copy)}
             <div className="grid grid-cols-3 gap-2">
                 {(
@@ -211,8 +204,7 @@ export function ExportPanel({ busy, onExport, scope, onScope }: { busy: ExportKi
                     </button>
                 ))}
             </div>
-            <p className="text-xs text-tertiary">{copy.pdfHint}</p>
-            {item("png", <ImageDown className="size-4" aria-hidden />, copy.png, copy.imageHint)}
+            {item("png", <ImageDown className="size-4" aria-hidden />, copy.png)}
             {item("jpeg", <FileDown className="size-4" aria-hidden />, copy.jpeg)}
         </PanelSection>
     );

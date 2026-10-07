@@ -1,4 +1,4 @@
-import { Check, ChevronDown, Download, FileDown, GitCompareArrows, LoaderCircle, Redo2, RotateCcw, Undo2, WandSparkles, X } from "lucide-react";
+import { Check, ChevronDown, Download, GitCompareArrows, LoaderCircle, Redo2, RotateCcw, Undo2, WandSparkles, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioNotice } from "@/components/studio/StudioParts";
 import { useSettled } from "@/components/studio/ImageProcessingPreview";
@@ -28,7 +28,7 @@ import { usePublishOutput, useToolImage } from "@/store/useImageStore";
 import type { ImageFile, ProcessedImage } from "@/types/image";
 import { type AppErrorInfo, type Dictionary, useT } from "@/i18n";
 
-type Tab = "retouch" | "export";
+type Tab = "retouch";
 
 /** What undo/redo steps through: which kept version is the base, and the selection painted over it. */
 interface Session {
@@ -73,7 +73,6 @@ function EmptyStudio() {
                 onChange={() => undefined}
                 tabs={[
                     { id: "retouch", label: copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
-                    { id: "export", label: copy.tabs.export, icon: <FileDown className="size-4" aria-hidden />, disabled: true },
                 ]}
             />
             <PanelBody>
@@ -406,10 +405,9 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
                 onChange={setTab}
                 tabs={[
                     { id: "retouch" as Tab, label: copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
-                    { id: "export" as Tab, label: copy.tabs.export, icon: <FileDown className="size-4" aria-hidden />, disabled: !downloadable },
                 ]}
             />
-            <PanelBody id={tab}>{tab === "retouch" || !downloadable ? controls : exportSection}</PanelBody>
+            <PanelBody id={tab}>{controls}</PanelBody>
         </>
     );
 

@@ -66,10 +66,7 @@ export function ProtectPage() {
                                 <li key={key}>
                                     <label className="flex cursor-pointer items-start gap-2.5 text-sm text-secondary">
                                         <input type="checkbox" checked={permissions[key]} onChange={(event) => setPermissions((all) => ({ ...all, [key]: event.target.checked }))} className="mt-0.5 size-4 shrink-0 accent-[var(--brand)]" />
-                                        <span className="min-w-0 flex-1">
-                                            {copy.allow[key].title}
-                                            <span className="block text-xs text-tertiary">{copy.allow[key].description}</span>
-                                        </span>
+                                        <span className="min-w-0 flex-1">{copy.allow[key].title}</span>
                                     </label>
                                 </li>
                             ))}

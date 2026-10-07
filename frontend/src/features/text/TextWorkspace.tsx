@@ -1,10 +1,9 @@
 import type { JSONContent } from "@tiptap/core";
 import { EditorContent, type Editor, useEditorState } from "@tiptap/react";
-import { BrushCleaning, CaseSensitive, Copy, FilePlus, FolderOpen, Search, Share, Sigma } from "lucide-react";
+import { BrushCleaning, CaseSensitive, FilePlus, FolderOpen, Search, Sigma } from "lucide-react";
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { type Notice, PanelBody, PanelTabs, StudioNotice } from "@/components/studio/StudioParts";
-import { studioExportButton } from "@/components/studio/styles";
 import { DocumentStudio } from "@/features/documents/DocumentStudio";
 import { plainText } from "@/features/ocr/convert";
 import { FindReplaceBar } from "@/features/ocr/FindReplaceBar";
@@ -19,6 +18,7 @@ import { cleanDocument, type CleanCounts, type CleanRule } from "./cleaner";
 import { lineDiff } from "./diff";
 import { textStats } from "./stats";
 import { textToContent, useTextDocument } from "./textDocument";
+import { ExportPopover } from "@/components/studio/ExportPopover";
 import { ExportDialog } from "@/features/documents/ExportDialog";
 import { CasePanel, CleanPanel, ExportList, StatsPanel, type TextExport } from "./TextPanels";
 
@@ -26,7 +26,7 @@ const escapeHtml = (value: string) => value.replace(/&/g, "&amp;").replace(/</g,
 import { useTextEditor } from "./useTextEditor";
 import "@/features/ocr/ocr.css";
 
-export type TextTab = "clean" | "case" | "stats" | "export";
+export type TextTab = "clean" | "case" | "stats";
 const ACCEPT = ".txt,.md,.markdown,.html,.htm,text/plain,text/markdown,text/html";
 const MAX_OPEN_BYTES = 5 * 1024 * 1024;
 const DEFAULT_RULES: CleanRule[] = ["extraSpaces", "ocrSpacing", "blankParagraphs", "collapseBlankLines", "specialCharacters"];
@@ -172,7 +172,6 @@ function TextStudio({ tool, initialTab, content }: { tool: ToolKey; initialTab: 
             { id: "clean" as const, label: copy.tabs.clean, icon: <BrushCleaning className="size-4" aria-hidden /> },
             { id: "case" as const, label: copy.tabs.case, icon: <CaseSensitive className="size-4" aria-hidden /> },
             { id: "stats" as const, label: copy.tabs.stats, icon: <Sigma className="size-4" aria-hidden /> },
-            { id: "export" as const, label: copy.tabs.export, icon: <Share className="size-4" aria-hidden /> },
         ],
         [copy.tabs],
     );
@@ -200,10 +199,18 @@ function TextStudio({ tool, initialTab, content }: { tool: ToolKey; initialTab: 
                 </>
             }
             exportSlot={
-                <button type="button" className={studioExportButton} onClick={() => void runExport("copy")} disabled={busy !== null} aria-label={t.ocr.export.copy}>
-                    <Copy className="size-4" aria-hidden />
-                    <span className="hidden sm:inline">{t.ocr.export.copy}</span>
-                </button>
+                <ExportPopover label={copy.tabs.export} title={copy.tabs.export} heading={false}>
+                    {(close) => (
+                        <ExportList
+                            busy={busy}
+                            onExport={(kind) => {
+                                close();
+                                if (kind === "copy") void runExport(kind);
+                                else setExportAs(kind);
+                            }}
+                        />
+                    )}
+                </ExportPopover>
             }
             panel={
                 <>
@@ -212,7 +219,6 @@ function TextStudio({ tool, initialTab, content }: { tool: ToolKey; initialTab: 
                         {tab === "clean" && <CleanPanel rules={rules} onRules={(next) => (setRules(next), setPreview(null))} counts={preview?.counts ?? null} previewing={Boolean(preview)} onPreview={runPreview} onApply={applyClean} onCancel={() => setPreview(null)} />}
                         {tab === "case" && <CasePanel sample={(selected || text).slice(0, 140)} target={selected.trim() ? "selection" : "document"} onApply={convert} />}
                         {tab === "stats" && <StatsPanel stats={stats} selection={selectionStats} />}
-                        {tab === "export" && <ExportList busy={busy} onExport={(kind) => (kind === "copy" ? void runExport(kind) : setExportAs(kind))} />}
                     </PanelBody>
                 </>
             }

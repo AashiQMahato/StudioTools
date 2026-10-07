@@ -14,11 +14,14 @@ export function createApp() {
     // Uncomment when deployed behind a reverse proxy so rate limiting sees real client IPs.
     // app.set("trust proxy", 1);
 
-    app.use(helmet());
+    // The site may live on another origin (FRONTEND_URL): it shows result images straight from here
+    // (<img>), which the default same-origin resource policy would block.
+    app.use(helmet({ crossOriginResourcePolicy: { policy: "cross-origin" } }));
     app.use(
         cors({
             origin: env.frontendOrigins,
-            methods: ["GET", "POST"],
+            // DELETE: the site removes a job's files as soon as they're no longer needed.
+            methods: ["GET", "POST", "DELETE"],
             // Let a cross-origin frontend read result metadata and the suggested file name.
             exposedHeaders: [
                 "Content-Disposition",

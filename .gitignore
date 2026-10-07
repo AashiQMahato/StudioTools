@@ -24,3 +24,6 @@ backend/python/.models/
 __pycache__/
 *.pyc
 *.onnx
+
+# Local scratch files (tests, snapshots)
+.tmp-*

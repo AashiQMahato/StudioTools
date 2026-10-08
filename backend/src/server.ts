@@ -1,3 +1,4 @@
+import sharp from "sharp";
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
 import { imageService } from "./services/image-service/imageServiceProcess.js";
@@ -8,6 +9,13 @@ import { deleteAllJobs } from "./services/jobs/jobService.js";
 
 // Documents from a previous run are never left behind.
 await resetWorkspaces();
+
+// On a small server, libvips' cache of decoded images (and a thread per core) is what tips it over its
+// memory limit after a few large photos: keep nothing between requests, one thread.
+if (env.lowMemory) {
+    sharp.cache(false);
+    sharp.concurrency(1);
+}
 
 const app = createApp();
 

@@ -111,8 +111,7 @@ async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOpti
 
     const { width, height } = input;
     // EXIF orientation applied: the browser painted the selection over the upright image.
-    const pixels = await sharp(input.buffer, { limitInputPixels: env.maxImagePixels }).rotate().ensureAlpha().raw().toBuffer();
-    if (pixels.length !== width * height * 4) throw new AppError("This file couldn't be read as an image. It may be damaged.", 422, "INVALID_IMAGE");
+    const upright = () => sharp(input.buffer, { limitInputPixels: env.maxImagePixels }).rotate();
     const selection = await readMask(maskFile, width, height);
     const bounds = selectionBounds(selection, width, height);
     if (!bounds) throw new AppError("Select an area to retouch first.", 400, "EMPTY_MASK");
@@ -124,8 +123,11 @@ async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOpti
     const scale = Math.min(1, env.retouch.maxWorkingSize / Math.max(region.width, region.height));
     const work = { width: Math.max(1, Math.round(region.width * scale)), height: Math.max(1, Math.round(region.height * scale)) };
 
-    const regionRgb = await sharp(pixels, { raw: { width, height, channels: 4 } })
-        .extract(region)
+    // Only the region is ever decoded into memory — never the whole photo (a 12 MP photo is 48 MB raw,
+    // and a few full copies are what ran a 512 MB server out of memory).
+    const pixels = await upright().extract(region).ensureAlpha().raw().toBuffer();
+    if (pixels.length !== region.width * region.height * 4) throw new AppError("This file couldn't be read as an image. It may be damaged.", 422, "INVALID_IMAGE");
+    const regionRgb = await sharp(pixels, { raw: { width: region.width, height: region.height, channels: 4 } })
         .removeAlpha()
         .resize(work.width, work.height, { fit: "fill", kernel: "lanczos3" })
         .raw()
@@ -155,13 +157,26 @@ async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOpti
             const r = y * region.width + x;
             const a = alpha[r]! / 255;
             if (a === 0) continue;
-            const o = ((region.top + y) * width + region.left + x) * 4;
+            const o = r * 4;
             for (let c = 0; c < 3; c++) pixels[o + c] = Math.round(pixels[o + c]! + (rgb[r * 3 + c]! - pixels[o + c]!) * a);
         }
     }
 
-    const output = sharp(pixels, { raw: { width, height, channels: 4 } });
+    // The retouched region laid back into the photo as it's encoded: libvips streams the rest in tiles,
+    // so every other pixel is the original's. The region carries the photo's own alpha (opaque for a
+    // photo), so laying it "over" replaces the area with the retouched pixels.
+    const output = upright()
+        .ensureAlpha()
+        .composite([{ input: pixels, raw: { width: region.width, height: region.height, channels: 4 }, left: region.left, top: region.top, blend: "over" }]);
     return encodeLike(input.hasAlpha ? output : output.removeAlpha(), input);
+}
+
+/**
+ * On a small server, hand the job's buffers back now: they're large (the region and its float copies)
+ * and the collector would otherwise let a few jobs' worth pile up first. Needs node --expose-gc.
+ */
+function releaseMemory() {
+    if (env.lowMemory) (globalThis as { gc?: () => void }).gc?.();
 }
 
 export const retouching = {
@@ -173,5 +188,5 @@ export const retouching = {
     providerName: (mode: RetouchMode, preference?: ProviderPreference) => providerFor(mode, preference).name,
     /** `preference` overrides RETOUCH_PROVIDER for this call (e.g. the watermark remover's own setting). */
     retouch: (input: ImageInput, mask: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference): Promise<ImageOutput> =>
-        limiter.run(() => retouch(input, mask, options, context, preference), context.signal),
+        limiter.run(() => retouch(input, mask, options, context, preference).finally(releaseMemory), context.signal),
 };

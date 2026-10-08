@@ -48,6 +48,8 @@ export const env = {
     trustProxy: Math.floor(parsePositive(env_.TRUST_PROXY, 0)),
     /** Allowed CORS origins. FRONTEND_URL may be a comma-separated list. */
     frontendOrigins: parseOrigins(env_.FRONTEND_URL),
+    /** A small server (e.g. 512 MB): no decoded-image cache, one image-processing thread. */
+    lowMemory: parseBoolean(env_.LOW_MEMORY, false),
 
     maxImageSizeMb: parsePositive(env_.MAX_IMAGE_SIZE_MB, 10),
     /** Largest decoded image accepted (pixels). Guards against decompression bombs. */

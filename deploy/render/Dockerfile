@@ -43,7 +43,15 @@ ENV NODE_ENV=production \
     COMPRESSION_CONCURRENCY=1 \
     RETOUCH_CONCURRENCY=1 \
     OCR_CONCURRENCY=1 \
-    UV_THREADPOOL_SIZE=2
+    UV_THREADPOOL_SIZE=2 \
+    # 512 MB instance: no image cache, one vips thread, less malloc fragmentation, smaller retouch
+    # working area and uploads (a 40 MP photo alone is 160 MB decoded). Render's proxy sits in front.
+    LOW_MEMORY=true \
+    MALLOC_ARENA_MAX=2 \
+    RETOUCH_MAX_WORKING_SIZE=1024 \
+    MAX_IMAGE_PIXELS=25000000 \
+    TRUST_PROXY=1
 
 # Render sets PORT.
-CMD ["node", "dist/server.js"]
+# --expose-gc: with LOW_MEMORY, memory is handed back right after each heavy job instead of piling up.
+CMD ["node", "--expose-gc", "dist/server.js"]

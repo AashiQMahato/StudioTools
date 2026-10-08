@@ -12,7 +12,9 @@ from dataclasses import dataclass
 import numpy as np
 from PIL import Image, ImageOps
 
-ALLOWED_FORMATS = {"JPEG", "PNG", "WEBP"}
+# MPO: a JPEG from many cameras (Nikon, Fujifilm, Sony…) that also carries preview images — the first
+# frame is the photo itself, and browsers and the API treat the file as an ordinary JPEG.
+ALLOWED_FORMATS = {"JPEG", "MPO", "PNG", "WEBP"}
 MEAN = np.array((0.485, 0.456, 0.406), np.float32)
 STD = np.array((0.229, 0.224, 0.225), np.float32)
 
@@ -41,6 +43,8 @@ def open_image(data: bytes, max_pixels: int) -> Image.Image:
                 raise ImageTooLarge("pixels")
             probe.verify()
         image = Image.open(io.BytesIO(data))
+        if getattr(image, "n_frames", 1) > 1:
+            image.seek(0)  # the main picture, not an embedded preview
         image.load()
     except (ImageTooLarge, InvalidImage):
         raise

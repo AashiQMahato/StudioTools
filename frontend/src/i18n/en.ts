@@ -735,6 +735,8 @@ export const en = {
         refining: "Refining edges",
         finishing: "Finalising",
         notice: "AI is removing the background…",
+        modeLabel: "Quality",
+        modes: { fast: "Fast", quality: "Quality", ultra: "Ultra" },
     },
 
     bgEditor: {

@@ -19,6 +19,8 @@ export interface ImageOutput {
     height: number;
     /** The processor's stage timings (Server-Timing header value), when it reports them. */
     timing?: string;
+    /** The processing mode actually used, when the processor has modes. */
+    mode?: string;
 }
 
 export type UpscaleScale = 2 | 4;

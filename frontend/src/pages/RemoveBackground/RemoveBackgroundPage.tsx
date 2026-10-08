@@ -1,5 +1,6 @@
 import { Eraser, Image as ImageIcon, Wand2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
 import { ClearImageButton, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
@@ -11,7 +12,7 @@ import { INITIAL_DOC } from "@/features/background-removal/editor/document";
 import { backgroundSessionFor, rememberRemoval, rememberResult } from "@/features/background-removal/resume";
 import { baseName } from "@/features/image-processing/format";
 import { useProcessingJob } from "@/features/image-processing/useProcessingJob";
-import { getBackgroundRemovalStatus, removeBackground } from "@/lib/api/backgroundRemovalApi";
+import { type BackgroundRemovalStatus, getBackgroundRemovalStatus, type RemovalMode, removeBackground } from "@/lib/api/backgroundRemovalApi";
 import { useImageStore, useToolImage } from "@/store/useImageStore";
 import type { ImageFile } from "@/types/image";
 import { errorMessage, useT } from "@/i18n";
@@ -35,6 +36,8 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
     const alreadyEdited = !resumed && original?.editedBy === "removeBackground";
     /** Removal was started and then stopped, for the status line. */
     const [cancelled, setCancelled] = useState(false);
+    const [mode, setMode] = useState<RemovalMode>("quality");
+    const status = useRemovalStatus(Boolean(original) && !resumed);
 
     // The moment the cut-out arrives it's the shared image, and the studio remembers it — so leaving
     // straight away (or coming back later) never means removing the background again.
@@ -58,6 +61,9 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
         <WaitingStudio
             original={original}
             job={job}
+            mode={mode}
+            onMode={setMode}
+            status={status}
             finishing={done}
             cancelled={cancelled}
             alreadyEdited={alreadyEdited}
@@ -67,7 +73,7 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
             }}
             onStart={() => {
                 setCancelled(false);
-                void job.run(removeBackground);
+                void job.run((file, options) => removeBackground(file, options, mode));
             }}
         />
     );
@@ -77,12 +83,27 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
  * The same studio before the cut-out exists: upload, then the image waiting for "Remove background"
  * (nothing is sent anywhere until it's pressed), the upload and processing states, and errors.
  */
-function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onCancel, onStart }: { original: ImageFile | null; job: ReturnType<typeof useProcessingJob>; finishing: boolean; cancelled: boolean; alreadyEdited: boolean; onCancel: () => void; onStart: () => void }) {
+interface WaitingStudioProps {
+    original: ImageFile | null;
+    job: ReturnType<typeof useProcessingJob>;
+    mode: RemovalMode;
+    onMode: (mode: RemovalMode) => void;
+    status: BackgroundRemovalStatus | null;
+    finishing: boolean;
+    cancelled: boolean;
+    alreadyEdited: boolean;
+    onCancel: () => void;
+    onStart: () => void;
+}
+
+function WaitingStudio({ original, job, mode, onMode, status, finishing, cancelled, alreadyEdited, onCancel, onStart }: WaitingStudioProps) {
     const t = useT();
     const copy = t.studio;
     const intro = copy.intros.removeBackground;
     const busy = finishing || job.status === "uploading" || job.status === "processing";
-    const stage = useStage(job.status === "processing", finishing, job.status === "uploading");
+    const stage = useStage(job.status === "processing", finishing, job.status === "uploading", status?.typicalSecondsByMode?.[mode] ?? status?.typicalSeconds ?? null);
+    // The modes this server offers (ultra only where it's stable; fast only where it's actually faster).
+    const modes = (["fast", "quality", "ultra"] as const).filter((value) => value === "quality" || Boolean(status?.modes?.[value]));
     const stageLabel = t.bgStages[stage];
     const ready = job.status === "selected";
     const failed = job.status === "error" || job.status === "unsupported";
@@ -99,8 +120,17 @@ function WaitingStudio({ original, job, finishing, cancelled, alreadyEdited, onC
                 ]}
             />
             <PanelBody>
-                <PanelIntro title={copy.howItWorks} steps={intro.steps} />
-                <p className="rounded-xl bg-secondary p-3 text-xs text-tertiary">{busy && original ? copy.removingBackground : copy.panelEmpty}</p>
+                {original ? (
+                    <section className="flex flex-col gap-2.5">
+                        <h3 className="text-sm font-semibold text-primary">{t.bgStages.modeLabel}</h3>
+                        <Segmented label={t.bgStages.modeLabel} value={mode} onChange={busy ? undefined : onMode} options={modes.map((value) => ({ value, label: t.bgStages.modes[value] }))} />
+                    </section>
+                ) : (
+                    <>
+                        <PanelIntro title={copy.howItWorks} steps={intro.steps} />
+                        <p className="rounded-xl bg-secondary p-3 text-xs text-tertiary">{copy.panelEmpty}</p>
+                    </>
+                )}
             </PanelBody>
         </>
     );
@@ -168,20 +198,28 @@ type Stage = "uploading" | "analyzing" | "removing" | "refining" | "finishing";
  * in one go, so the steps follow how long cut-outs have actually been taking on it (its own measured
  * median, from /remove-bg/status) — never a fixed animation.
  */
-function useStage(processing: boolean, finishing: boolean, uploading: boolean): Stage {
-    const [typical, setTypical] = useState<number | null>(null);
+/** The server's background-removal status (modes on offer, typical times), fetched once an image is in. */
+function useRemovalStatus(enabled: boolean): BackgroundRemovalStatus | null {
+    const [status, setStatus] = useState<BackgroundRemovalStatus | null>(null);
+    useEffect(() => {
+        if (!enabled) return;
+        const controller = new AbortController();
+        getBackgroundRemovalStatus(controller.signal)
+            .then(setStatus)
+            .catch(() => undefined);
+        return () => controller.abort();
+    }, [enabled]);
+    return status;
+}
+
+function useStage(processing: boolean, finishing: boolean, uploading: boolean, typical: number | null): Stage {
     /** Seconds since the upload finished and the server started working. */
     const [elapsed, setElapsed] = useState(0);
     useEffect(() => {
         if (!processing) return;
-        const controller = new AbortController();
-        getBackgroundRemovalStatus(controller.signal)
-            .then((status) => setTypical(status.typicalSeconds ?? null))
-            .catch(() => undefined);
         const since = Date.now();
         const timer = window.setInterval(() => setElapsed((Date.now() - since) / 1000), 250);
         return () => {
-            controller.abort();
             window.clearInterval(timer);
             setElapsed(0);
         };

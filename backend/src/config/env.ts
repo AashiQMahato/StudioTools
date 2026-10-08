@@ -152,6 +152,8 @@ export const env = {
         passportDpi: Math.floor(parsePositive(env_.PHOTO_PASSPORT_DPI, 300)),
         mrpDpi: Math.floor(parsePositive(env_.PHOTO_MRP_DPI, 600)),
         concurrency: Math.floor(parsePositive(env_.PHOTO_GENERATOR_CONCURRENCY, 2)),
+        /** Head tilt (eye-line roll) straightened automatically, in degrees; beyond it the photo is refused. */
+        maxAutoRotationDeg: parsePositive(env_.MAX_AUTO_ROTATION, 15),
         /** How long generated photos stay downloadable (in memory only), in minutes. */
         fileTtlMinutes: parsePositive(env_.PHOTO_FILE_TTL_MINUTES, 30),
         timeoutMs: parsePositive(env_.PHOTO_GENERATOR_TIMEOUT_MS, 60_000),

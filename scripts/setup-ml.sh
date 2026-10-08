@@ -135,6 +135,18 @@ for (repo, revision), files in pins.items():
             shutil.copy(hf_hub_download(repo, name, revision=revision), target)
 PY
     ok "BiRefNet-Massive ready"
+
+    # Face mesh for passport/MRP head alignment: MediaPipe (Apache-2.0), without its declared
+    # opencv-contrib-python (it would overwrite opencv-python-headless), plus its model, checked by hash.
+    if [[ "$PY" == "uv" ]]; then uv pip install -q --python "$VENV/bin/python" --no-deps mediapipe==1.1.0
+    else "$VENV/bin/python" -m pip install -q --no-deps mediapipe==1.1.0; fi
+    LANDMARKER="$MODELS_HOME/face_landmarker.task"
+    if [[ ! -s "$LANDMARKER" ]]; then
+      curl -fsSL "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task" -o "$LANDMARKER.part"
+      echo "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff  $LANDMARKER.part" | shasum -a 256 -c - >/dev/null || { fail "Face landmarker download didn't match its checksum."; rm -f "$LANDMARKER.part"; exit 1; }
+      mv "$LANDMARKER.part" "$LANDMARKER"
+    fi
+    ok "Face landmarks (MediaPipe) ready"
   fi
 
   # Face detection for the photo generator: OpenCV's YuNet (MIT), from the OpenCV model zoo.

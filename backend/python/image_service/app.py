@@ -304,20 +304,22 @@ def detect_faces(data: bytes) -> dict:
     _, found = detector.detect(small)
     gray = cv2.cvtColor(pixels, cv2.COLOR_BGR2GRAY)
 
+    def measure(box: dict) -> tuple[float, float]:
+        """Quality of the face itself: sharpness (variance of the Laplacian at a fixed size) and brightness."""
+        left, top = max(0, int(box["x"])), max(0, int(box["y"]))
+        right, bottom = min(width, int(box["x"] + box["width"])), min(height, int(box["y"] + box["height"]))
+        if right - left < 8 or bottom - top < 8:
+            return 0.0, 0.0
+        roi = gray[top:bottom, left:right]
+        roi = cv2.resize(roi, (256, max(8, round(256 * roi.shape[0] / roi.shape[1]))), interpolation=cv2.INTER_AREA)
+        return float(cv2.Laplacian(roi, cv2.CV_64F).var()), float(roi.mean())
+
     faces = []
     for row in [] if found is None else found:
         values = [float(v) / scale for v in row[:14]]
         x, y, w, h = values[0:4]
         point = lambda i: {"x": values[4 + i * 2], "y": values[5 + i * 2]}  # noqa: E731
-        # Quality of the face itself: sharpness (variance of the Laplacian at a fixed size) and brightness.
-        left, top = max(0, int(x)), max(0, int(y))
-        right, bottom = min(width, int(x + w)), min(height, int(y + h))
-        sharpness = brightness = 0.0
-        if right - left >= 8 and bottom - top >= 8:
-            roi = gray[top:bottom, left:right]
-            roi = cv2.resize(roi, (256, max(8, round(256 * roi.shape[0] / roi.shape[1]))), interpolation=cv2.INTER_AREA)
-            sharpness = float(cv2.Laplacian(roi, cv2.CV_64F).var())
-            brightness = float(roi.mean())
+        sharpness, brightness = measure({"x": x, "y": y, "width": w, "height": h})
         faces.append(
             {
                 "box": {"x": x, "y": y, "width": w, "height": h},
@@ -328,6 +330,10 @@ def detect_faces(data: bytes) -> dict:
                 "brightness": brightness,
             }
         )
+    # Precise eye positions (and faces YuNet missed, e.g. strongly tilted ones) from the face mesh, if installed.
+    from face_landmarks import refine
+
+    faces = refine(pixels, faces, measure)
     faces.sort(key=lambda face: face["box"]["width"] * face["box"]["height"], reverse=True)
     return {"width": width, "height": height, "faces": faces}
 

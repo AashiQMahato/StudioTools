@@ -22,6 +22,10 @@ export interface DetectedFace {
     sharpness: number;
     /** Mean brightness of the face, 0–255. */
     brightness: number;
+    /** Head turn (yaw) and tip (pitch) in degrees, from the face mesh — when it's available. */
+    pose?: { yaw: number; pitch: number } | null;
+    /** Where the landmarks came from: the face mesh (precise) or the detector (coarse). */
+    landmarkSource?: "mediapipe";
 }
 
 /** Contract every face detector implements, so the model can be swapped without touching the pipeline. */

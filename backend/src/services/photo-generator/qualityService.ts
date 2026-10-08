@@ -11,8 +11,15 @@ export type WarningCode = "LOW_RESOLUTION" | "BLURRY" | "TOO_DARK" | "TOO_BRIGHT
 const BLURRY_BELOW = 40;
 const DARK_BELOW = 70;
 const BRIGHT_ABOVE = 215;
-const TILT_DEGREES = 6;
+/** Eye line still off level after straightening (it's corrected to within ±2° normally). */
+const TILT_DEGREES = 2;
 const TURNED = 0.22;
+/** Where the nose sits between the eyes and the mouth (≈ 0.55 facing the camera); outside this, the head is tipped up or down. */
+const NOD_RANGE = [0.3, 0.85] as const;
+/** A second face smaller than this share of the main one leaves no doubt who the photo is of. */
+const DOMINANT_SHARE = 0.4;
+/** Turned (yaw) or tipped (pitch) further than this, from the face mesh: not front-facing. */
+const POSE_LIMIT_DEG = 20;
 const SMALL_FACE_PX = 90;
 
 /**
@@ -21,21 +28,27 @@ const SMALL_FACE_PX = 90;
  */
 export function inspectFaces(faces: DetectedFace[]): { face: DetectedFace; warnings: WarningCode[] } {
     const face = faces[0];
-    if (!face) throw new AppError("We couldn't detect a face. Please upload a clear front-facing portrait.", 422, "NO_FACE");
-    if (faces.length > 1) throw new AppError("Multiple faces detected. Please upload a photo containing only one person.", 422, "MULTIPLE_FACES");
+    if (!face) throw new AppError("Face could not be detected. Please upload a clear, front-facing photo.", 422, "NO_FACE");
+    // Several faces: fine if one clearly dominates (it's the person the photo is of); otherwise ask.
+    const second = faces[1];
+    const area = (f: DetectedFace) => f.box.width * f.box.height;
+    if (second && area(second) >= area(face) * DOMINANT_SHARE) throw new AppError("Multiple faces detected. Please upload a photo containing one person.", 422, "MULTIPLE_FACES");
 
     const warnings: WarningCode[] = [];
     if (face.sharpness < BLURRY_BELOW) warnings.push("BLURRY");
     if (face.brightness < DARK_BELOW) warnings.push("TOO_DARK");
     else if (face.brightness > BRIGHT_ABOVE) warnings.push("TOO_BRIGHT");
     if (face.box.height < SMALL_FACE_PX) warnings.push("SMALL_FACE");
+    // Turned or tipped heads aren't corrected (only roll is) — they're flagged.
+    if (face.pose && (Math.abs(face.pose.yaw) > POSE_LIMIT_DEG || Math.abs(face.pose.pitch) > POSE_LIMIT_DEG)) warnings.push("NOT_FACING");
     return { face, warnings };
 }
 
 export function inspectPose(head: HeadGeometry): WarningCode[] {
     const warnings: WarningCode[] = [];
     if (Math.abs(head.rollDeg) > TILT_DEGREES) warnings.push("HEAD_TILTED");
-    if (Math.abs(head.yaw) > TURNED) warnings.push("NOT_FACING");
+    // Turned or tipped heads aren't corrected (that would mean warping the face) — only flagged.
+    if (Math.abs(head.yaw) > TURNED || head.nod < NOD_RANGE[0] || head.nod > NOD_RANGE[1]) warnings.push("NOT_FACING");
     if (head.crownAtEdge) warnings.push("HEAD_AT_EDGE");
     return warnings;
 }

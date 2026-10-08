@@ -45,6 +45,12 @@ export const adjustCropHandler: RequestHandler = async (req, res) => {
     res.json({ success: true, data: await photoGenerator.adjustCrop(body.workId, body.crop) });
 };
 
+/** Fine-tunes the head's straightening by hand: the photo made again at that angle (no new background removal). */
+export const rotateHandler: RequestHandler = async (req, res) => {
+    const body = (req.body ?? {}) as Record<string, unknown>;
+    res.json({ success: true, data: await photoGenerator.rotate(body.sourceId, body.angle, processingContext(req, res)) });
+};
+
 export const sheetHandler: RequestHandler = async (req, res) => {
     const body = (req.body ?? {}) as Record<string, unknown>;
     res.json({ success: true, data: await photoGenerator.createSheet(body.photoId, body.copies) });

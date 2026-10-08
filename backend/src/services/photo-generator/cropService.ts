@@ -17,6 +17,8 @@ export interface HeadGeometry {
     rollDeg: number;
     /** Nose offset from the eyes' midpoint, as a share of the eye distance (turned head). */
     yaw: number;
+    /** Nose height between the eye line (0) and the mouth (1): ≈ 0.55 facing the camera (tipped head otherwise). */
+    nod: number;
     /** The crown came from the cut-out (true) or had to be estimated from the face (false). */
     crownMeasured: boolean;
     /** The head already touches the top edge of the original photo. */
@@ -63,6 +65,7 @@ export function analyzeHead(face: DetectedFace, alpha: Buffer, width: number, he
         subject: silhouetteBounds(alpha, width, height),
         rollDeg: (Math.atan2(leftEye.y - rightEye.y, leftEye.x - rightEye.x) * 180) / Math.PI,
         yaw: (nose.x - centerX) / eyeDistance,
+        nod: (nose.y - eyeY) / Math.max(1, (face.landmarks.mouthLeft.y + face.landmarks.mouthRight.y) / 2 - eyeY),
         crownMeasured,
         crownAtEdge: crownMeasured && crownY <= 1,
     };

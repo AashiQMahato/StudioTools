@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { type PointerEvent, useEffect, useRef, useState } from "react";
+import { type PointerEvent, type ReactNode, useEffect, useRef, useState } from "react";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
@@ -13,8 +13,8 @@ interface ImageProcessingPreviewProps {
     size: { width: number; height: number };
     /** "finishing": the result is in — the effect dissolves before the result takes over. */
     status: PreviewStatus;
-    /** What the server is doing, e.g. "Removing background…". */
-    label: string;
+    /** What the server is doing, e.g. "Removing background…". Left out where the tool lists its own steps: no status pill then. */
+    label?: string;
     /** Real upload progress (0–1) while the file is still being sent. */
     uploading?: boolean;
     uploadProgress?: number;
@@ -22,6 +22,8 @@ interface ImageProcessingPreviewProps {
     startedAt?: number | null;
     onCancel?: () => void;
     className?: string;
+    /** Laid over the effect: a tool's own marks (e.g. the photo generator's crop frame, a stage caption). */
+    children?: ReactNode;
 }
 
 /** One wave of light every this many seconds, rolling diagonally across the dot matrix. */
@@ -36,7 +38,7 @@ const WAVE_PERIOD = 2.6;
  * shows the real upload percentage, then honest elapsed time. Drawn on a canvas at display rate; holds
  * still (only the pointer glow responds) for people who prefer reduced motion.
  */
-export function ImageProcessingPreview({ src, alt, size, status, label, uploading = false, uploadProgress = 0, startedAt = null, onCancel, className }: ImageProcessingPreviewProps) {
+export function ImageProcessingPreview({ src, alt, size, status, label, uploading = false, uploadProgress = 0, startedAt = null, onCancel, className, children }: ImageProcessingPreviewProps) {
     const t = useT();
     const reduced = usePrefersReducedMotion();
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -186,44 +188,48 @@ export function ImageProcessingPreview({ src, alt, size, status, label, uploadin
                 </span>
             </div>
 
+            {children}
+
             {/* Status: a ring that fills with the real upload, then spins while the server works. */}
-            <figcaption
-                role="status"
-                className={cn(
-                    "absolute bottom-4 left-1/2 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-full border border-white/15 bg-neutral-950/70 py-1.5 pr-1.5 pl-2 text-xs font-medium text-white shadow-lg backdrop-blur-md transition-[opacity,translate] duration-300",
-                    !onCancel && "pr-3.5",
-                    finishing && "translate-y-2 opacity-0",
-                )}
-            >
-                <svg viewBox="0 0 18 18" className={cn("size-[1.125rem] shrink-0 -rotate-90", !uploading && "animate-spin motion-reduce:animate-none")} aria-hidden>
-                    <circle cx="9" cy="9" r="7" fill="none" stroke="rgb(255 255 255 / 0.2)" strokeWidth="2" />
-                    <circle
-                        cx="9"
-                        cy="9"
-                        r="7"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeDasharray={circumference}
-                        strokeDashoffset={uploading ? circumference * (1 - Math.max(0.04, uploadProgress)) : circumference * 0.72}
-                        className="transition-[stroke-dashoffset] duration-200"
-                    />
-                </svg>
-                <span className="truncate">{uploading ? t.workspace.uploading(percent) : label}</span>
-                {!uploading && elapsed >= 3 && <span className="shrink-0 text-white/55 tabular-nums">{elapsed}s</span>}
-                {onCancel && (
-                    <button
-                        type="button"
-                        onClick={onCancel}
-                        onPointerDown={(event) => event.stopPropagation()}
-                        aria-label={t.common.cancel}
-                        className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white/70 outline-white hover:bg-white/15 hover:text-white focus-visible:outline-2 pointer-coarse:size-9"
-                    >
-                        <X className="size-3.5" aria-hidden />
-                    </button>
-                )}
-            </figcaption>
+            {(label !== undefined || uploading) && (
+                <figcaption
+                    role="status"
+                    className={cn(
+                        "absolute bottom-4 left-1/2 flex max-w-[calc(100%-2rem)] -translate-x-1/2 items-center gap-2.5 rounded-full border border-white/15 bg-neutral-950/70 py-1.5 pr-1.5 pl-2 text-xs font-medium text-white shadow-lg backdrop-blur-md transition-[opacity,translate] duration-300",
+                        !onCancel && "pr-3.5",
+                        finishing && "translate-y-2 opacity-0",
+                    )}
+                >
+                    <svg viewBox="0 0 18 18" className={cn("size-[1.125rem] shrink-0 -rotate-90", !uploading && "animate-spin motion-reduce:animate-none")} aria-hidden>
+                        <circle cx="9" cy="9" r="7" fill="none" stroke="rgb(255 255 255 / 0.2)" strokeWidth="2" />
+                        <circle
+                            cx="9"
+                            cy="9"
+                            r="7"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeDasharray={circumference}
+                            strokeDashoffset={uploading ? circumference * (1 - Math.max(0.04, uploadProgress)) : circumference * 0.72}
+                            className="transition-[stroke-dashoffset] duration-200"
+                        />
+                    </svg>
+                    <span className="truncate">{uploading ? t.workspace.uploading(percent) : label}</span>
+                    {!uploading && elapsed >= 3 && <span className="shrink-0 text-white/55 tabular-nums">{elapsed}s</span>}
+                    {onCancel && (
+                        <button
+                            type="button"
+                            onClick={onCancel}
+                            onPointerDown={(event) => event.stopPropagation()}
+                            aria-label={t.common.cancel}
+                            className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-full text-white/70 outline-white hover:bg-white/15 hover:text-white focus-visible:outline-2 pointer-coarse:size-9"
+                        >
+                            <X className="size-3.5" aria-hidden />
+                        </button>
+                    )}
+                </figcaption>
+            )}
         </figure>
     );
 }

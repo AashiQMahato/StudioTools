@@ -1,6 +1,7 @@
 import { type PointerEvent, useState } from "react";
 import { CompareSlider } from "@/components/common/CompareSlider";
 import { Segmented } from "@/components/common/Segmented";
+import { ImageProcessingPreview } from "@/components/studio/ImageProcessingPreview";
 import { Fitted } from "@/components/studio/StudioParts";
 import { formatBytes, formatDimensions } from "@/features/image-processing/format";
 import type { CompressSettings } from "@/lib/api/compressApi";
@@ -46,7 +47,11 @@ export function CompressionPreview({ item, mode, onModeChange }: { item: QueueIt
                 <Segmented size="sm" label={t.workspace.zoom} value={zoom} onChange={setZoom} options={ZOOMS.map((level) => ({ value: level, label: level === 1 ? t.workspace.fit : `${level}×`, ariaLabel: level === 1 ? t.workspace.fitAria : t.workspace.zoomAria(level) }))} />
             </div>
             <Fitted dimensions={item.dimensions}>
-                {(size) => (
+                {(size) =>
+                    // Being compressed: the shared processing effect (as in Remove Background).
+                    item.status === "processing" ? (
+                        <ImageProcessingPreview src={item.previewUrl} alt={`${copy.original}: ${item.name}`} size={size} status="processing" label={`${copy.status.processing}…`} />
+                    ) : (
                     <div className={cn("relative", shown !== "split" && "[&_[role=slider]]:hidden")} style={size} onPointerMove={follow} onPointerDown={follow}>
                         <CompareSlider
                             value={position}
@@ -60,7 +65,8 @@ export function CompressionPreview({ item, mode, onModeChange }: { item: QueueIt
                             after={result ? <img src={result.url} alt={`${copy.compressed}: ${result.fileName}`} className={imageClass} draggable={false} /> : <span />}
                         />
                     </div>
-                )}
+                    )
+                }
             </Fitted>
         </div>
     );

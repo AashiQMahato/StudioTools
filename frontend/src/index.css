@@ -345,22 +345,6 @@
     font-weight: 600;
 }
 
-/* Processing indicator: a soft line sweeping across the image being worked on. */
-@keyframes scan {
-    from {
-        left: 0%;
-        opacity: 0;
-    }
-    15%,
-    85% {
-        opacity: 1;
-    }
-    to {
-        left: 100%;
-        opacity: 0;
-    }
-}
-
 /* ImageProcessingPreview — the photo sits softly out of focus under a living dot matrix of itself
  * while the server works, then sharpens back as the dots dissolve (see the component). */
 .ipp-base {
@@ -462,17 +446,6 @@
     .retouch-reveal,
     .retouch-stage {
         animation: none;
-    }
-}
-
-/* Photo generator — a soft band of light sweeping across the photo while it's being worked on. */
-.pg-scan {
-    background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.28), transparent);
-    animation: scan 1.8s var(--ease-in-out) infinite;
-}
-@media (prefers-reduced-motion: reduce) {
-    .pg-scan {
-        display: none;
     }
 }
 

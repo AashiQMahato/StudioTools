@@ -1,6 +1,8 @@
 import { Check, CircleAlert, LoaderCircle, Minus, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { ImageProcessingPreview } from "@/components/studio/ImageProcessingPreview";
 import { Fitted } from "@/components/studio/StudioParts";
+import type { ImageDimensions } from "@/types/image";
 import { apiUrl, type Rect, type StepId, type WarningCode } from "@/lib/api/photoGeneratorApi";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
@@ -14,6 +16,8 @@ interface ProcessingViewProps {
     startedAt: number | null;
     /** The format the photo was converted from on upload (e.g. "HEIC"), if any. */
     convertedFrom?: string;
+    /** The uploaded photo: shown (in the same effect) until the server's first preview arrives. */
+    image: { src: string; dimensions: ImageDimensions };
     onCancel: () => void;
 }
 
@@ -22,13 +26,11 @@ interface ProcessingViewProps {
  * background), the crop frame settles over it, and each step is ticked off when the server reports
  * it — nothing here is timed or simulated.
  */
-export function ProcessingView({ steps, previews, crop, warnings, startedAt, convertedFrom, onCancel }: ProcessingViewProps) {
+export function ProcessingView({ steps, previews, crop, warnings, startedAt, convertedFrom, image, onCancel }: ProcessingViewProps) {
     const t = useT();
     const copy = t.photo;
     const stage = previews.white ? "white" : previews.cutout ? "cutout" : previews.original ? "original" : null;
-    const base = previews.original;
-    const active = STEPS.find((step) => steps[step].status === "active");
-    const scanning = active === "face" || active === "background" || (active === "resolution" && Boolean(steps.resolution.detail?.upscaling));
+    const current = stage ? previews[stage] : undefined;
 
     const [elapsed, setElapsed] = useState(0);
     useEffect(() => {
@@ -41,37 +43,15 @@ export function ProcessingView({ steps, previews, crop, warnings, startedAt, con
     return (
         <div className="grid min-h-0 flex-1 grid-rows-[minmax(12rem,1fr)_auto] gap-2 lg:grid-cols-[minmax(0,1fr)_19rem] lg:grid-rows-1">
             <div className="relative flex min-h-0">
-                {base ? (
-                    <Fitted dimensions={base}>
-                        {(size) => (
-                            <figure className="relative overflow-hidden rounded-lg shadow-sm" style={size}>
-                                {(["original", "cutout", "white"] as const).map((key) => {
-                                    const preview = previews[key];
-                                    if (!preview) return null;
-                                    return (
-                                        <img
-                                            key={key}
-                                            src={apiUrl(preview.url)}
-                                            alt={copy.stages[key]}
-                                            aria-hidden={key !== stage}
-                                            className={cn("absolute inset-0 size-full transition-opacity duration-700 ease-[var(--ease-out)]", key === "cutout" && "bg-checkerboard", key === stage ? "opacity-100" : "opacity-0")}
-                                            draggable={false}
-                                        />
-                                    );
-                                })}
-                                {crop && <CropFrame rect={crop} />}
-                                {scanning && <span aria-hidden className="pg-scan pointer-events-none absolute inset-y-0 w-24 -translate-x-1/2" />}
-                                {stage && (
-                                    <figcaption className="absolute top-3 left-3 rounded-full bg-neutral-950/55 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">{copy.stages[stage]}</figcaption>
-                                )}
-                            </figure>
-                        )}
-                    </Fitted>
-                ) : (
-                    <div className="flex flex-1 items-center justify-center">
-                        <LoaderCircle className="size-6 animate-spin text-tertiary motion-reduce:animate-none" aria-hidden />
-                    </div>
-                )}
+                {/* The shared processing effect (as in Remove Background), over each stage as the server reaches it. */}
+                <Fitted dimensions={current ?? image.dimensions}>
+                    {(size) => (
+                        <ImageProcessingPreview src={current ? apiUrl(current.url) : image.src} alt={stage ? copy.stages[stage] : copy.preparing} size={size} status="processing" startedAt={startedAt} className="shadow-sm">
+                            {crop && <CropFrame rect={crop} />}
+                            {stage && <span className="absolute top-3 left-3 rounded-full bg-neutral-950/55 px-3 py-1 text-xs font-medium text-white backdrop-blur-md">{copy.stages[stage]}</span>}
+                        </ImageProcessingPreview>
+                    )}
+                </Fitted>
             </div>
 
             <section aria-live="polite" className="flex min-h-0 flex-col rounded-xl border border-[var(--card-line)] bg-primary p-3 sm:p-4 lg:my-6 lg:mr-2 lg:self-center">

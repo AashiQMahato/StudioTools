@@ -459,7 +459,7 @@ function WatermarkStudio({ original, session: imageSession }: { original: ImageF
     const split = comparing && compare === "split";
     const overlay = (frame: FrameSize) => (
         <>
-            {detecting && !pending && !busy && <AnalyzingOverlay />}
+            {detecting && !pending && !busy && <AnalyzingOverlay src={original.previewUrl} alt={original.name} frame={frame} />}
             {paintable && !detecting && list.length > 0 && <DetectionOverlay detections={list} selected={session.selected} width={width} height={height} onToggle={(id) => setSelected(session.selected.includes(id) ? session.selected.filter((entry) => entry !== id) : [...session.selected, id])} />}
             {pending && !comparing && <img src={pending.url} alt={copy.resultAlt} draggable={false} className="retouch-reveal absolute inset-0 size-full" />}
             {(busy || finishing) && (

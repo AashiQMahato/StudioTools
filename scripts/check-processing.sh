@@ -13,7 +13,7 @@ API="${1:-http://localhost:${PORT:-5000}}"
 
 echo "Local runtimes"
 if [[ -x "$BACKEND/python/.venv/bin/python" ]]; then
-  ok "Python venv: $("$BACKEND/python/.venv/bin/python" -c 'import platform; print(platform.python_version())'), rembg $("$BACKEND/python/.venv/bin/python" -c 'import importlib.metadata as m; print(m.version("rembg"))' 2>/dev/null || echo 'missing')"
+  ok "Python venv: $("$BACKEND/python/.venv/bin/python" -c 'import platform; print(platform.python_version())'), BiRefNet-Massive $([[ -s "$BACKEND/python/.models/birefnet-massive/model.safetensors" ]] && echo ready || echo missing)"
 else
   bad "Python venv missing (run scripts/setup-ml.sh)"
 fi

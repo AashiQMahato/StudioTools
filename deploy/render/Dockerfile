@@ -24,7 +24,7 @@ RUN npm run build && npm prune --omit=dev
 
 # The image/PDF service's environment (the paths the API expects: python/.venv, python/.models).
 RUN python3 -m venv python/.venv \
-    && python/.venv/bin/pip install --no-cache-dir -q -r python/rembg_service/requirements.txt
+    && python/.venv/bin/pip install --no-cache-dir -q -r python/image_service/requirements.txt
 
 # The two small detection models (face for photos, text for watermarks), checked against known hashes.
 RUN mkdir -p python/.models && cd python/.models \
@@ -34,7 +34,7 @@ RUN mkdir -p python/.models && cd python/.models \
     && echo "03f550c6b406fda8bf54bd8327815f6c7e2edd98cea02348c93d879254366587  text_detection_en_ppocrv3_2023may.onnx" | sha256sum -c -
 
 ENV NODE_ENV=production \
-    REMBG_MODEL=none \
+    BACKGROUND_REMOVAL=off \
     UPSCAYL_ENABLED=false \
     OCR_PROVIDER=tesseract \
     RETOUCH_PROVIDER=local \

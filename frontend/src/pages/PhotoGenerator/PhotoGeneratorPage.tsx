@@ -221,7 +221,7 @@ function PhotoStudio({ image, presets, presetsFailed, presetId, onPresetChange }
                 {!image ? (
                     <StudioDropzone title={t.studio.dropTitle} hint={t.studio.intros.photoGenerator.hint} />
                 ) : running ? (
-                    <ProcessingView steps={job.steps} previews={job.previews} crop={job.crop} warnings={job.warnings} startedAt={job.startedAt} convertedFrom={image.convertedFrom} onCancel={cancel} />
+                    <ProcessingView steps={job.steps} previews={job.previews} crop={job.crop} warnings={job.warnings} startedAt={job.startedAt} convertedFrom={image.convertedFrom} image={{ src: image.previewUrl, dimensions: image.dimensions }} onCancel={cancel} />
                 ) : job.status === "error" ? (
                     <StudioError title={copy.failedTitle} message={photoError(t, job.error)} onRetry={create} />
                 ) : result && adjusting ? (

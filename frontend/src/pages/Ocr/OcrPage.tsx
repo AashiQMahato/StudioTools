@@ -5,6 +5,7 @@ import { useEditorState } from "@tiptap/react";
 import { GitCompareArrows, PenLine, ScanText, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
+import { ImageProcessingPreview } from "@/components/studio/ImageProcessingPreview";
 import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioNotice, ClearImageButton } from "@/components/studio/StudioParts";
 import { Button } from "@/components/ui/base/buttons/button";
 import { baseName } from "@/features/image-processing/format";
@@ -35,7 +36,7 @@ import { ROUTES } from "@/lib/constants/routes";
 import { useNavigate } from "react-router-dom";
 import { downloadFile } from "@/lib/utils/download";
 import { ImageStoreContext, useSectionImageStore, useTextImageStore, useToolImage } from "@/store/useImageStore";
-import type { ImageFile } from "@/types/image";
+import type { ImageDimensions, ImageFile } from "@/types/image";
 import { errorMessage, useT } from "@/i18n";
 
 interface Reading {
@@ -93,6 +94,11 @@ function OcrSectionBody({ image }: { image: ImageFile | null }) {
 const sourceOf = (image: ImageFile) => pageOf(image.id)?.sourceId ?? image.id;
 
 /** "Read all pages" at work, page by page. */
+/** While the text is read: the shared processing effect (as in Remove Background). The stage list below says what's happening. */
+function ReadingPreview({ src, alt, dimensions }: { src: string; alt: string; dimensions: ImageDimensions }) {
+    return <Fitted dimensions={dimensions}>{(size) => <ImageProcessingPreview src={src} alt={alt} size={size} status="processing" />}</Fitted>;
+}
+
 function BatchStudio() {
     const t = useT();
     const { batch } = useOcrSource();
@@ -107,10 +113,7 @@ function BatchStudio() {
             panelLabel={t.ocr.controlsLabel}
         >
             <StudioCanvas>
-                <div className="relative flex min-h-0 flex-1">
-                    <ImagePane key={batch.image.id} src={batch.image.previewUrl} alt={t.ocr.imageAlt(batch.image.name)} size={batch.image.dimensions} tool="full" region={null} onRegion={() => undefined} />
-                    <span aria-hidden className="pg-scan pointer-events-none absolute inset-y-0 w-24 -translate-x-1/2" />
-                </div>
+                <ReadingPreview key={batch.image.id} src={batch.image.previewUrl} alt={t.ocr.imageAlt(batch.image.name)} dimensions={batch.image.dimensions} />
             </StudioCanvas>
             <BatchProgress />
         </OcrShell>
@@ -197,10 +200,13 @@ function OcrStudio({ image }: { image: ImageFile }) {
         >
             <PdfPager settings={settings} disabled={running} />
             <StudioCanvas>
-                <div className="relative flex min-h-0 flex-1">
-                    <ImagePane src={image.previewUrl} alt={t.ocr.imageAlt(image.name)} size={image.dimensions} tool={running ? "full" : settings.tool} region={settings.tool === "full" ? null : settings.region} onRegion={(region) => setSettings((current) => ({ ...current, region }))} />
-                    {running && <span aria-hidden className="pg-scan pointer-events-none absolute inset-y-0 w-24 -translate-x-1/2" />}
-                </div>
+                {running ? (
+                    <ReadingPreview src={image.previewUrl} alt={t.ocr.imageAlt(image.name)} dimensions={image.dimensions} />
+                ) : (
+                    <div className="relative flex min-h-0 flex-1">
+                        <ImagePane src={image.previewUrl} alt={t.ocr.imageAlt(image.name)} size={image.dimensions} tool={settings.tool} region={settings.tool === "full" ? null : settings.region} onRegion={(region) => setSettings((current) => ({ ...current, region }))} />
+                    </div>
+                )}
             </StudioCanvas>
             {running ? (
                 <StageList stages={job.stages} startedAt={job.startedAt} onCancel={job.cancel} />

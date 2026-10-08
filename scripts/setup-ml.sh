@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 # Sets up local image processing for Studio Tools:
-#   1. A Python virtualenv with rembg (background removal) and its model.
+#   1. A Python virtualenv for the image service, with BiRefNet-Massive (background removal).
 #   2. The official upscayl-ncnn binary ("upscayl-bin") and Upscayl's models (upscaling).
 #   3. A separate Python virtualenv with PaddleOCR and its text models (the OCR editor).
 #
 # Nothing is installed system-wide. Everything lands under backend/python/ and backend/vendor/ (both git-ignored).
 # The script explains what it will download and asks before doing it (pass --yes to skip the prompt).
 #
-# Usage: scripts/setup-ml.sh [--yes] [--skip-rembg] [--skip-upscayl] [--skip-ocr] [--rembg-model <name>]
+# Usage: scripts/setup-ml.sh [--yes] [--skip-image-service] [--skip-upscayl] [--skip-ocr]
 
 set -euo pipefail
 
@@ -33,18 +33,16 @@ UPSCAYL_MODELS_COMMIT="4f39acfc6f88260d105920a64deff8431d5e1544"
 UPSCAYL_MODELS=(upscayl-standard-4x upscayl-lite-4x digital-art-4x)
 
 ASSUME_YES=false
-SKIP_REMBG=false
+SKIP_IMAGE_SERVICE=false
 SKIP_UPSCAYL=false
 SKIP_OCR=false
-REMBG_MODEL="${REMBG_MODEL:-}"
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --yes|-y) ASSUME_YES=true ;;
-    --skip-rembg) SKIP_REMBG=true ;;
+    --skip-image-service|--skip-rembg) SKIP_IMAGE_SERVICE=true ;;
     --skip-upscayl) SKIP_UPSCAYL=true ;;
     --skip-ocr) SKIP_OCR=true ;;
-    --rembg-model) REMBG_MODEL="$2"; shift ;;
     -h|--help) sed -n '2,10p' "$0"; exit 0 ;;
     *) echo "Unknown option: $1" >&2; exit 2 ;;
   esac
@@ -61,8 +59,6 @@ env_value() {
   [[ -f "$BACKEND/.env" ]] || return 0
   grep -E "^$1=" "$BACKEND/.env" | tail -1 | cut -d= -f2- | tr -d '"' || true
 }
-[[ -z "$REMBG_MODEL" ]] && REMBG_MODEL="$(env_value REMBG_MODEL)"
-REMBG_MODEL="${REMBG_MODEL:-bria-rmbg}"
 
 OS="$(uname -s)"
 ARCH="$(uname -m)"
@@ -76,8 +72,8 @@ bold "Studio Tools — processing setup"
 echo "  Platform: $OS $ARCH"
 echo
 echo "This will:"
-$SKIP_REMBG || echo "  • create $VENV and install backend/python/rembg_service/requirements.txt"
-$SKIP_REMBG || echo "  • download the rembg model '$REMBG_MODEL' into $MODELS_HOME"
+$SKIP_IMAGE_SERVICE || echo "  • create $VENV and install backend/python/image_service/requirements-ai.txt"
+$SKIP_IMAGE_SERVICE || echo "  • download BiRefNet-Massive (≈885 MB) into $MODELS_HOME/birefnet-massive"
 $SKIP_UPSCAYL || echo "  • download upscayl-bin $UPSCAYL_BIN_TAG ($PLATFORM) from github.com/upscayl/upscayl-ncnn and verify its SHA-256"
 $SKIP_UPSCAYL || echo "  • download Upscayl models (${UPSCAYL_MODELS[*]}) from github.com/upscayl/upscayl @ ${UPSCAYL_MODELS_COMMIT:0:7}"
 $SKIP_OCR || echo "  • create $OCR_VENV, install backend/python/ocr_service/requirements.txt (PaddlePaddle + PaddleOCR, ~1 GB)"
@@ -88,7 +84,7 @@ if ! $ASSUME_YES; then
   [[ "$answer" =~ ^[Yy]$ ]] || { echo "Aborted."; exit 1; }
 fi
 
-# ---------------------------------------------------------------- rembg
+# ---------------------------------------------------------------- image service
 
 find_python() {
   if command -v uv >/dev/null 2>&1; then echo "uv"; return; fi
@@ -101,27 +97,45 @@ find_python() {
   done
 }
 
-if ! $SKIP_REMBG; then
-  echo; bold "Background removal (rembg)"
+if ! $SKIP_IMAGE_SERVICE; then
+  echo; bold "Image service + background removal (BiRefNet-Massive)"
   PY="$(find_python)"
   if [[ -z "$PY" ]]; then
-    fail "No Python between 3.11 and 3.13 found (rembg requires >=3.11,<3.14)."
+    fail "No Python between 3.11 and 3.13 found."
     echo "    Install one (e.g. 'brew install python@3.12' or 'uv python install 3.12') and re-run."
     exit 1
   fi
+  REQS="$PY_DIR/image_service/requirements-ai.txt"
+  [[ "${BACKGROUND_REMOVAL:-on}" == "off" ]] && REQS="$PY_DIR/image_service/requirements.txt"
   if [[ "$PY" == "uv" ]]; then
     [[ -x "$VENV/bin/python" ]] || uv venv -q --python 3.12 "$VENV"
-    uv pip install -q --python "$VENV/bin/python" -r "$PY_DIR/rembg_service/requirements.txt"
+    uv pip install -q --python "$VENV/bin/python" -r "$REQS"
   else
     [[ -x "$VENV/bin/python" ]] || "$PY" -m venv "$VENV"
     "$VENV/bin/python" -m pip install -q --upgrade pip
-    "$VENV/bin/python" -m pip install -q -r "$PY_DIR/rembg_service/requirements.txt"
+    "$VENV/bin/python" -m pip install -q -r "$REQS"
   fi
-  ok "Python $("$VENV/bin/python" -c 'import platform; print(platform.python_version())'), rembg $("$VENV/bin/python" -c 'import importlib.metadata as m; print(m.version("rembg"))')"
+  ok "Python $("$VENV/bin/python" -c 'import platform; print(platform.python_version())')"
 
-  echo "  Downloading model '$REMBG_MODEL' (can be large; first run only)…"
-  U2NET_HOME="$MODELS_HOME" "$VENV/bin/python" -c "from rembg import new_session; new_session('$REMBG_MODEL', providers=['CPUExecutionProvider'])" >/dev/null
-  ok "Model '$REMBG_MODEL' ready"
+  if [[ "${BACKGROUND_REMOVAL:-on}" != "off" ]]; then
+    # BiRefNet-Massive (MIT): weights + model code at reviewed, pinned revisions, in one local folder.
+    echo "  Downloading BiRefNet-Massive (≈885 MB, first run only)…"
+    BIREFNET_DIR="$MODELS_HOME/birefnet-massive" "$VENV/bin/python" - <<'PY'
+import os, shutil
+from huggingface_hub import hf_hub_download
+dst = os.environ["BIREFNET_DIR"]; os.makedirs(dst, exist_ok=True)
+pins = {
+    ("ZhengPeng7/BiRefNet-DIS5K-TR_TEs", "487f440314ea7ab8ea7d184861953a4010b55587"): ["config.json", "model.safetensors"],
+    ("ZhengPeng7/BiRefNet", "e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4"): ["birefnet.py", "BiRefNet_config.py"],
+}
+for (repo, revision), files in pins.items():
+    for name in files:
+        target = os.path.join(dst, name)
+        if not os.path.exists(target):
+            shutil.copy(hf_hub_download(repo, name, revision=revision), target)
+PY
+    ok "BiRefNet-Massive ready"
+  fi
 
   # Face detection for the photo generator: OpenCV's YuNet (MIT), from the OpenCV model zoo.
   FACE_MODEL="$MODELS_HOME/face_detection_yunet_2023mar.onnx"
@@ -170,7 +184,7 @@ if ! $SKIP_OCR; then
     fail "No Python between 3.11 and 3.13 found (needed for PaddleOCR)."
     exit 1
   fi
-  # Its own environment: PaddleOCR pins OpenCV and NumPy versions that would clash with rembg's.
+  # Its own environment: PaddleOCR pins OpenCV and NumPy versions that would clash with the image service's.
   if [[ "$OCR_PY" == "uv" ]]; then
     [[ -x "$OCR_VENV/bin/python" ]] || uv venv -q --python 3.12 "$OCR_VENV"
     uv pip install -q --python "$OCR_VENV/bin/python" -r "$PY_DIR/ocr_service/requirements.txt"
@@ -270,5 +284,5 @@ fi
 
 echo
 bold "Done."
-echo "  Start the API with 'npm run dev' in backend/ — it launches the rembg service automatically."
+echo "  Start the API with 'npm run dev' in backend/ — it launches the image service automatically."
 echo "  Check status any time with scripts/check-processing.sh"

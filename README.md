@@ -28,7 +28,7 @@ Every feature runs in one of three places:
 | Photo Editor (light, colour, filters, resize) | Canvas | — | — |
 | Crop (straighten, ratios, rotate/flip) | Canvas | — | — |
 | Image Compressor | Upload, preview | sharp | — |
-| Background Remover | Upload, preview | Queue | rembg |
+| Background Remover | Upload, preview | Queue | BiRefNet-Massive |
 | AI Upscaler (2× / 4×) | Upload, preview | `upscayl-bin` (needs a GPU) | — |
 | AI Retouch | Brush and mask | Built-in engine (sharp) | LaMa (optional, better results) |
 | Watermark Remover | Brush, found areas | Removal via retouch | Detection (OpenCV) |
@@ -54,7 +54,7 @@ Every feature runs in one of three places:
 | --- | --- | --- |
 | Frontend | TypeScript, CSS | React 19, Vite, Tailwind CSS 4, Untitled UI, React Router, Zustand, pdf.js, Tiptap |
 | Backend | TypeScript | Node.js 20.6+, Express 5, sharp, pdf-lib, Multer, Helmet |
-| AI services | Python 3.11–3.13 | FastAPI, rembg, PaddleOCR, OpenCV, PDFium, pikepdf |
+| AI services | Python 3.11–3.13 | FastAPI, PyTorch (BiRefNet-Massive), PaddleOCR, OpenCV, PDFium, pikepdf |
 
 ## Project structure
 
@@ -73,7 +73,7 @@ studio_tools/
 │   │   ├── controllers/          HTTP layer only
 │   │   ├── services/             pdf/, compression/, retouch/, ocr/, photo-generator/, …
 │   │   └── config/env.ts         every setting and its default
-│   ├── python/rembg_service/     image + PDF service (rembg, OpenCV, PDFium, pikepdf)
+│   ├── python/image_service/     image + PDF service (BiRefNet-Massive, OpenCV, PDFium, pikepdf)
 │   ├── python/ocr_service/       OCR service (PaddleOCR)
 │   └── vendor/upscayl/           upscaler binary + models (installed by setup, git-ignored)
 ├── scripts/                      setup-ml.sh, check-processing.sh

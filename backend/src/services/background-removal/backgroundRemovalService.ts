@@ -25,6 +25,8 @@ const FAILURES: Partial<Record<ErrorCode, { status: number; message: string }>> 
     INSUFFICIENT_MEMORY: { status: 503, message: "Background removal failed. Please try a smaller image." },
 };
 
+export type BackgroundRemovalMode = "fast" | "quality" | "ultra";
+
 /** One at a time by default: the model runs one image at a time anyway; this bounds the queue. */
 const limiter = new ConcurrencyLimiter(env.backgroundRemoval.concurrency, env.maxQueuedJobs);
 
@@ -37,6 +39,9 @@ export interface BackgroundRemovalStatus {
     loaded: boolean;
     /** Median time of the last few cut-outs (seconds), for the page's progress estimate. */
     typicalSeconds?: number | null;
+    typicalSecondsByMode?: Record<string, number>;
+    /** The modes this server offers (ultra only where it's stable), with their model input sizes. */
+    modes?: Record<string, number>;
 }
 
 /** Background removal by BiRefNet-Massive in the internal image service: an RGBA PNG at the original resolution. */
@@ -44,13 +49,14 @@ export const backgroundRemoval = {
     isAvailable: () => !backgroundRemovalDisabled() && imageService.connection !== null,
     stats: () => limiter.stats,
 
-    remove: (input: ImageInput, { signal }: ProcessingContext): Promise<ImageOutput> =>
+    remove: (input: ImageInput, { signal }: ProcessingContext, mode: BackgroundRemovalMode = "quality"): Promise<ImageOutput> =>
         limiter.run(async () => {
             const connection = imageService.connection;
             if (!connection || backgroundRemovalDisabled()) throw unavailable();
 
             const form = new FormData();
             form.append("file", new Blob([new Uint8Array(input.buffer)]), `upload.${input.format}`);
+            form.append("mode", mode);
             let response: Response;
             try {
                 response = await fetchBuffered(`${connection.url}/remove-background`, {
@@ -77,7 +83,7 @@ export const backgroundRemoval = {
             const buffer = Buffer.from(await response.arrayBuffer());
             const { width, height, format } = await sharp(buffer).metadata();
             if (format !== "png" || !width || !height) throw new AppError("Background removal failed. Please try again.", 502, "PROCESSING_FAILED");
-            return { buffer, mimeType: "image/png", extension: "png", width, height, timing: response.headers.get("Server-Timing") ?? undefined };
+            return { buffer, mimeType: "image/png", extension: "png", width, height, timing: response.headers.get("Server-Timing") ?? undefined, mode: response.headers.get("X-Mode") ?? undefined };
         }, signal),
 
     /** The model's state, for the page and operators (no paths). */
@@ -86,8 +92,18 @@ export const backgroundRemoval = {
         if (backgroundRemovalDisabled() || !connection) return { available: false, model: BACKGROUND_REMOVAL_MODEL, loaded: false };
         try {
             const response = await fetch(`${connection.url}/remove-background/status`, { headers: { "x-internal-token": connection.token }, signal: AbortSignal.timeout(5000) });
-            const body = (await response.json()) as BackgroundRemovalStatus & { reason?: string; disabled?: boolean; loadSeconds?: number; warmUpSeconds?: number };
-            return { available: body.available, model: BACKGROUND_REMOVAL_MODEL, device: body.device, precision: body.precision, inputSize: body.inputSize, loaded: body.loaded, typicalSeconds: body.typicalSeconds ?? null };
+            const body = (await response.json()) as BackgroundRemovalStatus;
+            return {
+                available: body.available,
+                model: BACKGROUND_REMOVAL_MODEL,
+                device: body.device,
+                precision: body.precision,
+                inputSize: body.inputSize,
+                loaded: body.loaded,
+                modes: body.modes,
+                typicalSeconds: body.typicalSeconds ?? null,
+                typicalSecondsByMode: body.typicalSecondsByMode,
+            };
         } catch {
             return { available: false, model: BACKGROUND_REMOVAL_MODEL, loaded: false };
         }

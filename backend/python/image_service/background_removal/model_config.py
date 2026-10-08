@@ -27,12 +27,27 @@ MAX_INPUT_SIZE = 1024
 
 
 @dataclass(frozen=True)
+class Mode:
+    """One processing level: how big the model's view is and how hard the edges are worked on."""
+
+    name: str  # "fast" | "quality" | "ultra"
+    input_size: int  # BiRefNet's input (longest side; aspect kept, padded square)
+    refine: bool  # edge-aware refinement in the transition band
+    refine_max_side: int  # refinement runs at most at this size
+    refine_eps: float  # guided-filter regularisation: smaller = closer to the photo's edges
+    decontaminate: float  # halo removal strength 0–1
+
+
+@dataclass(frozen=True)
 class Settings:
     model_name: str
     model_path: str
     device: str
     precision: str  # "fp16" | "fp32"
-    input_size: int  # the model sees the image at this size (longest side, aspect kept, padded square)
+    input_size: int  # QUALITY's input size (the default mode)
+    modes: dict  # name → Mode; "ultra" only where it's stable
+    edge_low: float  # alpha below: confident background
+    edge_high: float  # alpha above: confident foreground
     batch_size: int
     memory_gb: float
     max_pixels: int  # largest image accepted (the cut-out is made at full size)
@@ -40,7 +55,6 @@ class Settings:
     # Clean-up (all subtle; BiRefNet's alpha stays the source of truth).
     remove_specks: bool
     fill_holes: bool
-    decontaminate: bool
 
 
 def _int(name: str, default: int) -> int:
@@ -55,6 +69,18 @@ def _bool(name: str, default: bool) -> bool:
     return default if not value else value in ("1", "true", "yes", "on")
 
 
+def _float(name: str, default: float) -> float:
+    try:
+        return float(os.environ.get(name, "") or default)
+    except ValueError:
+        return default
+
+
+def _size(value: int) -> int:
+    value = max(MIN_INPUT_SIZE, min(MAX_INPUT_SIZE, value))
+    return value - value % 32
+
+
 def default_input_size(device: str, memory_gb: float) -> int:
     """Measured on an M2 with 8 GB (see README): 1024 on an NVIDIA GPU or a larger Mac, 768 on 8 GB Apple Silicon, 512 on the CPU."""
     if device == "cuda":
@@ -67,9 +93,16 @@ def default_input_size(device: str, memory_gb: float) -> int:
 def load_settings() -> Settings:
     device = detect_device(os.environ.get("BIREFNET_DEVICE", "auto").strip().lower() or "auto")
     memory = total_memory_gb()
-    size = _int("BIREFNET_INPUT_SIZE", default_input_size(device, memory))
-    size = max(MIN_INPUT_SIZE, min(MAX_INPUT_SIZE, size))
-    size -= size % 32
+    size = _size(_int("BIREFNET_INPUT_SIZE", default_input_size(device, memory)))
+    modes = {
+        "fast": Mode("fast", _size(_int("BIREFNET_FAST_SIZE", 640)), refine=True, refine_max_side=1024, refine_eps=1e-3, decontaminate=1.0),
+        "quality": Mode("quality", size, refine=True, refine_max_side=_int("REFINE_MAX_SIDE", 2048), refine_eps=_float("REFINE_EPS", 1e-4), decontaminate=_float("DECONTAMINATE_STRENGTH", 1.0)),
+    }
+    # ULTRA (1024) on a GPU: measured stable on an 8 GB M2 (fp16: 1.4 GB GPU, 1.2 GB RAM, ≈3.5 s). Not on the
+    # CPU, where it's far too slow. BIREFNET_ULTRA=on/off overrides.
+    ultra = os.environ.get("BIREFNET_ULTRA", "auto").strip().lower()
+    if ultra in ("on", "true", "1") or (ultra == "auto" and device != "cpu"):
+        modes["ultra"] = Mode("ultra", 1024, refine=True, refine_max_side=_int("REFINE_MAX_SIDE_ULTRA", 2560), refine_eps=_float("REFINE_EPS", 1e-4), decontaminate=_float("DECONTAMINATE_STRENGTH", 1.0))
     # Half precision on a GPU: same masks (checked), half the memory, several times faster on Apple Silicon.
     precision = os.environ.get("BIREFNET_PRECISION", "").strip().lower()
     if precision not in ("fp16", "fp32"):
@@ -80,11 +113,13 @@ def load_settings() -> Settings:
         device=device,
         precision=precision,
         input_size=size,
+        modes=modes,
+        edge_low=_float("EDGE_LOW_THRESHOLD", 0.05),
+        edge_high=_float("EDGE_HIGH_THRESHOLD", 0.95),
         batch_size=max(1, _int("BIREFNET_BATCH_SIZE", 1)),
         memory_gb=round(memory, 1),
         max_pixels=_int("MAX_IMAGE_PIXELS", 40_000_000),
         warm_up=_bool("BIREFNET_WARMUP", True),
         remove_specks=_bool("MASK_REMOVE_SPECKS", True),
         fill_holes=_bool("MASK_FILL_HOLES", True),
-        decontaminate=_bool("MASK_DECONTAMINATE", True),
     )

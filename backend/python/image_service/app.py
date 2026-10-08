@@ -168,8 +168,11 @@ async def remove_background_status(x_internal_token: str | None = Header(default
 
 
 @app.post("/remove-background")
-async def remove_background(file: UploadFile = File(...), x_internal_token: str | None = Header(default=None)):
-    """The subject on transparency (RGBA PNG at the original resolution), by BiRefNet-Massive."""
+async def remove_background(file: UploadFile = File(...), mode: str = Form("quality"), x_internal_token: str | None = Header(default=None)):
+    """
+    The subject on transparency (RGBA PNG at the original resolution), by BiRefNet-Massive. `mode`: fast,
+    quality (default) or ultra — an unknown or unavailable one (ultra on a small machine) means quality.
+    """
     from background_removal.image_preprocessor import ImageTooLarge, InvalidImage, open_image
 
     if not authorised(x_internal_token):
@@ -189,7 +192,7 @@ async def remove_background(file: UploadFile = File(...), x_internal_token: str 
         return error(422, "INVALID_IMAGE", "The file could not be read as an image.")
 
     try:
-        result = await run_in_threadpool(remover.remove, image)
+        result = await run_in_threadpool(remover.remove, image, mode)
     except MemoryError:
         log.exception("out of memory")
         return error(503, "INSUFFICIENT_MEMORY", "The server ran out of memory.")
@@ -210,6 +213,7 @@ async def remove_background(file: UploadFile = File(...), x_internal_token: str 
             "X-Image-Width": str(result.width),
             "X-Image-Height": str(result.height),
             "X-Model": "BiRefNet-Massive",
+            "X-Mode": result.mode,
             "Server-Timing": ", ".join(f"{name};dur={value:.0f}" for name, value in result.timings.items()),
         },
     )

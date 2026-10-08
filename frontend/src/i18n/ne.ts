@@ -729,6 +729,8 @@ export const ne: Dictionary = {
         refining: "किनारा मिलाउँदै",
         finishing: "अन्तिम रूप दिँदै",
         notice: "AI ले पृष्ठभूमि हटाउँदैछ…",
+        modeLabel: "गुणस्तर",
+        modes: { fast: "छिटो", quality: "गुणस्तर", ultra: "अल्ट्रा" },
     },
 
     bgEditor: {

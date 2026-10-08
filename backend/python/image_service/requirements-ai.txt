@@ -10,3 +10,11 @@ safetensors==0.8.0
 timm==1.0.30
 kornia==0.8.3
 einops==0.8.2
+# Face mesh for head alignment (passport/MRP): MediaPipe Face Landmarker (Apache-2.0). mediapipe itself is
+# installed with --no-deps by scripts/setup-ml.sh — its declared opencv-contrib-python would overwrite the
+# opencv-python-headless above. These are what it actually imports:
+absl-py==2.5.0
+flatbuffers==25.12.19
+certifi
+matplotlib==3.11.2
+sounddevice==0.5.6

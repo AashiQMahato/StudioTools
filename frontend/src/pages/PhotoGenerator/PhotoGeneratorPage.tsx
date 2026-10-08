@@ -6,6 +6,7 @@ import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { Button } from "@/components/ui/base/buttons/button";
 import { baseName, formatBytes, formatDimensions } from "@/features/image-processing/format";
+import { AlignmentControl } from "@/features/photo-generator/AlignmentControl";
 import { CropAdjuster } from "@/features/photo-generator/CropAdjuster";
 import { photoError, presetName, sizeSlug } from "@/features/photo-generator/labels";
 import { OutputSpecs, PresetSelector } from "@/features/photo-generator/PresetSelector";
@@ -174,6 +175,7 @@ function PhotoStudio({ image, presets, presetsFailed, presetId, onPresetChange }
                                 disabled={running}
                             />
                         ) : null}
+                        {result && !stale && result.alignment && <AlignmentControl result={result} onRotated={job.applyRotation} />}
                         {result && !stale ? <QualityPanel result={result} /> : preset && <OutputSpecs preset={preset} />}
                         {!image && <PanelIntro title={t.studio.howItWorks} steps={t.studio.intros.photoGenerator.steps} />}
                     </>

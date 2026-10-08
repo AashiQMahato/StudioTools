@@ -104,6 +104,9 @@ export function ProcessingView({ steps, previews, crop, warnings, startedAt, con
     );
 }
 
+/** "6.8", "−3.2" — degrees as people read them. */
+export const formatAngle = (degrees: number) => `${degrees < 0 ? "−" : ""}${Math.abs(degrees).toFixed(1)}`;
+
 function StepRow({ step, state, convertedFrom }: { step: StepId; state: StepState; convertedFrom?: string }) {
     const t = useT();
     const labels = t.photo.steps;
@@ -116,6 +119,9 @@ function StepRow({ step, state, convertedFrom }: { step: StepId; state: StepStat
             }
             case "orientation":
                 return status === "done" ? (detail?.corrected ? labels.orientation.corrected : labels.orientation.done) : labels.orientation.active;
+            case "align":
+                if (status === "skipped") return labels.align.skipped;
+                return status === "done" ? `${labels.align.done} · ${labels.align.angle(formatAngle(detail?.angle ?? 0))}` : labels.align.active;
             case "resolution":
                 if (status === "skipped") return labels.resolution.sharp;
                 if (status === "done") return detail?.upscaled === "resample" ? labels.resolution.enlarged : labels.resolution.enhanced;

@@ -3,7 +3,7 @@ import { ApiError } from "@/lib/api/apiClient";
 import { type GeneratedPhoto, type ProgressEvent, processPhoto, type Rect, type RenderedPhoto, type StepId, type WarningCode } from "@/lib/api/photoGeneratorApi";
 import type { AppErrorInfo } from "@/i18n";
 
-export const STEPS: readonly StepId[] = ["format", "orientation", "face", "background", "white", "composition", "resolution", "finalize"];
+export const STEPS: readonly StepId[] = ["format", "orientation", "face", "background", "align", "white", "composition", "resolution", "finalize"];
 
 export type StepStatus = "pending" | "active" | "done" | "skipped";
 
@@ -40,6 +40,7 @@ type Action =
     | { type: "fail"; error: AppErrorInfo }
     | { type: "rendered"; photo: RenderedPhoto & { crop: Rect } }
     | { type: "restore"; result: GeneratedPhoto }
+    | { type: "rotated"; photo: Omit<GeneratedPhoto, "source"> }
     | { type: "reset" };
 
 function reducer(state: State, action: Action): State {
@@ -62,6 +63,9 @@ function reducer(state: State, action: Action): State {
             const { crop, ...photo } = action.photo;
             return { ...state, result: { ...state.result, ...photo, work: { ...state.result.work, crop } } };
         }
+        case "rotated":
+            // The same photo, turned by hand: everything about it is new except where it came from.
+            return state.result ? { ...state, result: { ...state.result, ...action.photo }, warnings: action.photo.warnings } : state;
         case "restore":
             // A saved photo only fills an empty page — never one already working or showing a result.
             return state.status === "idle" ? { ...initial, status: "done", result: action.result, warnings: action.result.warnings } : state;
@@ -103,6 +107,7 @@ export function usePhotoJob() {
 
     const applyRender = useCallback((photo: RenderedPhoto & { crop: Rect }) => dispatch({ type: "rendered", photo }), []);
     const restore = useCallback((result: GeneratedPhoto) => dispatch({ type: "restore", result }), []);
+    const applyRotation = useCallback((photo: Omit<GeneratedPhoto, "source">) => dispatch({ type: "rotated", photo }), []);
 
-    return { ...state, run, cancel, reset: cancel, applyRender, restore };
+    return { ...state, run, cancel, reset: cancel, applyRender, restore, applyRotation };
 }

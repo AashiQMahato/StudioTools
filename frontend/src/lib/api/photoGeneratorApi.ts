@@ -28,7 +28,7 @@ export interface Rect {
     height: number;
 }
 
-export type StepId = "format" | "orientation" | "face" | "background" | "white" | "composition" | "resolution" | "finalize";
+export type StepId = "format" | "orientation" | "face" | "background" | "align" | "white" | "composition" | "resolution" | "finalize";
 export type WarningCode = "LOW_RESOLUTION" | "BLURRY" | "TOO_DARK" | "TOO_BRIGHT" | "HEAD_TILTED" | "NOT_FACING" | "SMALL_FACE" | "HEAD_AT_EDGE";
 export type CheckId = "aspectRatio" | "dimensions" | "dpi" | "whiteBackground" | "faceDetected" | "headVisible" | "headSize" | "centered" | "notStretched";
 
@@ -64,10 +64,24 @@ export interface GeneratedPhoto extends RenderedPhoto {
     work: { id: string; url: string; width: number; height: number; crop: Rect; autoCrop: Rect; head: HeadMarks };
     warnings: WarningCode[];
     source: { format: string; converted: boolean; orientationCorrected: boolean; width: number; height: number; upscaled: "ai" | "resample" | null };
+    alignment: PhotoAlignment;
+}
+
+/** How the head was straightened (roll only — the whole photo turned, nothing warped). */
+export interface PhotoAlignment {
+    /** Kept by the server for a while: turning by hand starts again from it. */
+    sourceId: string;
+    /** Degrees the photo was turned (positive = clockwise). */
+    angle: number;
+    /** The automatic choice. */
+    autoAngle: number;
+    /** The eye line's angle afterwards (≈ 0). */
+    residual: number;
+    maxAngle: number;
 }
 
 export type ProgressEvent =
-    | { type: "step"; step: StepId; status: "active" | "done" | "skipped"; detail?: { format?: string; converted?: boolean; corrected?: boolean; upscaling?: boolean; upscaled?: "ai" | "resample" | null } }
+    | { type: "step"; step: StepId; status: "active" | "done" | "skipped"; detail?: { format?: string; converted?: boolean; corrected?: boolean; upscaling?: boolean; upscaled?: "ai" | "resample" | null; angle?: number } }
     | { type: "preview"; stage: "original" | "cutout" | "white"; url: string; width: number; height: number }
     | { type: "crop"; rect: Rect }
     | { type: "warning"; code: WarningCode };
@@ -91,6 +105,9 @@ export function processPhoto(image: File, preset: string, onEvent: (event: Progr
     form.append("file", image, image.name || "photo.jpg");
     return postNdjson<GeneratedPhoto, ProgressEvent>("/photo-generator/process", form, onEvent, { signal, timeoutMs: TIMEOUT_MS });
 }
+
+/** The photo made again with the head turned by `angle` degrees (fine-tuning the automatic straightening). */
+export const rotatePhoto = (sourceId: string, angle: number) => apiClient.post<Omit<GeneratedPhoto, "source">>("/photo-generator/rotate", { sourceId, angle });
 
 export const adjustPhotoCrop = (workId: string, crop: Rect) => apiClient.post<RenderedPhoto & { crop: Rect }>("/photo-generator/adjust", { workId, crop: { ...crop } });
 

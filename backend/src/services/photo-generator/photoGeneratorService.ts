@@ -3,9 +3,10 @@ import { env } from "../../config/env.js";
 import type { ProcessingContext } from "../../types/image.js";
 import { AppError } from "../../utils/AppError.js";
 import { ConcurrencyLimiter } from "../../utils/concurrency.js";
-import { createWhiteBackground, removeBackground } from "./backgroundRemovalService.js";
+import { type AlignedCutout, checkRoll, detectFacesTolerant, measureRoll, RESIDUAL_TOLERANCE_DEG, rotateCutout, rotateFace } from "./alignmentService.js";
+import { createWhiteBackground, type Cutout, removeBackground } from "./backgroundRemovalService.js";
 import { analyzeHead, calculateCrop, cropImage, fromRaw, type HeadGeometry, transformRect } from "./cropService.js";
-import { detectFaces, type Rect } from "./faceDetectionService.js";
+import { type DetectedFace, detectFaces, type Rect } from "./faceDetectionService.js";
 import { convertImage, detectFormat, normalizeImage, type SourceFormat } from "./formatConversionService.js";
 import { describePreset, mmToPixels, outputSize, PAPER, PHOTO_PRESETS, type PhotoPreset, sizeLabel } from "./presets.js";
 import { inspectFaces, inspectPose, type QualityReport, validateOutput, type WarningCode } from "./qualityService.js";
@@ -14,7 +15,7 @@ import { fileUrl, tempStore } from "./tempStore.js";
 
 // ------------------------------------------------------------------ progress events
 
-export type StepId = "format" | "orientation" | "face" | "background" | "white" | "composition" | "resolution" | "finalize";
+export type StepId = "format" | "orientation" | "face" | "background" | "align" | "white" | "composition" | "resolution" | "finalize";
 
 export type ProgressEvent =
     | { type: "step"; step: StepId; status: "active" | "done" | "skipped"; detail?: Record<string, unknown> }
@@ -43,6 +44,28 @@ interface PhotoMeta {
     presetId: string;
 }
 
+/** The person cut out of the upright, unturned photo — kept so a hand-set angle is one turn from it, not a second. */
+interface SourceMeta {
+    presetId: string;
+    face: DetectedFace;
+    width: number;
+    height: number;
+    autoAngle: number;
+    baseName: string;
+}
+
+export interface Alignment {
+    /** Kept by the server for a while: turning by hand starts again from this. */
+    sourceId: string;
+    /** Degrees the photo was turned (positive = clockwise on screen). */
+    angle: number;
+    /** What the automatic straightening chose. */
+    autoAngle: number;
+    /** The eye line's angle after turning (≈ 0 when straightened). */
+    residual: number;
+    maxAngle: number;
+}
+
 export interface RenderedPhoto {
     imageUrl: string;
     pngUrl: string;
@@ -62,6 +85,7 @@ export interface GeneratedPhoto extends RenderedPhoto {
     work: { id: string; url: string; width: number; height: number; crop: Rect; autoCrop: Rect; head: HeadMarks };
     warnings: WarningCode[];
     source: { format: SourceFormat; converted: boolean; orientationCorrected: boolean; width: number; height: number; upscaled: UpscaleMethod | null };
+    alignment: Alignment;
 }
 
 // ------------------------------------------------------------------ helpers
@@ -133,11 +157,11 @@ async function renderPhoto(working: Buffer, meta: WorkMeta, crop: Rect): Promise
  */
 async function generate(upload: Buffer, fileName: string, presetId: unknown, emit: Emit, context: ProcessingContext): Promise<GeneratedPhoto> {
     const preset = getPreset(presetId);
-    const target = outputSize(preset);
     const { signal } = context;
     const warnings: WarningCode[] = [];
     const warn = (codes: WarningCode[]) => {
         for (const code of codes) {
+            if (warnings.includes(code)) continue;
             warnings.push(code);
             emit({ type: "warning", code });
         }
@@ -155,32 +179,107 @@ async function generate(upload: Buffer, fileName: string, presetId: unknown, emi
     emit({ type: "step", step: "orientation", status: "done", detail: { corrected: photo.orientationCorrected } });
     emit({ type: "preview", stage: "original", ...(await storePreview(sharp(photo.buffer), "jpeg", "original")) });
 
-    // 5–6. Exactly one person, and how good the photo of them is.
+    // 5–6. One person (the dominant face), how good the photo of them is, and how tilted their head is.
     emit({ type: "step", step: "face", status: "active" });
-    const { face, warnings: faceWarnings } = inspectFaces((await detectFaces(photo.buffer, signal)).faces);
+    const found = await detectFacesTolerant(photo.buffer, photo.width, photo.height, async (image) => (await detectFaces(image, signal)).faces);
+    const { face, warnings: faceWarnings } = inspectFaces(found);
     warn(faceWarnings);
+    const roll = measureRoll(face);
+    checkRoll(roll);
     emit({ type: "step", step: "face", status: "done" });
 
-    // 7–8. The person, then the person on white.
+    // 7. The person, from the photo as it is (BiRefNet sees the real pixels, not a turned copy).
     emit({ type: "step", step: "background", status: "active" });
     const cutout = await removeBackground(photo, context);
-    emit({ type: "preview", stage: "cutout", ...(await storePreview(sharp(cutout.png), "png", "cutout")) });
     emit({ type: "step", step: "background", status: "done" });
+    const sourceId = tempStore.put(cutout.png, "image/png", "source.png", { presetId: preset.id, face, width: photo.width, height: photo.height, autoAngle: -roll, baseName: safeName(fileName) } satisfies SourceMeta);
+
+    // 8. Level the eyes: the whole cut-out turned once, then checked on the result.
+    emit({ type: "step", step: "align", status: "active" });
+    const aligned = await alignAutomatically(cutout, face, -roll, signal);
+    emit({ type: "step", step: "align", status: aligned.angle === 0 ? "skipped" : "done", detail: { angle: round1(aligned.angle) } });
+
+    const { upscaled, ...composed } = await composePhoto(aligned, preset, safeName(fileName), emit, warn, context);
+    return {
+        ...composed,
+        warnings,
+        source: { format, converted: conversion.converted, orientationCorrected: photo.orientationCorrected, width: photo.width, height: photo.height, upscaled },
+        alignment: { sourceId, angle: round1(aligned.angle), autoAngle: round1(aligned.angle), residual: round1(aligned.residual), maxAngle: env.photoGenerator.maxAutoRotationDeg },
+    };
+}
+
+const round1 = (value: number) => Math.round(value * 10) / 10;
+
+interface Aligned extends AlignedCutout {
+    face: DetectedFace;
+    angle: number;
+    residual: number;
+}
+
+/** The cut-out flattened on white, as a JPEG for the face detector. */
+const forDetection = (png: Buffer) => sharp(png).flatten({ background: "#ffffff" }).jpeg({ quality: 92 }).toBuffer();
+
+/** Of the faces found in a turned photo, the one where the original face went. */
+function sameFace(faces: DetectedFace[], expected: DetectedFace): DetectedFace | null {
+    const centre = (f: DetectedFace) => ({ x: f.box.x + f.box.width / 2, y: f.box.y + f.box.height / 2 });
+    const want = centre(expected);
+    const near = faces.filter((f) => Math.hypot(centre(f).x - want.x, centre(f).y - want.y) < expected.box.width * 0.5);
+    return near[0] ?? null;
+}
+
+/**
+ * Turns the cut-out so the eye line is level, and checks it on the result: the face is found again in the
+ * turned photo and its eye line measured. If it's still off by more than the tolerance, the original
+ * cut-out is turned once more by the corrected total — still a single resample, never a turn of a turn.
+ */
+async function alignAutomatically(cutout: Cutout, face: DetectedFace, angle: number, signal: AbortSignal): Promise<Aligned> {
+    let total = angle;
+    for (let attempt = 0; attempt < 2; attempt++) {
+        const turned = await rotateCutout(cutout, total);
+        if (!turned.rotation) return { ...turned, face, angle: 0, residual: measureRoll(face) };
+        const expected = rotateFace(face, turned.rotation);
+        const found = sameFace((await detectFaces(await forDetection(turned.png), signal)).faces, expected);
+        // The detector's own box is tighter than the turned corners of the old one; the landmarks agree either way.
+        const measured = found ?? expected;
+        const residual = measureRoll(measured);
+        if (Math.abs(residual) <= RESIDUAL_TOLERANCE_DEG || attempt === 1) return { ...turned, face: measured, angle: total, residual };
+        total -= residual;
+        // The detector reads large tilts short; the measured remainder shows the real one — check it again.
+        checkRoll(total);
+    }
+    throw new Error("unreachable");
+}
+
+/** A hand-set angle, from the kept cut-out of the unturned photo: one turn, no second background removal. */
+async function alignManually(source: { buffer: Buffer }, meta: SourceMeta, angle: number): Promise<Aligned> {
+    const alpha = await sharp(source.buffer).ensureAlpha().extractChannel(3).raw().toBuffer();
+    const turned = await rotateCutout({ png: source.buffer, alpha, width: meta.width, height: meta.height }, angle);
+    const face = turned.rotation ? rotateFace(meta.face, turned.rotation) : meta.face;
+    return { ...turned, face, angle: turned.rotation ? angle : 0, residual: measureRoll(face) };
+}
+
+/**
+ * From the straightened cut-out to the finished photo: previews, the composition around the head, enough
+ * resolution, exact size and checks. Shared by the automatic run and a hand-set angle.
+ */
+async function composePhoto(aligned: Aligned, preset: PhotoPreset, baseName: string, emit: Emit, warn: (codes: WarningCode[]) => void, context: ProcessingContext) {
+    const target = outputSize(preset);
+    const image = { width: aligned.width, height: aligned.height };
+    emit({ type: "preview", stage: "cutout", ...(await storePreview(sharp(aligned.png), "png", "cutout")) });
 
     emit({ type: "step", step: "white", status: "active" });
-    emit({ type: "preview", stage: "white", ...(await storePreview(createWhiteBackground(sharp(cutout.png), preset.background), "jpeg", "white")) });
+    emit({ type: "preview", stage: "white", ...(await storePreview(createWhiteBackground(sharp(aligned.png), preset.background), "jpeg", "white")) });
     emit({ type: "step", step: "white", status: "done" });
 
-    // 9–11. Where the head is, and the composition around it.
+    // 9–11. Where the head is (in the straightened photo), and the composition around it.
     emit({ type: "step", step: "composition", status: "active" });
-    const head = analyzeHead(face, cutout.alpha, photo.width, photo.height);
+    const head = analyzeHead(aligned.face, aligned.alpha, image.width, image.height);
     warn(inspectPose(head));
     const crop = calculateCrop(head, preset);
-    emit({ type: "crop", rect: { x: crop.x / photo.width, y: crop.y / photo.height, width: crop.width / photo.width, height: crop.height / photo.height } });
-    const region = workingRegion(crop, photo.width, photo.height);
-    const regionCutout = await cropImage(cutout.png, photo, region, CLEAR);
+    emit({ type: "crop", rect: { x: crop.x / image.width, y: crop.y / image.height, width: crop.width / image.width, height: crop.height / image.height } });
+    const region = workingRegion(crop, image.width, image.height);
+    const regionCutout = await cropImage(aligned.png, image, region, CLEAR);
     emit({ type: "step", step: "composition", status: "done" });
-
     // 12–13. Enough pixels for the output? Only if not, double them.
     emit({ type: "step", step: "resolution", status: "active" });
     const resolution = checkResolution(crop.height, target.height);
@@ -226,7 +325,7 @@ async function generate(upload: Buffer, fileName: string, presetId: unknown, emi
         autoCrop: transformRect(crop, region, scale),
         width: workWidth ?? 0,
         height: workHeight ?? 0,
-        baseName: safeName(fileName),
+        baseName,
     };
     const rendered = await renderPhoto(working, meta, meta.autoCrop);
     const workId = tempStore.put(working, "image/jpeg", "working.jpg", meta);
@@ -236,8 +335,29 @@ async function generate(upload: Buffer, fileName: string, presetId: unknown, emi
         ...rendered,
         preset: describePreset(preset),
         work: { id: workId, url: fileUrl(workId), width: meta.width, height: meta.height, crop: meta.autoCrop, autoCrop: meta.autoCrop, head: meta.head },
+        upscaled,
+    };
+}
+
+/**
+ * A hand-set angle (fine-tuning the automatic one): the kept cut-out turned once by it, then composed
+ * exactly as the automatic photo was. No second background removal.
+ */
+async function rotatePhoto(sourceId: unknown, angle: unknown, context: ProcessingContext): Promise<Omit<GeneratedPhoto, "source">> {
+    const source = typeof sourceId === "string" ? tempStore.get(sourceId) : null;
+    const meta = source?.meta as SourceMeta | undefined;
+    if (!source || !meta?.presetId) throw new AppError("This photo has expired. Please create it again.", 404, "FILE_EXPIRED");
+    const max = env.photoGenerator.maxAutoRotationDeg;
+    const degrees = Number(angle);
+    if (!Number.isFinite(degrees) || Math.abs(degrees) > max) throw new AppError(`Choose an angle between −${max}° and ${max}°.`, 400, "INVALID_REQUEST");
+    const preset = getPreset(meta.presetId);
+    const warnings: WarningCode[] = [];
+    const aligned = await alignManually(source, meta, degrees);
+    const { upscaled: _upscaled, ...composed } = await composePhoto(aligned, preset, meta.baseName, () => undefined, (codes) => warnings.push(...codes.filter((code) => !warnings.includes(code))), context);
+    return {
+        ...composed,
         warnings,
-        source: { format, converted: conversion.converted, orientationCorrected: photo.orientationCorrected, width: photo.width, height: photo.height, upscaled },
+        alignment: { sourceId: sourceId as string, angle: round1(aligned.angle), autoAngle: round1(meta.autoAngle), residual: round1(aligned.residual), maxAngle: max },
     };
 }
 
@@ -317,6 +437,7 @@ export const photoGenerator = {
     presets: () => Object.values(PHOTO_PRESETS).map((preset) => ({ ...describePreset(preset), sheet: { paper: sheetLayout(preset).paper.name, maxCopies: sheetLayout(preset).maxCopies } })),
     generate: (upload: Buffer, fileName: string, presetId: unknown, emit: Emit, context: ProcessingContext) => limiter.run(() => generate(upload, fileName, presetId, emit, context), context.signal),
     adjustCrop,
+    rotate: (sourceId: unknown, angle: unknown, context: ProcessingContext) => limiter.run(() => rotatePhoto(sourceId, angle, context), context.signal),
     createSheet,
     file: (id: string) => tempStore.get(id),
 };

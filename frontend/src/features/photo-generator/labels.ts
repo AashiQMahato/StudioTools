@@ -10,7 +10,7 @@ export const sizeSlug = ({ width, height, unit }: PhysicalSize) => `${width}x${h
 export const presetName = (t: Dictionary, preset: Pick<PhotoPreset, "id" | "name">) => t.photo.presetFullNames[preset.id] ?? preset.name;
 
 /** Codes whose own sentence says it best; everything else gets the one calm, general message. */
-const EXPLAINED = new Set(["NO_FACE", "MULTIPLE_FACES", "UNSUPPORTED_MEDIA_TYPE", "INVALID_IMAGE", "FILE_TOO_LARGE", "IMAGE_TOO_LARGE", "CONVERSION_FAILED", "RATE_LIMITED", "SERVER_BUSY", "NETWORK", "PROCESSING_TIMEOUT", "BACKGROUND_REMOVAL_UNAVAILABLE", "FACE_DETECTION_UNAVAILABLE", "FILE_EXPIRED", "INVALID_CROP"]);
+const EXPLAINED = new Set(["NO_FACE", "MULTIPLE_FACES", "UNSUPPORTED_MEDIA_TYPE", "INVALID_IMAGE", "FILE_TOO_LARGE", "IMAGE_TOO_LARGE", "CONVERSION_FAILED", "RATE_LIMITED", "SERVER_BUSY", "NETWORK", "PROCESSING_TIMEOUT", "BACKGROUND_REMOVAL_UNAVAILABLE", "FACE_DETECTION_UNAVAILABLE", "FILE_EXPIRED", "INVALID_CROP", "FACE_ANGLE_TOO_STEEP"]);
 
 /** Never the server's raw wording: a known situation in the user's language, or the general message. */
 export function photoError(t: Dictionary, error: AppErrorInfo | null | undefined): string {

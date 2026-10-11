@@ -19,6 +19,9 @@ export type ErrorCode =
     | "INVALID_MASK"
     | "EMPTY_MASK"
     | "RETOUCH_UNAVAILABLE"
+    | "OBJECT_REMOVAL_UNAVAILABLE"
+    | "RESTORATION_UNAVAILABLE"
+    | "INVALID_OPERATIONS"
     | "INVALID_REQUEST"
     | "INVALID_PRESET"
     | "INVALID_CROP"
@@ -40,7 +43,12 @@ export type ErrorCode =
     | "JOB_EXPIRED"
     | "WRONG_PASSWORD"
     | "INSUFFICIENT_MEMORY"
-    | "FACE_ANGLE_TOO_STEEP";
+    | "FACE_ANGLE_TOO_STEEP"
+    | "TRANSLATION_NOT_CONFIGURED"
+    | "TRANSLATION_FAILED"
+    | "TRANSLATION_TIMEOUT"
+    | "TEXT_TOO_LONG"
+    | "INVALID_LANGUAGE";
 
 /** An error whose message is safe to show to users. Internal details belong in logs, never here. */
 export class AppError extends Error {

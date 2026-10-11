@@ -4,9 +4,11 @@ import { compressHandler } from "../controllers/compressionController.js";
 import { annotateHandler, protectHandler, toWordHandler, unlockHandler, compressHandler as compressPdfHandler, deleteJobHandler, fromImagesHandler, pageNumbersHandler, toTextHandler, watermarkHandler, getJobHandler, jobArchiveHandler, jobFileHandler, mergeHandler, organizeHandler, splitHandler, toImagesHandler } from "../controllers/documentController.js";
 import { getHealth, getProcessorHealth } from "../controllers/healthController.js";
 import { ocrHandler } from "../controllers/ocrController.js";
+import { translateHandler, translateStatusHandler } from "../controllers/translationController.js";
 import { adjustCropHandler, convertHandler, fileHandler, presetsHandler, processHandler, rotateHandler, sheetHandler } from "../controllers/photoGeneratorController.js";
 import { upscaleHandler } from "../controllers/upscaleController.js";
-import { retouchHandler } from "../controllers/retouchController.js";
+import { removeObjectHandler, retouchHandler } from "../controllers/retouchController.js";
+import { restoreCapabilitiesHandler, restoreHandler } from "../controllers/restorationController.js";
 import { detectWatermarkHandler, removeWatermarkHandler } from "../controllers/watermarkController.js";
 import { processingRateLimiter } from "../middleware/rateLimiter.js";
 import { documentUpload } from "../middleware/documentUpload.js";
@@ -20,6 +22,9 @@ apiRouter.post("/remove-background", processingRateLimiter, uploadImage, removeB
 apiRouter.get("/remove-bg/status", removeBackgroundStatusHandler);
 apiRouter.post("/upscale", processingRateLimiter, uploadImage, upscaleHandler);
 apiRouter.post("/retouch", processingRateLimiter, uploadRetouch, retouchHandler);
+apiRouter.post("/remove-object", processingRateLimiter, uploadRetouch, removeObjectHandler);
+apiRouter.get("/restore/capabilities", restoreCapabilitiesHandler);
+apiRouter.post("/restore", processingRateLimiter, uploadImage, restoreHandler);
 apiRouter.post("/convert", processingRateLimiter, uploadPhoto, convertHandler);
 
 apiRouter.get("/photo-generator/presets", presetsHandler);
@@ -33,6 +38,8 @@ apiRouter.post("/compress", processingRateLimiter, uploadImage, compressHandler)
 apiRouter.post("/watermark/detect", processingRateLimiter, uploadImage, detectWatermarkHandler);
 apiRouter.post("/watermark/remove", processingRateLimiter, uploadRetouch, removeWatermarkHandler);
 apiRouter.post("/ocr", processingRateLimiter, uploadPhoto, ocrHandler);
+apiRouter.get("/translate/status", translateStatusHandler);
+apiRouter.post("/translate", processingRateLimiter, translateHandler);
 
 // Document tools: each request starts a job (202) that the client follows at /jobs/:id.
 apiRouter.post("/pdf/merge", processingRateLimiter, documentUpload("pdf", { min: 2 }), mergeHandler);

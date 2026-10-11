@@ -176,3 +176,17 @@ PDF tools start a job (`202`) that the browser follows at `/jobs/:id`. Results a
 ## Licences
 
 Licences of the processing engines and models: [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).
+
+## Newer tools: object remover, photo restoration, image translator, social resizer, document scanner
+
+| Tool | Route | Runs where | Needs |
+|---|---|---|---|
+| Object Remover | `/object-remover` | AI server (`POST /api/remove-object`) | LaMa ONNX (`scripts/setup-ml.sh`) or an IOPaint server (`RETOUCH_SERVICE_URL`). No classical fallback: without AI it says so (`OBJECT_REMOVAL_UNAVAILABLE`). |
+| Photo Restoration | `/photo-restoration` | AI server (`GET /api/restore/capabilities`, `POST /api/restore`) | Denoise and fade: OpenCV (always). Scratches: LaMa or OpenCV Telea. Colorize: ECCV16 ONNX. Faces: GFPGAN 1.4 ONNX + YuNet. Enlarge: Upscayl. Each step is reported as available or not, independently. |
+| Image Translator | `/image-translator` | Main API (`/api/ocr`, `/api/translate`) | OCR works as today. Translation needs `TRANSLATION_PROVIDER=libretranslate` (`LIBRETRANSLATE_URL`, optional key) or `google` (`GOOGLE_TRANSLATE_API_KEY`). Keys stay on the server. |
+| Social Media Resizer | `/social-media-resizer` | Browser only | Nothing. Presets live in `frontend/src/features/social-resizer/presets.ts` (sources and verification date at the top). |
+| Document Scanner | `/document-scanner` | Browser only | Nothing. Edge detection, perspective correction, clean-up and PDF export run on the device. The camera needs HTTPS. |
+
+**Models and licences**: LaMa (Apache-2.0); GFPGAN v1.4 (Apache-2.0, ONNX conversion from `huggingface.co/Neus/GFPGANv1.4`); ECCV16 *Colorful Image Colorization* (BSD-2-Clause), exported to ONNX from the official weights by `backend/python/scripts/export_colorization_onnx.py` (needs PyTorch); Real-ESRGAN via Upscayl (see `THIRD_PARTY_NOTICES.md`). Weights are downloaded by `scripts/setup-ml.sh` into `backend/python/.models/` (git-ignored, checksums verified).
+
+**Deployment**: the free Render service (`deploy/render/Dockerfile`, 512 MB, no GPU) doesn't ship these models. With `VITE_AI_API_BASE_URL` pointing at the AI server (`npm run ai-server`), Object Remover and Photo Restoration run there. Without it, Object Remover reports that AI inpainting isn't available, and Photo Restoration offers only its OpenCV steps. The resizer and the scanner need no server.

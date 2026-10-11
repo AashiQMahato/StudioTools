@@ -65,6 +65,16 @@ export const getProcessorHealth: RequestHandler = async (_req, res) => {
                 provider: ocrProvider?.name ?? null,
                 status: ocrProcess.state.status,
             },
+            objectRemoval: {
+                available: retouching.aiInpainter() !== null,
+                engine: (() => {
+                    const engine = retouching.aiInpainter();
+                    return engine ? retouching.providerName("remove", engine) : null;
+                })(),
+                // No model installed and no IOPaint server: off on this server, not merely starting up.
+                disabled: !env.retouch.serviceUrl && !existsSync(env.retouch.lamaModelPath),
+                message: retouching.aiInpainter() ? null : "AI object removal isn't available on this server.",
+            },
             retouch: {
                 available: retouching.isAvailable(),
                 engines: retouching.engines(),

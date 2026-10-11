@@ -30,6 +30,8 @@ const service = new PythonService({
         FACE_DETECTOR_MODEL: env.photoGenerator.faceModelPath,
         TEXT_DETECTOR_MODEL: env.watermark.textModelPath,
         INPAINT_MODEL: env.retouch.lamaModelPath,
+        COLORIZATION_MODEL: env.restoration.colorizationModelPath,
+        FACE_RESTORE_MODEL: env.restoration.faceRestoreModelPath,
         MAX_IMAGE_SIZE_MB: String(env.maxImageSizeMb),
         MAX_IMAGE_PIXELS: String(env.maxImagePixels),
         DOCUMENTS_TEMP_DIR: env.documents.tempDir,

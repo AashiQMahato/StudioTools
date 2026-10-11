@@ -5,8 +5,8 @@ import { type AppRoute, ROUTES } from "./routes";
  * exists: Resize has no page of its own, so it opens the editor (where the resize panel lives), and
  * Rotate & Flip opens the crop tool, whose controls rotate, flip and straighten.
  */
-export type ToolKey = "removeBackground" | "upscaler" | "retouch" | "photoGenerator" | "watermarkRemover" | "compressor" | "crop" | "resize" | "rotateFlip" | "editor" | "ocr" | DocumentToolKey;
-export type DocumentToolKey = "pdfOrganizer" | "pdfMerge" | "pdfSplit" | "pdfOrganize" | "pdfRotate" | "pdfToImages" | "imagesToPdf" | "pdfCompress" | "pdfWatermark" | "pdfPageNumbers" | "pdfToText" | "pdfToWord" | "pdfViewer" | "pdfEditor" | "pdfSign" | "pdfProtect" | "pdfUnlock" | "textEditor" | "textCleaner" | "caseConverter" | "wordCounter";
+export type ToolKey = "removeBackground" | "upscaler" | "retouch" | "objectRemover" | "photoRestoration" | "imageTranslator" | "photoGenerator" | "watermarkRemover" | "compressor" | "crop" | "resize" | "socialResizer" | "rotateFlip" | "editor" | "ocr" | DocumentToolKey;
+export type DocumentToolKey = "documentScanner" | "pdfOrganizer" | "pdfMerge" | "pdfSplit" | "pdfOrganize" | "pdfRotate" | "pdfToImages" | "imagesToPdf" | "pdfCompress" | "pdfWatermark" | "pdfPageNumbers" | "pdfToText" | "pdfToWord" | "pdfViewer" | "pdfEditor" | "pdfSign" | "pdfProtect" | "pdfUnlock" | "textEditor" | "textCleaner" | "caseConverter" | "wordCounter";
 export type ToolGroupKey = "ai" | "image" | "editor" | "text" | "pdf" | "pdfConvert" | "pdfEdit";
 
 export interface NavTool {
@@ -29,7 +29,10 @@ const TOOL_GROUPS: readonly NavToolGroup[] = [
         items: [
             { key: "removeBackground", href: ROUTES.removeBackground },
             { key: "upscaler", href: ROUTES.upscale },
+            { key: "objectRemover", href: ROUTES.objectRemover },
             { key: "retouch", href: ROUTES.retouch },
+            { key: "photoRestoration", href: ROUTES.photoRestoration },
+            { key: "imageTranslator", href: ROUTES.imageTranslator },
             { key: "photoGenerator", href: ROUTES.photoGenerator },
             { key: "watermarkRemover", href: ROUTES.watermarkRemover },
         ],
@@ -39,6 +42,7 @@ const TOOL_GROUPS: readonly NavToolGroup[] = [
         items: [
             { key: "crop", href: ROUTES.crop },
             { key: "compressor", href: ROUTES.compress },
+            { key: "socialResizer", href: ROUTES.socialResizer },
             { key: "resize", href: ROUTES.editor, alias: true },
             { key: "rotateFlip", href: ROUTES.crop, alias: true },
         ],
@@ -81,6 +85,7 @@ const DOCUMENT_GROUPS: readonly NavToolGroup[] = [
     {
         key: "pdf",
         items: [
+            { key: "documentScanner", href: ROUTES.documentScanner },
             { key: "pdfOrganizer", href: ROUTES.pdfMerge, members: ORGANIZE_MODES },
             { key: "pdfToWord", href: ROUTES.pdfToWord },
             { key: "pdfToImages", href: ROUTES.pdfToImages },
@@ -102,7 +107,7 @@ const DOCUMENT_GROUPS: readonly NavToolGroup[] = [
 export const DOCUMENT_ROUTES: readonly AppRoute[] = [ROUTES.documents, ...DOCUMENT_GROUPS.flatMap((group) => group.items.flatMap((item) => [item.href, ...(item.members ?? []).map((member) => member.href)]))];
 
 /** Every route the Tools menu covers — the trigger reads as current on any of them. */
-export const TOOL_ROUTES: readonly AppRoute[] = [ROUTES.imageTools, ROUTES.removeBackground, ROUTES.upscale, ROUTES.retouch, ROUTES.photoGenerator, ROUTES.watermarkRemover, ROUTES.crop, ROUTES.compress, ROUTES.editor];
+export const TOOL_ROUTES: readonly AppRoute[] = [ROUTES.imageTools, ROUTES.removeBackground, ROUTES.upscale, ROUTES.retouch, ROUTES.photoGenerator, ROUTES.watermarkRemover, ROUTES.objectRemover, ROUTES.photoRestoration, ROUTES.imageTranslator, ROUTES.socialResizer, ROUTES.crop, ROUTES.compress, ROUTES.editor];
 
 /** In-page sections of the home page. There is no About section or page, so there is no About link. */
 export const SECTION_LINKS = [

@@ -38,6 +38,13 @@ const CaseConverterPage = lazy(() => import("@/pages/Text/TextPages").then((modu
 const WordCounterPage = lazy(() => import("@/pages/Text/TextPages").then((module) => ({ default: module.WordCounterPage })));
 const ImagesToPdfPage = lazy(() => import("@/pages/Pdf/ImagesToPdfPage").then((module) => ({ default: module.ImagesToPdfPage })));
 
+// The five newer tools load on their own: each brings its own canvas or processing code.
+const ObjectRemoverPage = lazy(() => import("@/pages/ObjectRemover/ObjectRemoverPage").then((module) => ({ default: module.ObjectRemoverPage })));
+const PhotoRestorationPage = lazy(() => import("@/pages/PhotoRestoration/PhotoRestorationPage").then((module) => ({ default: module.PhotoRestorationPage })));
+const ImageTranslatorPage = lazy(() => import("@/pages/ImageTranslator/ImageTranslatorPage").then((module) => ({ default: module.ImageTranslatorPage })));
+const SocialResizerPage = lazy(() => import("@/pages/SocialResizer/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage })));
+const DocumentScannerPage = lazy(() => import("@/pages/DocumentScanner/DocumentScannerPage").then((module) => ({ default: module.DocumentScannerPage })));
+
 const later = (page: ReactNode) => <Suspense fallback={null}>{page}</Suspense>;
 
 export function AppRoutes() {
@@ -51,6 +58,11 @@ export function AppRoutes() {
                 <Route path={ROUTES.photoGenerator} element={<PhotoGeneratorPage />} />
                 <Route path={ROUTES.watermarkRemover} element={<WatermarkRemoverPage />} />
                 <Route path={ROUTES.ocr} element={later(<OcrPage />)} />
+                <Route path={ROUTES.objectRemover} element={later(<ObjectRemoverPage />)} />
+                <Route path={ROUTES.photoRestoration} element={later(<PhotoRestorationPage />)} />
+                <Route path={ROUTES.imageTranslator} element={later(<ImageTranslatorPage />)} />
+                <Route path={ROUTES.socialResizer} element={later(<SocialResizerPage />)} />
+                <Route path={ROUTES.documentScanner} element={later(<DocumentScannerPage />)} />
                 <Route path={ROUTES.imageTools} element={later(<ImageToolsPage />)} />
                 <Route path={ROUTES.documents} element={later(<DocumentsPage />)} />
                 <Route path={ROUTES.pdfMerge} element={later(<MergePage />)} />

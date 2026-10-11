@@ -21,7 +21,7 @@ import { RetouchModeSelector } from "@/features/retouch/RetouchModeSelector";
 import { ExportControls, RetouchResultPanel } from "@/features/retouch/RetouchResultPanel";
 import { RetouchToolbar } from "@/features/retouch/RetouchToolbar";
 import { type SelectionStroke, useSelectionMask } from "@/features/retouch/useSelectionMask";
-import { type RetouchMode, retouchImage } from "@/lib/api/retouchApi";
+import { type RetouchMode, removeObject, retouchImage } from "@/lib/api/retouchApi";
 import { cn } from "@/lib/utils/cn";
 import { downloadFile } from "@/lib/utils/download";
 import { usePublishOutput, useToolImage } from "@/store/useImageStore";
@@ -44,7 +44,7 @@ const isTyping = (target: EventTarget | null) => target instanceof HTMLElement &
 const formatFromMime = (type: string): ExportFormat => (type === "image/jpeg" ? "jpeg" : type === "image/webp" ? "webp" : "png");
 
 /** Codes whose own translated message says it best; anything else gets the one friendly line. */
-const EXPLAINED = new Set(["FILE_TOO_LARGE", "UNSUPPORTED_MEDIA_TYPE", "INVALID_IMAGE", "IMAGE_TOO_LARGE", "INVALID_MASK", "RATE_LIMITED", "SERVER_BUSY", "NETWORK", "RETOUCH_UNAVAILABLE"]);
+const EXPLAINED = new Set(["FILE_TOO_LARGE", "UNSUPPORTED_MEDIA_TYPE", "INVALID_IMAGE", "IMAGE_TOO_LARGE", "INVALID_MASK", "RATE_LIMITED", "SERVER_BUSY", "NETWORK", "RETOUCH_UNAVAILABLE", "OBJECT_REMOVAL_UNAVAILABLE", "AI_SERVER_OFFLINE"]);
 
 /** Never the server's raw wording: a known situation gets its own sentence, everything else the same calm one. */
 function retouchError(t: Dictionary, error: AppErrorInfo | null): string {
@@ -55,16 +55,22 @@ function retouchError(t: Dictionary, error: AppErrorInfo | null): string {
     return t.retouch.failed;
 }
 
-export function RetouchPage() {
+/**
+ * Retouch, or the Object Remover: the same studio with the mode fixed to "remove", AI inpainting only
+ * (its own endpoint refuses the classical fill), and its own words.
+ */
+export type RetouchVariant = "retouch" | "objectRemover";
+
+export function RetouchPage({ variant = "retouch" }: { variant?: RetouchVariant }) {
     const { image, session } = useToolImage();
     // A new image starts a fresh session: selection, history and kept results all belong to one image.
-    return image ? <RetouchStudio key={image.id} original={image} session={session} /> : <EmptyStudio />;
+    return image ? <RetouchStudio key={image.id} original={image} session={session} variant={variant} /> : <EmptyStudio variant={variant} />;
 }
 
-function EmptyStudio() {
+function EmptyStudio({ variant }: { variant: RetouchVariant }) {
     const t = useT();
     const copy = t.retouch;
-    const intro = t.studio.intros.retouch;
+    const intro = t.studio.intros[variant];
     const panel = (
         <>
             <PanelTabs
@@ -72,7 +78,7 @@ function EmptyStudio() {
                 value="retouch"
                 onChange={() => undefined}
                 tabs={[
-                    { id: "retouch", label: copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
+                    { id: "retouch", label: variant === "objectRemover" ? t.objectRemover.tab : copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
                 ]}
             />
             <PanelBody>
@@ -82,7 +88,7 @@ function EmptyStudio() {
         </>
     );
     return (
-        <StudioShell tool="retouch" panel={panel} panelLabel={copy.controlsLabel}>
+        <StudioShell tool={variant} panel={panel} panelLabel={copy.controlsLabel}>
             <StudioCanvas>
                 <StudioDropzone title={t.studio.dropTitle} hint={intro.hint} />
             </StudioCanvas>
@@ -90,9 +96,11 @@ function EmptyStudio() {
     );
 }
 
-function RetouchStudio({ original, session: imageSession }: { original: ImageFile; session: string }) {
+function RetouchStudio({ original, session: imageSession, variant }: { original: ImageFile; session: string; variant: RetouchVariant }) {
     const t = useT();
     const copy = t.retouch;
+    const remover = variant === "objectRemover";
+    const removerCopy = t.objectRemover;
     const { width, height } = original.dimensions;
     const shortSide = Math.min(width, height);
 
@@ -113,7 +121,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
     const base = versions.current[session.version] ?? versions.current[0]!;
     // Kept results are the working image everywhere else; undoing back to the upload restores it.
     const output = useMemo(() => (session.version > 0 ? { blob: base.blob, name: base.fileName, dimensions: base.dimensions } : null), [session.version, base]);
-    usePublishOutput({ image: original, session: imageSession }, output, "retouch");
+    usePublishOutput({ image: original, session: imageSession }, output, variant);
 
     // ------------------------------------------------------------------ selection
     const mask = useSelectionMask(width, height);
@@ -125,6 +133,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
 
     const [mode, setMode] = useState<RetouchMode>("remove");
     const config = modeConfig(mode);
+    const busyLabel = remover ? removerCopy.removing : `${copy.modes[mode].label}…`;
     const [strength, setStrength] = useState(0.5);
     const [texture, setTexture] = useState(0.6);
     const [tool, setTool] = useState<RetouchTool>("paint");
@@ -132,7 +141,9 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
     const maxBrush = Math.max(40, Math.round(shortSide * 0.4));
 
     // ------------------------------------------------------------------ processing
-    const fileNameFor = useCallback((image: ImageFile) => `${baseName(image.name)}-retouched.png`, []);
+    const fileNameFor = useCallback((image: ImageFile) => `${baseName(image.name)}-${remover ? "object-removed" : "retouched"}.png`, [remover]);
+    /** The model that filled the last removal (Object Remover only), from the X-Inpaint-Engine header. */
+    const [engine, setEngine] = useState<string | null>(null);
     const job = useProcessingJob(original, fileNameFor);
     const pending = job.status === "success" ? job.result : null;
     const busy = job.status === "uploading" || job.status === "processing";
@@ -153,8 +164,8 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
         if (!settled) return;
         setCompareOn(true);
         setShowBefore(false);
-        setNotice({ tone: "success", text: copy.notices.done });
-    }, [settled, copy.notices.done]);
+        setNotice({ tone: "success", text: remover ? removerCopy.done(removerCopy.engines[engine ?? ""] ?? removerCopy.aiEngine) : copy.notices.done });
+    }, [settled, copy.notices.done, remover, removerCopy, engine]);
 
     /** What the comparison shows: a waiting result against its base, or everything kept against the upload. */
     const comparePair = pending ? { before: base, after: pending, beforeLabel: copy.before } : session.version > 0 ? { before: versions.current[0]!, after: base, beforeLabel: copy.original } : null;
@@ -181,9 +192,16 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
             setPreparing(false);
         }
         setSheetOpen(false);
-        setNotice({ tone: "info", text: `${copy.modes[mode].label}…` });
+        setNotice({ tone: "info", text: busyLabel });
         const request = { image: base.blob, fileName: original.name, mask: maskPng, mode, strength, texture: config.texture ? texture : undefined };
-        void job.run((_file, options) => retouchImage(request, options));
+        void job.run((_file, options) =>
+            remover
+                ? removeObject(request, options).then((result) => {
+                      setEngine(result.header("X-Inpaint-Engine"));
+                      return result;
+                  })
+                : retouchImage(request, options),
+        );
     };
 
     const cancel = () => {
@@ -326,7 +344,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
 
     // ------------------------------------------------------------------ status line
     const shownNotice: Notice =
-        job.status === "error" ? { tone: "error", text: retouchError(t, job.error) } : busy ? { tone: "info", text: `${copy.modes[mode].label}…` } : notice;
+        job.status === "error" ? { tone: "error", text: retouchError(t, job.error) } : busy ? { tone: "info", text: busyLabel } : notice;
     const coverage = hasSelection ? copy.selectionSize(`${Math.max(1, Math.round(selection.coverage * 100))}%`) : null;
 
     // ------------------------------------------------------------------ pieces
@@ -382,7 +400,14 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
                         setCompare(next);
                         setCompareOn(true);
                     }} onAccept={accept} onDiscard={discard} />}
-            <RetouchModeSelector mode={mode} onModeChange={changeMode} strength={strength} onStrengthChange={setStrength} texture={texture} onTextureChange={setTexture} disabled={busy || Boolean(pending)} />
+            {remover ? (
+                <section className="flex flex-col gap-1.5">
+                    <h3 className="text-sm font-semibold text-primary">{removerCopy.selectTitle}</h3>
+                    <p className="text-xs leading-relaxed text-tertiary">{removerCopy.selectHint}</p>
+                </section>
+            ) : (
+                <RetouchModeSelector mode={mode} onModeChange={changeMode} strength={strength} onStrengthChange={setStrength} texture={texture} onTextureChange={setTexture} disabled={busy || Boolean(pending)} />
+            )}
             <div className="border-t border-[var(--card-line)] pt-5">
                 <BrushSettings tool={tool} onToolChange={setTool} brush={brush} onBrushChange={changeBrush} maxSize={maxBrush} coverage={coverage} onClear={clearSelection} disabled={!paintable} />
             </div>
@@ -404,7 +429,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
                 value={tab}
                 onChange={setTab}
                 tabs={[
-                    { id: "retouch" as Tab, label: copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
+                    { id: "retouch" as Tab, label: remover ? removerCopy.tab : copy.tabs.retouch, icon: <WandSparkles className="size-4" aria-hidden /> },
                 ]}
             />
             <PanelBody id={tab}>{controls}</PanelBody>
@@ -415,7 +440,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
         <Button size={compact ? "md" : "lg"} color="primary" onPress={() => void run()} isDisabled={preparing || !paintable} className={cn("press-scale", compact ? "min-h-12 px-3.5" : "pointer-coarse:min-h-12")}>
             <span className="flex items-center justify-center gap-2">
                 {preparing ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <WandSparkles className="size-4" aria-hidden />}
-                {compact ? copy.retouch : preparing ? copy.preparing : copy.retouchImage}
+                {compact ? (remover ? removerCopy.remove : copy.retouch) : preparing ? copy.preparing : remover ? removerCopy.removeObject : copy.retouchImage}
             </span>
         </Button>
     );
@@ -448,7 +473,7 @@ function RetouchStudio({ original, session: imageSession }: { original: ImageFil
 
     return (
         <StudioShell
-            tool="retouch"
+            tool={variant}
             actions={actions}
             exportSlot={exportSlot}
             panel={panel}

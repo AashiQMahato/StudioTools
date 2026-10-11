@@ -9,6 +9,7 @@ import { type Dictionary, useT } from "@/i18n";
 /** Each section's colour: its filter icon and the label on its cards. */
 const SECTION_TONE: Record<MenuSectionKey, string> = {
     aiTools: "#7C3AED",
+    aiPhotoText: "#7C3AED",
     editAdjust: "#2563EB",
     optimize: "#E11D48",
     editOptimize: "#2563EB",

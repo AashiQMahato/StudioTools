@@ -133,6 +133,25 @@ export const env = {
         concurrency: Math.floor(parsePositive(env_.OCR_CONCURRENCY, 1)),
     },
 
+    translation: {
+        /** none (default) | libretranslate | google. Keys stay here — never sent to the browser or logged. */
+        provider: parseChoice(env_.TRANSLATION_PROVIDER, ["none", "libretranslate", "google"] as const, "none"),
+        libreTranslateUrl: (env_.LIBRETRANSLATE_URL?.trim() || "").replace(/\/$/, ""),
+        libreTranslateApiKey: env_.LIBRETRANSLATE_API_KEY?.trim() || "",
+        googleApiKey: env_.GOOGLE_TRANSLATE_API_KEY?.trim() || "",
+        timeoutMs: parsePositive(env_.TRANSLATION_TIMEOUT_MS, 20_000),
+    },
+
+    restoration: {
+        /** ECCV16 colorization (ONNX), exported from the official weights by scripts/setup-ml.sh. */
+        colorizationModelPath: resolvePath(env_.COLORIZATION_MODEL, "python/.models/colorization_eccv16.onnx"),
+        /** GFPGAN v1.4 face restoration (ONNX), downloaded by scripts/setup-ml.sh. */
+        faceRestoreModelPath: resolvePath(env_.FACE_RESTORE_MODEL, "python/.models/gfpgan_v1.4.onnx"),
+        /** Each step's limit; a whole restoration may run several. */
+        stepTimeoutMs: parsePositive(env_.RESTORATION_STEP_TIMEOUT_MS, 120_000),
+        concurrency: Math.floor(parsePositive(env_.RESTORATION_CONCURRENCY, 1)),
+    },
+
     compression: {
         concurrency: Math.floor(parsePositive(env_.COMPRESSION_CONCURRENCY, 2)),
     },

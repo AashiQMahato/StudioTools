@@ -186,6 +186,12 @@ export const retouching = {
     stats: () => limiter.stats,
     /** Which engine a mode would use (for health reports and callers with their own preference). */
     providerName: (mode: RetouchMode, preference?: ProviderPreference) => providerFor(mode, preference).name,
+    /**
+     * The AI inpainting engine object removal uses: the IOPaint server if configured, else LaMa in the image
+     * service if its model is installed. Null when only the built-in (classical) fill exists — object removal
+     * then refuses rather than passing a classical fill off as AI.
+     */
+    aiInpainter: (): ProviderPreference | null => (iopaintProvider.isAvailable() ? "iopaint" : lamaProvider.isAvailable() ? "lama" : null),
     /** `preference` overrides RETOUCH_PROVIDER for this call (e.g. the watermark remover's own setting). */
     retouch: (input: ImageInput, mask: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference): Promise<ImageOutput> =>
         limiter.run(() => retouch(input, mask, options, context, preference).finally(releaseMemory), context.signal),

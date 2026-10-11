@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
-import { ClearImageButton, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
+import { ClearImageX, PanelBody, PanelIntro, PanelTabs, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
 import { ToolUnavailable } from "@/components/studio/ToolUnavailable";
 import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -38,6 +38,12 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
     const [cancelled, setCancelled] = useState(false);
     const [mode, setMode] = useState<RemovalMode>("quality");
     const status = useRemovalStatus(Boolean(original) && !resumed);
+
+    // A photo that's just been added starts straight away; only a stopped or already-edited one waits for the button.
+    useEffect(() => {
+        if (job.status !== "selected" || resumed || alreadyEdited || cancelled) return;
+        void job.run((file, options) => removeBackground(file, options, mode));
+    }, [job, resumed, alreadyEdited, cancelled, mode]);
 
     // The moment the cut-out arrives it's the shared image, and the studio remembers it — so leaving
     // straight away (or coming back later) never means removing the background again.
@@ -138,6 +144,7 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
     return (
         <StudioShell tool="removeBackground" panel={panel} panelLabel={t.bgEditor.controlsLabel}>
             <StudioCanvas>
+                {original && !busy && <ClearImageX />}
                 {!original ? (
                     <StudioDropzone title={copy.dropTitle} hint={intro.hint} />
                 ) : failed ? (
@@ -166,26 +173,23 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
                     </Fitted>
                 )}
             </StudioCanvas>
-            {original && !failed && (
+            {original && !failed && (busy || cancelled || alreadyEdited) && (
                 <StudioNotice
                     notice={
                         finishing
                             ? { tone: "success", text: t.bgEditor.removedSuccess }
                             : busy
                               ? { tone: "info", text: t.bgStages.notice }
-                              : { tone: "info", text: cancelled ? copy.cancelled : alreadyEdited ? copy.alreadyRemoved : copy.readyToRemove }
+                              : { tone: "info", text: cancelled ? copy.cancelled : copy.alreadyRemoved }
                     }
                 />
             )}
-            {original && !busy && (
-                <StudioActions>
-                    <ClearImageButton />
-                    {ready && (
-                        <Button size="lg" color="primary" iconLeading={Eraser} onPress={onStart} className="press-scale pointer-coarse:min-h-12">
-                            {t.pages.removeBackground.action}
-                        </Button>
-                    )}
-                </StudioActions>
+            {ready && (cancelled || alreadyEdited) && (
+                <div className="flex justify-center">
+                    <Button size="lg" color="primary" iconLeading={Eraser} onPress={onStart} className="press-scale pointer-coarse:min-h-12 sm:min-w-48">
+                        {t.pages.removeBackground.action}
+                    </Button>
+                </div>
             )}
         </StudioShell>
     );

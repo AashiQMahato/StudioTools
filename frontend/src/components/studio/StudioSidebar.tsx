@@ -1,5 +1,5 @@
-import { ArrowLeft, ShieldCheck, X } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { ArrowLeft, X } from "lucide-react";
+import { type ReactNode, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { documentMenu, imageMenu, isCurrentItem, menuItemCopy, sidebarSections, type ToolMenu } from "@/components/layout/toolMenus";
 import { isDocumentTool, type ToolKey } from "@/lib/constants/navigation";
@@ -54,7 +54,7 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
 
             {/* Narrow screens: a drawer from the left, over the page. */}
             <div className={cn("fixed inset-0 z-50 lg:hidden", !drawerOpen && "pointer-events-none")} inert={!drawerOpen}>
-                <div aria-hidden onClick={onCloseDrawer} className={cn("absolute inset-0 bg-neutral-950/40 transition-opacity duration-300 motion-reduce:transition-none", drawerOpen ? "opacity-100" : "opacity-0")} />
+                <div aria-hidden onClick={onCloseDrawer} className={cn("absolute inset-0 bg-neutral-950/40 backdrop-blur-[2px] transition-opacity duration-300 motion-reduce:transition-none", drawerOpen ? "opacity-100" : "opacity-0")} />
                 <div
                     ref={drawer}
                     role="dialog"
@@ -62,17 +62,23 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                     aria-label={t.studio.toolsNav}
                     tabIndex={-1}
                     className={cn(
-                        "absolute inset-y-0 left-0 flex w-[min(20rem,86vw)] flex-col gap-1 bg-secondary p-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
+                        "absolute inset-y-0 left-0 flex w-[min(14.5rem,66vw)] flex-col gap-1 rounded-r-3xl bg-secondary p-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
                         drawerOpen ? "translate-x-0" : "-translate-x-full",
                     )}
                 >
-                    <div className="flex shrink-0 items-center justify-between py-1 pr-1 pl-3">
-                        <span className="text-sm font-semibold text-primary">{t.studio.toolsNav}</span>
-                        <button type="button" onClick={onCloseDrawer} aria-label={t.studio.hideTools} className="grid size-9 cursor-pointer place-items-center rounded-lg text-tertiary outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 pointer-coarse:size-11">
-                            <X className="size-4" aria-hidden />
-                        </button>
-                    </div>
-                    <SidebarNav current={current} className="min-h-0 flex-1" onNavigate={onCloseDrawer} />
+                    <SidebarNav
+                        current={current}
+                        className="min-h-0 flex-1"
+                        onNavigate={onCloseDrawer}
+                        header={
+                            <div className="mb-2 flex shrink-0 items-center justify-between pl-2">
+                                <span className="text-base font-semibold tracking-tight text-primary">{t.studio.toolsNav}</span>
+                                <button type="button" onClick={onCloseDrawer} aria-label={t.studio.hideTools} className="grid size-8 cursor-pointer place-items-center rounded-full bg-secondary text-tertiary outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 pointer-coarse:size-10">
+                                    <X className="size-4" aria-hidden />
+                                </button>
+                            </div>
+                        }
+                    />
                 </div>
             </div>
         </>
@@ -80,7 +86,7 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
 }
 
 /** The tool list itself (the same in the column and the drawer): the suite's sections, as in its menu. */
-function SidebarNav({ current, className, onNavigate }: { current: ToolKey; className?: string; onNavigate?: () => void }) {
+function SidebarNav({ current, className, onNavigate, header }: { current: ToolKey; className?: string; onNavigate?: () => void; header?: ReactNode }) {
     const t = useT();
     const copy = t.studio;
     const { pathname } = useLocation();
@@ -96,6 +102,7 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
 
     return (
         <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2 xl:p-3", className)}>
+            {header}
             <div ref={list} className="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-1">
                 {sidebarSections(menu).map((section) => (
                     <section key={section.key} aria-labelledby={`studio-group-${section.key}`} className="flex flex-col gap-0.5">
@@ -105,7 +112,7 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
                         {section.items.map((item) => {
                             const Icon = item.icon;
                             const active = isCurrentItem(item, pathname);
-                            const { title, description } = menuItemCopy(t, item.key);
+                            const { title } = menuItemCopy(t, item.key);
                             return (
                                 <Link
                                     key={item.key}
@@ -114,22 +121,19 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
                                     aria-current={active ? "page" : undefined}
                                     title={title}
                                     className={cn(
-                                        "studio-nav-item group relative flex items-center gap-3 rounded-xl p-1.5 outline-focus-ring focus-visible:outline-2 lg:justify-center xl:justify-start xl:pr-2",
-                                        active ? "bg-[var(--brand-soft)]" : "hover:bg-secondary",
+                                        "studio-nav-item group relative flex items-center gap-2.5 rounded-xl p-1.5 outline-focus-ring transition-colors duration-150 focus-visible:outline-2 lg:justify-center xl:justify-start xl:pr-2",
+                                        active ? "bg-[var(--brand-soft)] before:absolute before:top-2 before:bottom-2 before:-left-1 before:w-1 before:rounded-full before:bg-[var(--brand)] lg:before:hidden xl:before:block" : "hover:bg-secondary",
                                     )}
                                 >
                                     <span
                                         className={cn(
-                                            "grid size-9 shrink-0 place-items-center rounded-[0.625rem] border transition-colors duration-150",
-                                            active ? "border-transparent bg-linear-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_10px_-4px_rgb(37_99_235/0.6)]" : "border-[var(--card-line)] bg-primary text-tertiary group-hover:text-primary",
+                                            "grid size-8 shrink-0 place-items-center rounded-lg border transition-colors duration-150",
+                                            active ? "border-transparent bg-linear-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_10px_-4px_rgb(37_99_235/0.6)]" : "border-transparent bg-secondary text-tertiary group-hover:bg-primary group-hover:text-primary",
                                         )}
                                     >
-                                        <Icon className="size-[1.125rem]" strokeWidth={1.9} aria-hidden />
+                                        <Icon className="size-4" strokeWidth={1.9} aria-hidden />
                                     </span>
-                                    <span className="min-w-0 lg:sr-only xl:not-sr-only">
-                                        <span className={cn("block truncate text-sm font-semibold", active ? "text-[var(--brand)]" : "text-primary")}>{title}</span>
-                                        <span className="block truncate text-xs text-tertiary">{description}</span>
-                                    </span>
+                                    <span className={cn("min-w-0 truncate text-sm font-medium lg:sr-only xl:not-sr-only", active ? "font-semibold text-[var(--brand)]" : "text-secondary")}>{title}</span>
                                 </Link>
                             );
                         })}
@@ -138,13 +142,6 @@ function SidebarNav({ current, className, onNavigate }: { current: ToolKey; clas
             </div>
 
             <div className="mt-3 flex flex-col gap-2 border-t border-[var(--card-line)] pt-3">
-                <div className="flex items-start gap-2.5 rounded-xl border border-[color-mix(in_srgb,#10B981_22%,transparent)] bg-[color-mix(in_srgb,#10B981_8%,transparent)] p-3 lg:hidden xl:flex">
-                    <ShieldCheck className="mt-0.5 size-4 shrink-0 text-[#059669] dark:text-[#34D399]" aria-hidden />
-                    <p className="text-xs leading-relaxed text-tertiary">
-                        <span className="block text-sm font-semibold text-[#047857] dark:text-[#6EE7B7]">{copy.privateTitle}</span>
-                        {copy.privateNote}
-                    </p>
-                </div>
                 <Link
                     to={menu.href}
                     onClick={onNavigate}

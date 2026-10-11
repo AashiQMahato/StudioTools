@@ -16,14 +16,14 @@ export const NAV_GROUPS: readonly NavGroup[] = ["image", "ai", "ocr", "pdf"];
 
 /** The navbar's columns, in display order. Every tool appears in one column only. */
 const GROUP_TOOLS: Record<NavGroup, readonly MenuItemKey[]> = {
-    image: ["editor", "crop", "rotateFlip", "resize", "compressor", "socialResizer"],
+    image: ["editor", "compressor", "socialResizer"],
     ai: ["removeBackground", "upscaler", "objectRemover", "retouch", "photoRestoration", "watermarkRemover", "photoGenerator"],
     ocr: ["ocr", "pdfToText", "textEditor", "textCleaner"],
     pdf: ["pdfMerge", "pdfSplit", "pdfCompress", "pdfToWord", "pdfEditor", "pdfSign", "organizePdf", "documentScanner"],
 };
 
 /** Shortcuts at the top of the Tools menu and the search box's suggestions. */
-const POPULAR: readonly MenuItemKey[] = ["removeBackground", "upscaler", "editor", "crop"];
+const POPULAR: readonly MenuItemKey[] = ["removeBackground", "upscaler", "editor", "compressor"];
 
 /** The AI Studio menu: the AI tools worth opening first. */
 const AI_STUDIO: readonly MenuItemKey[] = ["removeBackground", "upscaler", "objectRemover", "photoRestoration", "retouch"];

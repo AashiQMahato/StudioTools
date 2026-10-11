@@ -155,6 +155,8 @@ class BackgroundRemover:
 
         started = time.perf_counter()
         alpha = resize_alpha_to_original(alpha, width, height)
+        # Crisper edge: drop the faint fringe and firm up the near-opaque side (a mild curve; hair stays soft).
+        alpha = np.clip((alpha - 0.08) / 0.84, 0.0, 1.0)
         lap("resize", started)
 
         started = time.perf_counter()

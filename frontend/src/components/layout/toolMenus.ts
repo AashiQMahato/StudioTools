@@ -78,9 +78,6 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
         icon: SlidersHorizontal,
         items: [
             tool("editor", ROUTES.editor),
-            tool("crop", ROUTES.crop),
-            // The crop tool rotates, flips and straightens.
-            { ...tool("rotateFlip", ROUTES.crop), alias: true },
         ],
     },
     {
@@ -89,8 +86,6 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
         items: [
             tool("compressor", ROUTES.compress),
             { ...tool("socialResizer", ROUTES.socialResizer), isNew: true },
-            // Resizing is a panel of the editor.
-            { ...tool("resize", ROUTES.editor), alias: true },
         ],
     },
 ];
@@ -104,7 +99,7 @@ export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
     featured: [
         { key: "aiTools", icon: Sparkles, items: pick(IMAGE_SECTIONS, "removeBackground", "upscaler", "objectRemover", "retouch", "watermarkRemover") },
         { key: "aiPhotoText", icon: History, items: pick(IMAGE_SECTIONS, "photoRestoration", "photoGenerator") },
-        { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "crop", "rotateFlip", "compressor", "resize", "socialResizer") },
+        { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "compressor", "socialResizer") },
     ],
 };
 

@@ -203,6 +203,23 @@ export function ClearImageButton({ className }: { className?: string }) {
     );
 }
 
+/** A round X in the canvas's top corner that clears the image. */
+export function ClearImageX() {
+    const t = useT();
+    const { clearImage } = useStudio();
+    return (
+        <button
+            type="button"
+            onClick={clearImage}
+            aria-label={t.studio.clearImage}
+            title={t.studio.clearImage}
+            className="press-scale absolute top-3 right-3 z-10 grid size-9 cursor-pointer place-items-center rounded-full bg-primary/80 text-secondary shadow-sm ring-1 ring-[var(--card-line)] backdrop-blur-md outline-focus-ring transition-colors duration-150 hover:bg-primary hover:text-primary focus-visible:outline-2 pointer-coarse:size-11"
+        >
+            <X className="size-4" aria-hidden />
+        </button>
+    );
+}
+
 /** The centre card's action row. */
 export function StudioActions({ children }: { children: ReactNode }) {
     return <div className="flex flex-col-reverse items-stretch justify-center gap-2 sm:flex-row sm:gap-3 [&>*]:sm:min-w-48">{children}</div>;

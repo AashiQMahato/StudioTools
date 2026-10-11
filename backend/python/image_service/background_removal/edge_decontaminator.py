@@ -55,4 +55,13 @@ def decontaminate_edges(rgb: np.ndarray, alpha: np.ndarray, low: float = 0.02, h
     mixed = image + strength * (foreground - image)
     out = rgb.copy()
     out[ys, xs] = (mixed * 255).round().astype(np.uint8)
+
+    # The model's mask is usually a pixel or two generous, so the outermost "opaque" pixels still carry the old
+    # background (the white rim on a dark subject). The mix formula can't fix α≈1; take the subject's own nearby colour.
+    rim = cv2.dilate((alpha < 0.5).astype(np.uint8), np.ones((5, 5), np.uint8)).astype(bool) & (alpha >= high)
+    ry, rx = np.nonzero(rim)
+    if len(ry):
+        inner = cv2.resize(local_f, (width, height), interpolation=cv2.INTER_LINEAR)[ry, rx]
+        original = rgb[ry, rx].astype(np.float32)
+        out[ry, rx] = (original + strength * (inner * 255 - original)).round().clip(0, 255).astype(np.uint8)
     return out

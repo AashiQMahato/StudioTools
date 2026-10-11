@@ -69,7 +69,6 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
             { ...tool("objectRemover", ROUTES.objectRemover), isNew: true },
             tool("retouch", ROUTES.retouch),
             { ...tool("photoRestoration", ROUTES.photoRestoration), isNew: true },
-            { ...tool("imageTranslator", ROUTES.imageTranslator), isNew: true },
             tool("watermarkRemover", ROUTES.watermarkRemover),
             tool("photoGenerator", ROUTES.photoGenerator),
         ],
@@ -104,7 +103,7 @@ export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
     // Three columns: AI clean-up, AI photo and text, and everything for editing, optimizing and resizing.
     featured: [
         { key: "aiTools", icon: Sparkles, items: pick(IMAGE_SECTIONS, "removeBackground", "upscaler", "objectRemover", "retouch", "watermarkRemover") },
-        { key: "aiPhotoText", icon: History, items: pick(IMAGE_SECTIONS, "photoRestoration", "imageTranslator", "photoGenerator") },
+        { key: "aiPhotoText", icon: History, items: pick(IMAGE_SECTIONS, "photoRestoration", "photoGenerator") },
         { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "crop", "rotateFlip", "compressor", "resize", "socialResizer") },
     ],
 };

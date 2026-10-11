@@ -68,12 +68,6 @@
             "description": "Repair scratches and damage, reduce noise, revive faded photos, colorize black-and-white pictures and enhance faces. Compare with the original and download.",
             "priority": 0.8
         },
-        "/image-translator": {
-            "title": "Image Translator — Translate Text in Photos & Screenshots | Studio Tools",
-            "heading": "Translate the text in an image",
-            "description": "Extract English or Nepali text from photos, signs, posters and screenshots with OCR, correct it, and translate it. Copy, download or export a translated image.",
-            "priority": 0.8
-        },
         "/social-media-resizer": {
             "title": "Social Media Image Resizer — Instagram, YouTube, TikTok Sizes | Studio Tools",
             "heading": "Resize images for social media",

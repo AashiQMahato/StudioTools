@@ -11,7 +11,6 @@ export const ROUTES = {
     watermarkRemover: "/watermark-remover",
     objectRemover: "/object-remover",
     photoRestoration: "/photo-restoration",
-    imageTranslator: "/image-translator",
     socialResizer: "/social-media-resizer",
     documentScanner: "/document-scanner",
     ocr: "/ocr",

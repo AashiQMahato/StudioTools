@@ -4,7 +4,6 @@ import { compressHandler } from "../controllers/compressionController.js";
 import { annotateHandler, protectHandler, toWordHandler, unlockHandler, compressHandler as compressPdfHandler, deleteJobHandler, fromImagesHandler, pageNumbersHandler, toTextHandler, watermarkHandler, getJobHandler, jobArchiveHandler, jobFileHandler, mergeHandler, organizeHandler, splitHandler, toImagesHandler } from "../controllers/documentController.js";
 import { getHealth, getProcessorHealth } from "../controllers/healthController.js";
 import { ocrHandler } from "../controllers/ocrController.js";
-import { translateHandler, translateStatusHandler } from "../controllers/translationController.js";
 import { adjustCropHandler, convertHandler, fileHandler, presetsHandler, processHandler, rotateHandler, sheetHandler } from "../controllers/photoGeneratorController.js";
 import { upscaleHandler } from "../controllers/upscaleController.js";
 import { removeObjectHandler, retouchHandler } from "../controllers/retouchController.js";
@@ -38,8 +37,6 @@ apiRouter.post("/compress", processingRateLimiter, uploadImage, compressHandler)
 apiRouter.post("/watermark/detect", processingRateLimiter, uploadImage, detectWatermarkHandler);
 apiRouter.post("/watermark/remove", processingRateLimiter, uploadRetouch, removeWatermarkHandler);
 apiRouter.post("/ocr", processingRateLimiter, uploadPhoto, ocrHandler);
-apiRouter.get("/translate/status", translateStatusHandler);
-apiRouter.post("/translate", processingRateLimiter, translateHandler);
 
 // Document tools: each request starts a job (202) that the client follows at /jobs/:id.
 apiRouter.post("/pdf/merge", processingRateLimiter, documentUpload("pdf", { min: 2 }), mergeHandler);

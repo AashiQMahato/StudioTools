@@ -43,12 +43,7 @@ export type ErrorCode =
     | "JOB_EXPIRED"
     | "WRONG_PASSWORD"
     | "INSUFFICIENT_MEMORY"
-    | "FACE_ANGLE_TOO_STEEP"
-    | "TRANSLATION_NOT_CONFIGURED"
-    | "TRANSLATION_FAILED"
-    | "TRANSLATION_TIMEOUT"
-    | "TEXT_TOO_LONG"
-    | "INVALID_LANGUAGE";
+    | "FACE_ANGLE_TOO_STEEP";
 
 /** An error whose message is safe to show to users. Internal details belong in logs, never here. */
 export class AppError extends Error {

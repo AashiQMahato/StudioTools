@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, Plus } from "lucide-react";
+import { ArrowRight, ChevronDown, Plus, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Segmented } from "@/components/common/Segmented";
@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils/cn";
 import { DICTIONARIES, LOCALES, useLocale, useT } from "@/i18n";
 import { documentMenu, imageMenu, isCurrentItem, type MenuSectionKey, menuItemCopy, navSections, type ToolMenu } from "./toolMenus";
 import { NavItem } from "./NavItem";
+import { useToolSearch } from "@/store/useToolSearch";
 import { scrollToSection, sectionHref } from "./sections";
 
 interface MobileNavProps {
@@ -27,6 +28,7 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
     const { locale, setLocale } = useLocale();
     const [toolsOpen, setToolsOpen] = useState(false);
     const [documentsOpen, setDocumentsOpen] = useState(false);
+    const openSearch = useToolSearch((state) => state.setOpen);
 
     // The page underneath shouldn't scroll while the sheet is up.
     useEffect(() => {
@@ -47,12 +49,24 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
                 <nav aria-label={t.nav.main} className="mx-auto max-h-[calc(100dvh-6rem)] max-w-xl overflow-y-auto rounded-2xl border border-secondary bg-primary p-2 shadow-xl">
                     <button
                         type="button"
+                        onClick={() => {
+                            onClose();
+                            openSearch(true);
+                        }}
+                        className="mb-1 flex min-h-12 w-full cursor-pointer items-center gap-2.5 rounded-lg border border-secondary bg-secondary/50 px-3 text-md text-tertiary outline-focus-ring transition-colors duration-150 hover:bg-secondary focus-visible:outline-2"
+                    >
+                        <Search className="size-4.5" aria-hidden />
+                        {t.nav.mega.searchField}
+                    </button>
+
+                    <button
+                        type="button"
                         aria-expanded={toolsOpen}
                         aria-controls={`${id}-tools`}
                         onClick={() => setToolsOpen((value) => !value)}
                         className="flex min-h-12 w-full cursor-pointer items-center justify-between rounded-lg px-3 text-md font-medium text-primary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover focus-visible:outline-2"
                     >
-                        {t.nav.tools}
+                        {t.nav.mega.tools}
                         <Plus className="nav-plus size-5 text-quaternary" aria-hidden />
                     </button>
 
@@ -108,7 +122,7 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
                         />
                         <UploadButton
                             size="lg"
-                            label={t.common.startEditing}
+                            label={t.nav.mega.openStudio}
                             navigateTo={ROUTES.editor}
                             className="flex w-full md:hidden"
                             buttonClassName="w-full rounded-full before:rounded-full"

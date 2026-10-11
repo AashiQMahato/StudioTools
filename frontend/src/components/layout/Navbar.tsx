@@ -1,4 +1,4 @@
-import { Menu, X } from "lucide-react";
+import { ArrowRight, Menu, Search, Sparkles, X } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { LanguageMenu } from "@/components/common/LanguageMenu";
@@ -11,10 +11,13 @@ import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
+import { useToolSearch } from "@/store/useToolSearch";
+import { SearchDialog } from "./SearchDialog";
 import { ThemeToggle } from "./ThemeToggle";
 
 const DESKTOP = "(min-width: 64rem)";
 const MOBILE_NAV_ID = "mobile-nav";
+const SHORTCUT = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform) ? "⌘ K" : "Ctrl K";
 
 /**
  * Transparent over the hero, so the page's first view is one surface; once content scrolls under
@@ -26,7 +29,8 @@ export function Navbar() {
     const scrolled = useScrolled();
     const { pathname } = useLocation();
     const activeSection = useActiveSection(pathname === ROUTES.home);
-    const menuButtonRef = useRef<HTMLButtonElement>(null);
+        const menuButtonRef = useRef<HTMLButtonElement>(null);
+    const openSearch = useToolSearch((state) => state.setOpen);
 
     // The sheet belongs to the page it was opened on, so any navigation closes it.
     const [menuOpenedAt, setMenuOpenedAt] = useState<string | null>(null);
@@ -58,18 +62,31 @@ export function Navbar() {
             <div className="page-container relative flex h-18 items-center gap-6">
                 <Logo className="nav-logo" />
 
-                <DesktopNav activeSection={activeSection} className="absolute left-1/2 hidden -translate-x-1/2 lg:block" />
+                <DesktopNav className="hidden lg:block" />
 
                 <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+                    <button
+                        type="button"
+                        onClick={() => openSearch(true)}
+                        aria-label={t.nav.mega.search.label}
+                        title={`${t.nav.mega.search.label} (⌘K)`}
+                        className="flex size-11 cursor-pointer items-center justify-center gap-2 rounded-full text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 2xl:h-10 2xl:w-60 2xl:justify-start 2xl:rounded-xl 2xl:border 2xl:border-secondary 2xl:bg-primary 2xl:px-3 2xl:text-sm 2xl:font-normal 2xl:text-tertiary"
+                    >
+                        <Search className="size-5 2xl:size-4" aria-hidden />
+                        <span className="hidden flex-1 text-left 2xl:inline">{t.nav.mega.searchField}</span>
+                        <kbd className="hidden rounded-md border border-secondary bg-secondary px-1.5 py-0.5 font-sans text-xs text-tertiary 2xl:inline">{SHORTCUT}</kbd>
+                    </button>
                     <LanguageMenu className="hidden lg:block" />
                     <ThemeToggle />
                     <UploadButton
                         size="md"
-                        label={t.common.startEditing}
+                        label={t.nav.mega.openStudio}
                         navigateTo={ROUTES.editor}
-                        showIcon={false}
+                        icon={Sparkles}
+                        trailingIcon={ArrowRight}
                         className="ml-1 hidden md:inline-flex"
-                        buttonClassName="nav-cta rounded-full px-5 before:rounded-full"
+                        // No inner highlight border or inset ring: a flat, borderless fill.
+                        buttonClassName="nav-cta rounded-xl px-4 shadow-none! ring-0! before:hidden"
                     />
                     <button
                         ref={menuButtonRef}
@@ -86,6 +103,7 @@ export function Navbar() {
             </div>
 
             <MobileNav id={MOBILE_NAV_ID} open={menuOpen} onClose={closeMenu} activeSection={activeSection} />
+            <SearchDialog />
         </header>
     );
 }

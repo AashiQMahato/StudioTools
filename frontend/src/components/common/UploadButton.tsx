@@ -1,4 +1,4 @@
-import { Upload } from "lucide-react";
+import { type LucideIcon, Upload } from "lucide-react";
 import { useEffect } from "react";
 import { Button } from "@/components/ui/base/buttons/button";
 import { useImageUpload } from "@/hooks/useImageUpload";
@@ -13,6 +13,9 @@ interface UploadButtonProps {
     buttonClassName?: string;
     label?: string;
     showIcon?: boolean;
+    /** Replaces the upload icon, and an optional icon after the label (the navbar's "Open Studio"). */
+    icon?: LucideIcon;
+    trailingIcon?: LucideIcon;
     /** Where to go after picking an image. Defaults to the background remover; `null` stays put. */
     navigateTo?: AppRoute | null;
     /** Show validation errors yourself (e.g. in place of a hint) instead of the built-in note. */
@@ -20,7 +23,7 @@ interface UploadButtonProps {
 }
 
 /** Primary "Upload image" action. Validation errors appear in a small note beneath the button. */
-export function UploadButton({ size = "xl", className, buttonClassName, label, showIcon = true, onErrorChange, navigateTo }: UploadButtonProps) {
+export function UploadButton({ size = "xl", className, buttonClassName, label, showIcon = true, icon, trailingIcon, onErrorChange, navigateTo }: UploadButtonProps) {
     const t = useT();
     const { openPicker, inputProps, error, clearError } = useImageUpload({ navigateTo });
 
@@ -39,7 +42,8 @@ export function UploadButton({ size = "xl", className, buttonClassName, label, s
             <Button
                 size={size}
                 color="primary"
-                iconLeading={showIcon ? Upload : undefined}
+                iconLeading={showIcon ? (icon ?? Upload) : undefined}
+                iconTrailing={trailingIcon}
                 onPress={openPicker}
                 className={cn("press-scale w-full", buttonClassName)}
             >

@@ -44,7 +44,8 @@ const PhotoRestorationPage = lazy(() => import("@/pages/PhotoRestoration/PhotoRe
 const SocialResizerPage = lazy(() => import("@/pages/SocialResizer/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage })));
 const DocumentScannerPage = lazy(() => import("@/pages/DocumentScanner/DocumentScannerPage").then((module) => ({ default: module.DocumentScannerPage })));
 
-const later = (page: ReactNode) => <Suspense fallback={null}>{page}</Suspense>;
+// A tall placeholder while a page loads, so the footer isn't pushed down (a layout shift) when it arrives.
+const later = (page: ReactNode) => <Suspense fallback={<div aria-hidden className="min-h-dvh" />}>{page}</Suspense>;
 
 export function AppRoutes() {
     return (

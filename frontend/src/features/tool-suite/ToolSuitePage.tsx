@@ -1,7 +1,8 @@
 import { ArrowRight, LayoutGrid, type LucideIcon, Search, ShieldCheck, X, Zap } from "lucide-react";
 import { type CSSProperties, type KeyboardEvent as ReactKeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
-import { type MenuItemKey, type MenuSectionKey, menuItemCopy, type ToolMenu } from "@/components/layout/toolMenus";
+import { type MenuSectionKey, menuItemCopy, type ToolMenu } from "@/components/layout/toolMenus";
+import { TOOL_ACCENT } from "@/components/layout/toolRegistry";
 import { TOOL_CATALOG } from "@/lib/constants/toolCatalog";
 import { cn } from "@/lib/utils/cn";
 import { type Dictionary, useT } from "@/i18n";
@@ -20,43 +21,6 @@ const SECTION_TONE: Record<MenuSectionKey, string> = {
     editSecure: "#7C3AED",
 };
 
-/** Each tool's own colour (icon tile, card tint, arrow). Tools without one take their section's. */
-const ACCENT: Partial<Record<MenuItemKey, string>> = {
-    removeBackground: "#8B5CF6",
-    upscaler: "#6366F1",
-    retouch: "#EC4899",
-    watermarkRemover: "#F59E0B",
-    photoGenerator: "#0EA5E9",
-    editor: "#3B82F6",
-    crop: "#10B981",
-    rotateFlip: "#14B8A6",
-    compressor: "#F43F5E",
-    resize: "#F97316",
-    ocr: "#6366F1",
-    textEditor: "#3B82F6",
-    textCleaner: "#10B981",
-    findReplace: "#F59E0B",
-    wordCounter: "#D946EF",
-    caseConverter: "#14B8A6",
-    organizePdf: "#F43F5E",
-    pdfMerge: "#EF4444",
-    pdfSplit: "#F43F5E",
-    pdfCompress: "#EF4444",
-    pdfRotate: "#F43F5E",
-    extractPages: "#EF4444",
-    pdfToWord: "#2563EB",
-    pdfToText: "#0D9488",
-    pdfToImages: "#0EA5E9",
-    imagesToPdf: "#06B6D4",
-    pdfToJpg: "#0EA5E9",
-    pdfToPng: "#3B82F6",
-    pdfEditor: "#8B5CF6",
-    pdfSign: "#7C3AED",
-    pdfWatermark: "#A855F7",
-    pdfPageNumbers: "#6366F1",
-    pdfProtect: "#7C3AED",
-    pdfUnlock: "#8B5CF6",
-};
 
 interface Card {
     /** `section:item`, so the filters can match a card to its section. */
@@ -297,7 +261,7 @@ function menuCards<K extends MenuSectionKey>(t: Dictionary, menu: ToolMenu<K>): 
             ...menuItemCopy(t, item.key),
             label: menu.sectionCopy(t, section.key).title,
             tone: SECTION_TONE[section.key],
-            accent: ACCENT[item.key] ?? SECTION_TONE[section.key],
+            accent: TOOL_ACCENT[item.key] ?? SECTION_TONE[section.key],
             isNew: item.isNew,
         })),
     );

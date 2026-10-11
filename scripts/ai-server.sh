@@ -21,7 +21,7 @@ if port_busy "$PORT"; then
   [[ "$PORT" == "$taken" ]] && { echo "Ports $taken–$((taken + 49)) are all in use. Set AI_SERVER_PORT to a free one." >&2; exit 1; }
   echo "Port $taken is in use ($(lsof -nP -iTCP:"$taken" -sTCP:LISTEN 2>/dev/null | awk 'NR==2 {print $1" pid "$2}')) — using $PORT instead."
 fi
-SITE="${SITE_URL:-https://imagetools-358n.onrender.com}"
+SITE="${SITE_URL:-https://studiotools.tech,https://www.studiotools.tech}"
 
 TS="$(command -v tailscale || true)"
 [[ -z "$TS" && -x /Applications/Tailscale.app/Contents/MacOS/Tailscale ]] && TS=/Applications/Tailscale.app/Contents/MacOS/Tailscale

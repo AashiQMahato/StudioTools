@@ -27,3 +27,6 @@ __pycache__/
 
 # Local scratch files (tests, snapshots)
 .tmp-*
+
+# graphify knowledge-graph output (local only)
+graphify-out/

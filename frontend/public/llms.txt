@@ -1,0 +1,22 @@
+# Studio Tools
+
+> Free online image, OCR and PDF tools that run in your browser or on a private server. Files are processed for your request only and deleted afterwards.
+
+## Image tools
+
+- [Background Remover](https://studiotools.tech/remove-background): cut out the subject as a transparent PNG
+- [AI Upscaler](https://studiotools.tech/upscale): enlarge images 2x or 4x
+- [Object Remover](https://studiotools.tech/object-remover): erase people, text and clutter with AI inpainting
+- [Photo Restoration](https://studiotools.tech/photo-restoration): reduce noise, repair scratches, revive faded photos, colorize, enhance faces
+- [Social Media Resizer](https://studiotools.tech/social-media-resizer): exact sizes for Instagram, Facebook, LinkedIn, YouTube and TikTok
+- [Image Compressor](https://studiotools.tech/compress), [Crop](https://studiotools.tech/crop), [Editor](https://studiotools.tech/editor)
+
+## Documents
+
+- [Document Scanner](https://studiotools.tech/document-scanner): photos of paper to flat, clean scans and PDFs
+- [OCR Editor](https://studiotools.tech/ocr): extract English and Nepali text from images and PDFs
+- [PDF tools](https://studiotools.tech/documents): merge, split, compress, convert, sign, protect and unlock PDFs
+
+## Optional
+
+- [Sitemap](https://studiotools.tech/sitemap.xml)

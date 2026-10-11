@@ -1,7 +1,7 @@
 {
     "site": {
         "name": "Studio Tools",
-        "url": "https://imagetools-358n.onrender.com",
+        "url": "https://studiotools.tech",
         "image": "/og-image.png",
         "imageAlt": "Studio Tools — free image, OCR and PDF tools",
         "locale": "en_US",
@@ -69,15 +69,15 @@
             "priority": 0.8
         },
         "/social-media-resizer": {
-            "title": "Social Media Image Resizer — Instagram, YouTube, TikTok Sizes | Studio Tools",
+            "title": "Social Media Image Resizer — Exact Sizes | Studio Tools",
             "heading": "Resize images for social media",
-            "description": "Exact sizes for Instagram, Facebook, LinkedIn, YouTube and TikTok. Position, zoom and pad your image on a live canvas, then export PNG, JPG or WebP — in your browser.",
+            "description": "Exact sizes for Instagram, Facebook, LinkedIn, YouTube and TikTok. Position, zoom and pad your image, then export PNG, JPG or WebP in your browser.",
             "priority": 0.8
         },
         "/document-scanner": {
             "title": "Document Scanner — Photo to Flat PDF Scan | Studio Tools",
             "heading": "Scan documents from photos",
-            "description": "Turn photos of paper into flat, clean scans: automatic edge detection, perspective correction, black-and-white and shadow clean-up, multi-page PDF export. Runs in your browser.",
+            "description": "Turn photos of paper into flat, clean scans: automatic edge detection, perspective correction, shadow clean-up and PDF export in your browser.",
             "priority": 0.8
         },
         "/compress": {

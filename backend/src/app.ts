@@ -26,6 +26,8 @@ export function createApp() {
             exposedHeaders: [
                 "Content-Disposition",
                 "X-Image-Width",
+                "X-Inpaint-Engine",
+                "X-Restore-Steps",
                 "X-Image-Height",
                 "X-Original-Width",
                 "X-Original-Height",

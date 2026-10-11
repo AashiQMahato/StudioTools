@@ -741,6 +741,111 @@ async def inpaint_region(file: UploadFile = File(...), mask: UploadFile = File(.
     return Response(content=png, media_type="image/png")
 
 
+# ---------------------------------------------------------------- photo restoration
+
+# One restoration step at a time: denoising and the face model are heavy on a CPU.
+restore_slots = threading.BoundedSemaphore(1)
+
+
+def restore(operation: str, data: bytes) -> tuple[bytes, dict[str, str]]:
+    """
+    Runs one restoration step on an upright image and returns it as PNG, with headers naming the engine
+    that did the work — or why the step was skipped (nothing to do), so nothing is ever claimed falsely.
+    """
+    import cv2
+    import numpy as np
+    import restoration
+
+    pixels = cv2.imdecode(np.frombuffer(data, np.uint8), cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    if pixels is None:
+        raise ValueError("decode")
+    if pixels.shape[0] * pixels.shape[1] > MAX_PIXELS:
+        raise ValueError("size")
+    headers: dict[str, str] = {}
+    if operation == "scratches":
+        mask = restoration.scratch_mask(pixels)
+        headers["X-Coverage"] = f"{float((mask > 0).mean()):.4f}"
+        if not mask.any():
+            headers["X-Skipped"] = "nothing-found"
+        elif os.path.isfile(INPAINT_MODEL):
+            ok, mask_png = cv2.imencode(".png", mask)
+            ok_image, image_png = cv2.imencode(".png", pixels)
+            if not (ok and ok_image):
+                raise ValueError("encode")
+            lama_slots.acquire()
+            try:
+                filled = inpaint(image_png.tobytes(), mask_png.tobytes())
+            finally:
+                lama_slots.release()
+            pixels = cv2.cvtColor(np.asarray(Image.open(io.BytesIO(filled)).convert("RGB")), cv2.COLOR_RGB2BGR)
+            headers["X-Engine"] = "lama-onnx"
+        else:
+            pixels = restoration.telea(pixels, mask)
+            headers["X-Engine"] = "opencv-telea"
+    elif operation == "denoise":
+        pixels = restoration.denoise(pixels)
+        headers["X-Engine"] = "opencv-nlmeans"
+    elif operation == "fade":
+        pixels = restoration.fade(pixels)
+        headers["X-Engine"] = "opencv-clahe"
+    elif operation == "colorize":
+        if restoration.is_monochrome(pixels):
+            pixels = restoration.colorize(pixels)
+            headers["X-Engine"] = "eccv16-onnx"
+        else:
+            headers["X-Skipped"] = "already-colour"
+    elif operation == "faces":
+        pixels, count, skipped = restoration.restore_faces(pixels)
+        headers["X-Faces"] = str(count)
+        headers["X-Faces-Skipped"] = str(skipped)
+        if count:
+            headers["X-Engine"] = "gfpgan-1.4-onnx"
+        else:
+            headers["X-Skipped"] = "no-faces"
+    ok, png = cv2.imencode(".png", pixels, [cv2.IMWRITE_PNG_COMPRESSION, 1])
+    if not ok:
+        raise ValueError("encode")
+    return png.tobytes(), headers
+
+
+@app.get("/restore/capabilities")
+async def restore_capabilities(x_internal_token: str | None = Header(default=None)):
+    if not authorised(x_internal_token):
+        return error(401, "UNAUTHORIZED", "Unauthorized.")
+    import restoration
+
+    return restoration.available()
+
+
+@app.post("/restore/{operation}")
+async def restore_step(operation: str, file: UploadFile = File(...), x_internal_token: str | None = Header(default=None)):
+    if not authorised(x_internal_token):
+        return error(401, "UNAUTHORIZED", "Unauthorized.")
+    import restoration
+
+    if operation not in restoration.OPERATIONS:
+        return error(404, "INVALID_OPERATIONS", "Unknown restoration step.")
+    if not restoration.available()[operation]:
+        return error(503, "RESTORATION_UNAVAILABLE", "That restoration step isn't set up on this server.")
+    data = await file.read(MAX_BYTES * 4 + 1)
+    # Steps hand each other lossless PNGs, which run larger than the upload limit for JPEG photos.
+    if len(data) > MAX_BYTES * 4:
+        return error(413, "FILE_TOO_LARGE", "The image is too large.")
+    await run_in_threadpool(restore_slots.acquire)
+    started = time.perf_counter()
+    try:
+        png, headers = await run_in_threadpool(restore, operation, data)
+    except ValueError:
+        return error(422, "INVALID_IMAGE", "The file could not be read as an image.")
+    except Exception:  # noqa: BLE001
+        log.exception("restoration step %s failed", operation)
+        return error(500, "PROCESSING_FAILED", "Restoration failed.")
+    finally:
+        restore_slots.release()
+    log.info("restore %s in %.2fs", operation, time.perf_counter() - started)
+    return Response(content=png, media_type="image/png", headers=headers)
+
+
 # ---------------------------------------------------------------- PDF pages
 
 # PDF files are read only from the Node API's documents workspace — a path anywhere else is refused.

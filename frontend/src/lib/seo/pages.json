@@ -56,6 +56,36 @@
             "description": "Remove text, logos and marks from images you own. Brush over the watermark and AI fills the area naturally. Free online watermark remover.",
             "priority": 0.7
         },
+        "/object-remover": {
+            "title": "AI Object Remover — Erase People, Text & Clutter | Studio Tools",
+            "heading": "Remove objects from photos with AI",
+            "description": "Brush over people, text, wires or clutter and let LaMa AI inpainting rebuild the background. Compare before and after, then download at full resolution.",
+            "priority": 0.8
+        },
+        "/photo-restoration": {
+            "title": "Old Photo Restoration & Colorize — Repair Scratches | Studio Tools",
+            "heading": "Restore and colorize old photos",
+            "description": "Repair scratches and damage, reduce noise, revive faded photos, colorize black-and-white pictures and enhance faces. Compare with the original and download.",
+            "priority": 0.8
+        },
+        "/image-translator": {
+            "title": "Image Translator — Translate Text in Photos & Screenshots | Studio Tools",
+            "heading": "Translate the text in an image",
+            "description": "Extract English or Nepali text from photos, signs, posters and screenshots with OCR, correct it, and translate it. Copy, download or export a translated image.",
+            "priority": 0.8
+        },
+        "/social-media-resizer": {
+            "title": "Social Media Image Resizer — Instagram, YouTube, TikTok Sizes | Studio Tools",
+            "heading": "Resize images for social media",
+            "description": "Exact sizes for Instagram, Facebook, LinkedIn, YouTube and TikTok. Position, zoom and pad your image on a live canvas, then export PNG, JPG or WebP — in your browser.",
+            "priority": 0.8
+        },
+        "/document-scanner": {
+            "title": "Document Scanner — Photo to Flat PDF Scan | Studio Tools",
+            "heading": "Scan documents from photos",
+            "description": "Turn photos of paper into flat, clean scans: automatic edge detection, perspective correction, black-and-white and shadow clean-up, multi-page PDF export. Runs in your browser.",
+            "priority": 0.8
+        },
         "/compress": {
             "title": "Image Compressor — Reduce JPG, PNG & WebP Size | Studio Tools",
             "heading": "Compress images",

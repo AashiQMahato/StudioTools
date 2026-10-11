@@ -185,6 +185,21 @@ PY
   fetch_model lama_fp32.onnx "https://huggingface.co/Carve/LaMa-ONNX/resolve/main/lama_fp32.onnx" \
     1faef5301d78db7dda502fe59966957ec4b79dd64e16f03ed96913c7a4eb68d6
   ok "Inpainting model (LaMa) ready"
+  echo "  Downloading GFPGAN v1.4 face restoration model (~340 MB, first run only)…"
+  fetch_model gfpgan_v1.4.onnx "https://huggingface.co/Neus/GFPGANv1.4/resolve/main/GFPGANv1.4.onnx" \
+    cd7311b8d9e13cdb1e208b12363182da58c7bf45e26d1aa67bbeac4751aae92e
+  ok "Face restoration model (GFPGAN) ready"
+  # Colorization: the official ECCV16 PyTorch weights, exported once to ONNX (needs PyTorch, from requirements-ai.txt).
+  if [[ ! -f "$MODELS_HOME/colorization_eccv16.onnx" ]] && "$VENV/bin/python" -c "import torch" 2>/dev/null; then
+    echo "  Exporting ECCV16 colorization model (~130 MB download, first run only)…"
+    WEIGHTS="$(mktemp -d)/eccv16.pth"
+    curl -fsSL "https://colorizers.s3.us-east-2.amazonaws.com/colorization_release_v2-9b330a0b.pth" -o "$WEIGHTS"
+    echo "9b330a0bae53f4ded77b1e23defbf78beaa09c10ebc4c4999e8e4f4a160b93f9  $WEIGHTS" | shasum -a 256 -c - >/dev/null || { fail "Colorization weights didn't match their checksum."; exit 1; }
+    "$VENV/bin/python" -c "import onnx" 2>/dev/null || "$VENV/bin/python" -m pip install -q onnx==1.19.1 || uv pip install -q --python "$VENV/bin/python" onnx==1.19.1
+    "$VENV/bin/python" -I "$ROOT/backend/python/scripts/export_colorization_onnx.py" "$WEIGHTS" "$MODELS_HOME/colorization_eccv16.onnx"
+    rm -f "$WEIGHTS"
+  fi
+  [[ -f "$MODELS_HOME/colorization_eccv16.onnx" ]] && ok "Colorization model (ECCV16) ready" || echo "  Colorization skipped (needs PyTorch: run without BACKGROUND_REMOVAL=off)."
 fi
 
 # ---------------------------------------------------------------- OCR (PaddleOCR)

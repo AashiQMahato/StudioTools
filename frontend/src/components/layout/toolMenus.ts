@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Files, type LucideIcon, Replace, ScanText, ShieldCheck, SlidersHorizontal, Sparkles, Gauge, FileImage, FileOutput } from "lucide-react";
+import { ArrowLeftRight, Files, History, type LucideIcon, Replace, ScanText, ShieldCheck, SlidersHorizontal, Sparkles, Gauge, FileImage, FileOutput } from "lucide-react";
 import type { Dictionary } from "@/i18n";
 import { ORGANIZE_MODES, type ToolKey } from "@/lib/constants/navigation";
 import { type AppRoute, ROUTES } from "@/lib/constants/routes";
@@ -66,7 +66,10 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
         items: [
             tool("removeBackground", ROUTES.removeBackground),
             tool("upscaler", ROUTES.upscale),
+            { ...tool("objectRemover", ROUTES.objectRemover), isNew: true },
             tool("retouch", ROUTES.retouch),
+            { ...tool("photoRestoration", ROUTES.photoRestoration), isNew: true },
+            { ...tool("imageTranslator", ROUTES.imageTranslator), isNew: true },
             tool("watermarkRemover", ROUTES.watermarkRemover),
             tool("photoGenerator", ROUTES.photoGenerator),
         ],
@@ -86,6 +89,7 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
         icon: Gauge,
         items: [
             tool("compressor", ROUTES.compress),
+            { ...tool("socialResizer", ROUTES.socialResizer), isNew: true },
             // Resizing is a panel of the editor.
             { ...tool("resize", ROUTES.editor), alias: true },
         ],
@@ -97,10 +101,11 @@ export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
     sectionCopy: (t, key) => t.nav.imageMenu.sections[key],
     viewAll: (t) => t.nav.imageMenu.viewAll,
     sections: IMAGE_SECTIONS,
-    // Two columns: the AI tools, and everything for editing and optimizing.
+    // Three columns: AI clean-up, AI photo and text, and everything for editing, optimizing and resizing.
     featured: [
-        { key: "aiTools", icon: Sparkles, items: pick(IMAGE_SECTIONS, "removeBackground", "upscaler", "retouch", "watermarkRemover", "photoGenerator") },
-        { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "crop", "rotateFlip", "compressor", "resize") },
+        { key: "aiTools", icon: Sparkles, items: pick(IMAGE_SECTIONS, "removeBackground", "upscaler", "objectRemover", "retouch", "watermarkRemover") },
+        { key: "aiPhotoText", icon: History, items: pick(IMAGE_SECTIONS, "photoRestoration", "imageTranslator", "photoGenerator") },
+        { key: "editOptimize", icon: SlidersHorizontal, items: pick(IMAGE_SECTIONS, "editor", "crop", "rotateFlip", "compressor", "resize", "socialResizer") },
     ],
 };
 
@@ -136,6 +141,7 @@ const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
         key: "convert",
         icon: ArrowLeftRight,
         items: [
+            { ...tool("documentScanner", ROUTES.documentScanner), isNew: true },
             tool("pdfToWord", ROUTES.pdfToWord),
             tool("pdfToText", ROUTES.pdfToText),
             tool("pdfToImages", ROUTES.pdfToImages),
@@ -167,7 +173,7 @@ export const documentMenu: ToolMenu<DocumentMenuSectionKey> = {
     // Three columns of five: text, PDFs (organizing and converting together), editing and securing.
     featured: [
         { key: "textOcr", icon: ScanText, items: pick(DOCUMENT_SECTIONS, "ocr", "textEditor", "textCleaner", "findReplace", "wordCounter") },
-        { key: "pdfConvert", icon: Files, items: pick(DOCUMENT_SECTIONS, "pdfMerge", "pdfSplit", "pdfCompress", "pdfToWord", "pdfToImages") },
+        { key: "pdfConvert", icon: Files, items: pick(DOCUMENT_SECTIONS, "documentScanner", "pdfMerge", "pdfSplit", "pdfCompress", "pdfToWord", "pdfToImages") },
         { key: "editSecure", icon: ShieldCheck, items: pick(DOCUMENT_SECTIONS, "pdfEditor", "pdfSign", "pdfWatermark", "pdfProtect", "pdfUnlock") },
     ],
 };

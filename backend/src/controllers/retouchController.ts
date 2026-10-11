@@ -16,6 +16,24 @@ function parseFraction(value: unknown, fallback: number): number {
     return value === undefined || value === "" || !Number.isFinite(number) ? fallback : Math.min(1, Math.max(0, number));
 }
 
+/** Object removal is AI inpainting only: without LaMa (local or IOPaint) it says so instead of degrading quietly. */
+export const objectRemovalUnavailable = () =>
+    new AppError("AI object removal isn't available on this server: it needs the LaMa inpainting model (run scripts/setup-ml.sh) or an IOPaint server (RETOUCH_SERVICE_URL).", 503, "OBJECT_REMOVAL_UNAVAILABLE");
+
+export const removeObjectHandler: RequestHandler = async (req, res) => {
+    const engine = retouching.aiInpainter();
+    if (!engine) throw objectRemovalUnavailable();
+    const files = (req.files ?? {}) as Record<string, Express.Multer.File[] | undefined>;
+    const input = await validateImage(files.file?.[0]);
+    const mask = files.mask?.[0];
+    if (!mask || mask.size === 0) throw new AppError("Brush over what you want removed first.", 400, "EMPTY_MASK");
+
+    const output = await retouching.retouch(input, mask.buffer, { mode: "remove", strength: 1, texture: 0 }, processingContext(req, res), engine);
+    // Which model filled the area, so the page can say so (never a classical fill: see aiInpainter).
+    res.set("X-Inpaint-Engine", retouching.providerName("remove", engine));
+    sendImage(res, output, `${safeBaseName(input.originalName)}-object-removed.${output.extension}`, input);
+};
+
 export const retouchHandler: RequestHandler = async (req, res) => {
     const body = (req.body ?? {}) as Record<string, unknown>;
     const mode = parseMode(body.mode);

@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useRef, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useRef, useState } from "react";
 import { create } from "zustand";
 import { clearDraftImage, type DraftSection, loadDraftImage, saveDraftImage } from "@/lib/draft";
 import type { ImageDimensions, ImageFile, UpscaleFactor } from "@/types/image";
@@ -15,6 +15,8 @@ import type { ImageDimensions, ImageFile, UpscaleFactor } from "@/types/image";
  */
 interface ImageState {
     original: ImageFile | null;
+    /** A name the user typed in the top bar; it replaces the file's name in every tool until a different image is chosen. */
+    customName: string | null;
     /** Changes only when a different image is chosen, never when a tool publishes a result. */
     session: string;
     selectedScale: UpscaleFactor;
@@ -26,6 +28,7 @@ interface ImageState {
      */
     publish: (session: string, result: { blob: Blob; name: string; dimensions: ImageDimensions }, editedBy: string | undefined) => ImageFile | null;
     setSelectedScale: (scale: UpscaleFactor) => void;
+    rename: (name: string) => void;
     clear: () => void;
 }
 
@@ -48,13 +51,14 @@ function persist(image: ImageFile | null, section: DraftSection | null) {
 const createImageStore = (section: DraftSection | null) =>
     create<ImageState>()((set, get) => ({
         original: null,
+        customName: null,
         session: crypto.randomUUID(),
         selectedScale: 2,
 
         setOriginal: (image) => {
             const previous = get().original;
             if (previous && previous.previewUrl !== image?.previewUrl) retire(previous.previewUrl);
-            set({ original: image, session: crypto.randomUUID() });
+            set({ original: image, customName: null, session: crypto.randomUUID() });
             persist(image, section);
         },
         publish: (session, { blob, name, dimensions }, editedBy) => {
@@ -68,6 +72,7 @@ const createImageStore = (section: DraftSection | null) =>
             return image;
         },
         setSelectedScale: (selectedScale) => set({ selectedScale }),
+        rename: (customName) => set({ customName }),
         clear: () => get().setOriginal(null),
     }));
 
@@ -98,7 +103,8 @@ export function useToolImage() {
         current = { session, image: original };
         setSnapshot(current);
     }
-    const image = current.image;
+    const customName = store((state) => state.customName);
+    const image = useMemo(() => (current.image && customName ? { ...current.image, name: customName } : current.image), [current.image, customName]);
     useEffect(() => {
         if (!image) return;
         const url = image.previewUrl;

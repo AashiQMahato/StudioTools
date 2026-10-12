@@ -2,7 +2,7 @@ import { CheckCircle2, LoaderCircle, RotateCcw, RotateCw, Undo2 } from "lucide-r
 import { useState } from "react";
 import { type GeneratedPhoto, rotatePhoto } from "@/lib/api/photoGeneratorApi";
 import { useT } from "@/i18n";
-import { formatAngle } from "./ProcessingView";
+import { formatAngle } from "./formatAngle";
 
 const STEP = 0.5;
 

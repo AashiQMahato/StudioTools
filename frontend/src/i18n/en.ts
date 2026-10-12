@@ -149,6 +149,7 @@ export const en = {
         },
     },
 
+    support: { coffee: "Buy me a coffee", label: "Support with eSewa: scan this QR code", close: "Close" },
     footer: {
         trust: "Files are deleted automatically after processing",
         backToTop: "Back to top",
@@ -163,6 +164,7 @@ export const en = {
         about: "About",
         privacy: "Privacy",
         terms: "Terms",
+        designedBy: "Designed by",
         rights: (year: number) => `© ${year} Studio Tools. All rights reserved.`,
         privacyNote: "Files are processed securely and temporary files are automatically removed.",
     },

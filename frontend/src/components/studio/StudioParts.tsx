@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, X } from "lucide-react";
+import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, Coffee, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, X } from "lucide-react";
 import { type PointerEvent, type ReactNode, useId, useRef, useState } from "react";
 import { CompareSlider } from "@/components/common/CompareSlider";
 import { Segmented } from "@/components/common/Segmented";
@@ -7,6 +7,7 @@ import { useFitSize } from "@/hooks/useFitSize";
 import { cn } from "@/lib/utils/cn";
 import type { ImageDimensions } from "@/types/image";
 import { useT } from "@/i18n";
+import { useSupport } from "@/store/useSupport";
 import { useStudio } from "./StudioShell";
 
 /**
@@ -174,6 +175,8 @@ export interface Notice {
 
 /** One line under the canvas saying what just happened. */
 export function StudioNotice({ notice }: { notice: Notice }) {
+    const t = useT();
+    const openSupport = useSupport((state) => state.setOpen);
     const Icon = notice.tone === "success" ? CheckCircle2 : notice.tone === "error" ? CircleAlert : Info;
     return (
         <p
@@ -188,7 +191,18 @@ export function StudioNotice({ notice }: { notice: Notice }) {
             )}
         >
             <Icon className="size-4 shrink-0" aria-hidden />
-            <span className="min-w-0 truncate">{notice.text}</span>
+            <span className="min-w-0 flex-1 truncate">{notice.text}</span>
+            {notice.tone === "success" && (
+                <button
+                    type="button"
+                    onClick={() => openSupport(true)}
+                    title={t.support.coffee}
+                    className="ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full bg-black/5 px-2.5 py-1 text-xs font-medium outline-focus-ring transition-colors duration-150 hover:bg-black/10 focus-visible:outline-2 dark:bg-white/10 dark:hover:bg-white/15"
+                >
+                    <Coffee className="size-3.5" aria-hidden />
+                    <span className="max-sm:sr-only">{t.support.coffee}</span>
+                </button>
+            )}
         </p>
     );
 }

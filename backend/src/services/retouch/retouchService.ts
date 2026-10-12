@@ -1,11 +1,13 @@
 import sharp from "sharp";
 import { env } from "../../config/env.js";
-import type { ImageInput, ImageOutput, ProcessingContext, RetouchMode, RetouchOptions, RetouchProvider } from "../../types/image.js";
+import type { ImageInput, ImageOutput, ProcessingContext, RawImage, RetouchMode, RetouchOptions, RetouchProvider } from "../../types/image.js";
 import { AppError } from "../../utils/AppError.js";
 import { ConcurrencyLimiter } from "../../utils/concurrency.js";
 import { encodeLike } from "../image-processing/encode.js";
 import { iopaintProvider } from "./providers/iopaintProvider.js";
 import { lamaProvider } from "./providers/lamaProvider.js";
+import { premiumInpaintBlocker } from "../inpaint-service/inpaintServiceProcess.js";
+import { powerpaintProvider } from "./providers/powerpaintProvider.js";
 import { localRetouchProvider } from "./providers/localProvider.js";
 import { dilate, gaussianBlur } from "./providers/pixels.js";
 
@@ -22,7 +24,10 @@ interface Rect {
 }
 
 /** Swap providers here; controllers only ever call this service. */
-export type ProviderPreference = "auto" | "local" | "lama" | "iopaint";
+export type ProviderPreference = "auto" | "local" | "lama" | "iopaint" | "powerpaint";
+
+/** Told, after a retouch, which engine really filled the area and whether High quality was asked for but not used. */
+export type EngineReport = (engine: string, fellBack: boolean) => void;
 
 /**
  * Filling modes (remove, repair) use AI inpainting when there is one: an IOPaint server if configured,
@@ -30,6 +35,9 @@ export type ProviderPreference = "auto" | "local" | "lama" | "iopaint";
  * else is the built-in engine's job. A preference pins the choice.
  */
 function providerFor(mode: RetouchMode, preference: ProviderPreference = env.retouch.provider): RetouchProvider {
+    if (preference === "powerpaint" && powerpaintProvider.supports(mode) && powerpaintProvider.isAvailable()) return powerpaintProvider;
+    // An unavailable premium engine isn't an error: the default (LaMa) engine takes over, and the caller is told.
+    if (preference === "powerpaint") preference = env.retouch.provider;
     if (preference === "local" || !lamaProvider.supports(mode)) return localRetouchProvider;
     if (preference === "iopaint") return iopaintProvider;
     if (preference === "lama") return lamaProvider;
@@ -105,8 +113,8 @@ const resizeRaw = (data: Buffer, width: number, height: number, channels: 1 | 3,
  * context, scaled down if it's larger than a provider should handle, retouched, and blended back
  * through the (feathered) selection — so every unselected pixel leaves exactly as it arrived.
  */
-async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference): Promise<ImageOutput> {
-    const provider = providerFor(options.mode, preference);
+async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference, report?: EngineReport): Promise<ImageOutput> {
+    let provider = providerFor(options.mode, preference);
     if (!provider.isAvailable()) throw new AppError("Retouching is temporarily unavailable. Please try again in a moment.", 503, "RETOUCH_UNAVAILABLE");
 
     const { width, height } = input;
@@ -144,7 +152,20 @@ async function retouch(input: ImageInput, maskFile: Buffer, options: RetouchOpti
         blend = toBytes(gaussianBlur(hole, work.width, work.height, 1.5));
     }
 
-    let processed = await provider.retouch({ data: regionRgb, ...work }, { data: providerMask, ...work }, options, context);
+    const asked = preference === "powerpaint" && powerpaintProvider.supports(options.mode);
+    let fellBack = asked && provider !== powerpaintProvider;
+    let processed: RawImage;
+    try {
+        processed = await provider.retouch({ data: regionRgb, ...work }, { data: providerMask, ...work }, options, context);
+    } catch (error) {
+        // High quality failed (crashed, ran out of memory, timed out): LaMa does it instead, and the result says so.
+        if (provider !== powerpaintProvider || context.signal.aborted) throw error;
+        console.warn("[retouch] High quality failed, falling back:", error instanceof Error ? error.message : error);
+        provider = providerFor(options.mode, "auto");
+        fellBack = true;
+        processed = await provider.retouch({ data: regionRgb, ...work }, { data: providerMask, ...work }, options, context);
+    }
+    report?.(provider.name, fellBack);
     if (processed.width !== work.width || processed.height !== work.height) {
         processed = { data: await resizeRaw(processed.data, processed.width, processed.height, 3, work), ...work };
     }
@@ -193,6 +214,8 @@ export const retouching = {
      */
     aiInpainter: (): ProviderPreference | null => (iopaintProvider.isAvailable() ? "iopaint" : lamaProvider.isAvailable() ? "lama" : null),
     /** `preference` overrides RETOUCH_PROVIDER for this call (e.g. the watermark remover's own setting). */
-    retouch: (input: ImageInput, mask: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference): Promise<ImageOutput> =>
-        limiter.run(() => retouch(input, mask, options, context, preference).finally(releaseMemory), context.signal),
+    retouch: (input: ImageInput, mask: Buffer, options: RetouchOptions, context: ProcessingContext, preference?: ProviderPreference, report?: EngineReport): Promise<ImageOutput> =>
+        limiter.run(() => retouch(input, mask, options, context, preference, report).finally(releaseMemory), context.signal),
+    /** High quality (PowerPaint) on this machine: whether it can run, and if not, why. */
+    premium: () => ({ available: powerpaintProvider.isAvailable(), blocker: premiumInpaintBlocker() }),
 };

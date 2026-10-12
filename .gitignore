@@ -20,6 +20,7 @@ build
 backend/vendor/
 backend/python/.venv/
 backend/python/.venv-ocr/
+backend/python/.venv-inpaint/
 backend/python/.models/
 __pycache__/
 *.pyc

@@ -11,14 +11,13 @@ import { documentMenu, imageMenu, type MenuItem, type MenuItemKey, menuItemCopy 
  * new tool is added there once; this file only decides where it sits in the navbar.
  */
 
-export type NavGroup = "image" | "ai" | "ocr" | "pdf";
-export const NAV_GROUPS: readonly NavGroup[] = ["image", "ai", "ocr", "pdf"];
+export type NavGroup = "ai" | "image" | "pdf";
+export const NAV_GROUPS: readonly NavGroup[] = ["ai", "image", "pdf"];
 
 /** The navbar's columns, in display order. Every tool appears in one column only. */
 const GROUP_TOOLS: Record<NavGroup, readonly MenuItemKey[]> = {
-    image: ["editor", "compressor", "socialResizer"],
     ai: ["removeBackground", "upscaler", "objectRemover", "retouch", "photoRestoration", "watermarkRemover", "photoGenerator"],
-    ocr: ["ocr", "pdfToText", "textEditor", "textCleaner"],
+    image: ["editor", "compressor", "socialResizer", "ocr", "pdfToText", "textEditor", "textCleaner"],
     pdf: ["pdfMerge", "pdfSplit", "pdfCompress", "pdfToWord", "pdfEditor", "pdfSign", "organizePdf", "documentScanner"],
 };
 

@@ -2,30 +2,15 @@
 
 Studio Tools runs open-source image-processing engines **locally, on the server**. Nothing here is sent to a third-party service. This file records what is used, where it comes from, and its licence. It is not legal advice — review it before you package or deploy the product commercially.
 
-## Background removal — rembg
+## Background removal — BiRefNet
 
 | | |
 | --- | --- |
-| Project | [rembg](https://github.com/danielgatis/rembg) by Daniel Gatis |
-| Version | 2.0.85 (pinned in `backend/python/rembg_service/requirements.txt`) |
-| Licence | MIT |
-| Used as | Python library inside our internal service (`backend/python/rembg_service`) |
-| Runtime | [ONNX Runtime](https://github.com/microsoft/onnxruntime) (MIT) |
+| Model | BiRefNet-Massive (Zheng Peng et al., `ZhengPeng7/BiRefNet-DIS5K-TR_TEs`) |
+| Licence | MIT: commercial use allowed |
+| Runtime | PyTorch (BSD-3-Clause) and `transformers` (Apache-2.0) in the internal image service |
 
-Security: 2.0.85 is later than every published rembg advisory, including the `/api/remove` URL SSRF fix (2.0.77) and the SAM `extras.sam_model` injection (only reachable through rembg's own HTTP server). This project does not use rembg's HTTP server, its URL input, SAM, or any request-supplied model name.
-
-### rembg models
-
-The model is chosen by the server operator with `REMBG_MODEL`. **Model weights carry their own licences**, separate from rembg's:
-
-| `REMBG_MODEL` | Model | Licence | Commercial use |
-| --- | --- | --- | --- |
-| `bria-rmbg` (code default) | BRIA RMBG-2.0 | CC BY-NC 4.0 ([model card](https://huggingface.co/briaai/RMBG-2.0)) | **No** — requires a commercial agreement with BRIA AI |
-| `birefnet-general`, `birefnet-general-lite`, `birefnet-portrait` | BiRefNet (Zheng Peng et al.) | MIT | Yes |
-| `isnet-general-use` | DIS / IS-Net (Xuebin Qin et al.) | Apache-2.0 | Yes |
-| `u2net`, `u2netp` | U²-Net (Xuebin Qin et al.) | Apache-2.0 | Yes |
-
-Weights are downloaded by rembg from its GitHub releases on first use and cached under `backend/python/.models/` (not committed).
+Weights are fetched once by `scripts/setup-ml.sh` from pinned revisions into `backend/python/.models/` (not committed) and only read while serving.
 
 ## Upscaling — Upscayl / upscayl-ncnn
 

@@ -93,7 +93,7 @@ export const ne: Dictionary = {
         mega: {
             tools: "उपकरण",
             popular: "लोकप्रिय",
-            groups: { image: "तस्बिर उपकरण", ai: "AI उपकरण", ocr: "OCR र पाठ", pdf: "PDF र कागजात" },
+            groups: { ai: "AI उपकरण", image: "तस्बिर र पाठ", pdf: "PDF र कागजात" },
             searchField: "उपकरण खोज्नुहोस्…",
             viewAll: "सबै उपकरण हेर्नुहोस्",
             viewAllPdf: "सबै PDF र कागजात उपकरण",
@@ -973,10 +973,18 @@ export const ne: Dictionary = {
         removing: "AI ले हटाउँदै…",
         done: (engine: string) => `${engine} ले हटाइयो। तुलना गर्नुहोस्, अनि राख्नुहोस् वा फेरि प्रयास गर्नुहोस्।`,
         aiEngine: "AI इनपेन्टिङ",
-        engines: { "lama-onnx": "LaMa AI इनपेन्टिङ", "iopaint-lama": "LaMa AI इनपेन्टिङ (IOPaint)" } as Record<string, string>,
+        engines: { "lama-onnx": "LaMa AI इनपेन्टिङ", "iopaint-lama": "LaMa AI इनपेन्टिङ (IOPaint)", "powerpaint-v2-1": "PowerPaint (उच्च गुणस्तर)" } as Record<string, string>,
     },
 
     retouch: {
+        quality: {
+            title: "गुणस्तर",
+            fast: "छिटो",
+            high: "उच्च",
+            hintFast: "LaMa: केही सेकेन्ड, धेरैजसो फोटोका लागि राम्रो।",
+            hintHigh: "PowerPaint: बनावट र विवरण जोगाउँछ, तर एक मिनेट वा बढी लाग्छ।",
+            fellBack: "उच्च गुणस्तर यहाँ चल्न सकेन, त्यसैले छिटो इन्जिनले यो गर्‍यो।",
+        },
         controlsLabel: "रिटच नियन्त्रणहरू",
         tabs: { retouch: "रिटच", export: "निर्यात" },
 

@@ -1,12 +1,11 @@
-import { ArrowRight, Search } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { CSSProperties, KeyboardEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import type { NavPanelProps } from "./NavDropdown";
-import { useToolSearch } from "@/store/useToolSearch";
-import { aiStudioTools, groupTools, NAV_GROUPS, popularTools, TOOL_ACCENT, type ToolEntry, toolCopy } from "./toolRegistry";
+import { aiStudioTools, groupTools, NAV_GROUPS, TOOL_ACCENT, type ToolEntry, toolCopy } from "./toolRegistry";
 
 const linkRing = "outline-focus-ring focus-visible:outline-2";
 
@@ -41,11 +40,10 @@ const ToolIcon = ({ tool, size = "sm" }: { tool: ToolEntry; size?: "sm" | "md" }
     </span>
 );
 
-/** Tools: shortcuts and a search field on top, then one column per kind of tool. */
+/** Tools: three columns — AI, image & text, PDF & documents. */
 export function ToolsMegaMenu({ id, open, panelRef, onNavigate, onKeyDown }: NavPanelProps) {
     const t = useT();
     const copy = t.nav.mega;
-    const openSearch = useToolSearch((state) => state.setOpen);
 
     // ↑ ↓ Home End move through every entry (the dropdown's own handling); ← → jump between columns.
     const onPanelKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
@@ -61,35 +59,10 @@ export function ToolsMegaMenu({ id, open, panelRef, onNavigate, onKeyDown }: Nav
     };
 
     return (
-        <div className="pointer-events-none absolute top-[calc(100%-1.125rem)] left-1/2 w-[min(60rem,calc(100vw-2rem))] -translate-x-1/2">
+        <div className="pointer-events-none absolute top-[calc(100%-1.125rem)] left-1/2 w-[min(46rem,calc(100vw-2rem))] -translate-x-1/2">
             <div id={id} ref={panelRef} data-open={open || undefined} inert={!open} onKeyDown={onPanelKeyDown} className="nav-panel pt-5">
                 <div className="overflow-hidden rounded-[1.25rem] border border-secondary bg-primary shadow-xl">
-                    <div className="flex items-center gap-3 border-b border-secondary px-4 py-3 xl:px-5">
-                        <button
-                            type="button"
-                            data-nav-item
-                            onClick={() => {
-                                onNavigate();
-                                openSearch(true);
-                            }}
-                            className={cn("flex h-9 w-56 shrink-0 cursor-pointer items-center gap-2 rounded-lg border border-secondary bg-secondary/50 px-3 text-sm text-tertiary transition-colors duration-150 hover:bg-secondary", linkRing)}
-                        >
-                            <Search className="size-4" aria-hidden />
-                            {copy.searchField}
-                        </button>
-                        <span aria-hidden className="h-5 w-px bg-[var(--card-line)]" />
-                        <section aria-label={copy.popular} className="flex min-w-0 flex-1 items-center gap-1.5">
-                            <h2 className="mr-1 shrink-0 text-label text-quaternary">{copy.popular}</h2>
-                            {popularTools().map((tool) => (
-                                <ToolLink key={tool.id} tool={tool} onNavigate={onNavigate} className="flex min-w-0 items-center gap-1.5 rounded-full border border-secondary px-3 py-1.5 text-sm font-medium whitespace-nowrap text-secondary hover:text-primary">
-                                    <tool.icon className="size-3.5 shrink-0 text-[var(--accent)]" strokeWidth={2} aria-hidden />
-                                    <span className="truncate">{toolCopy(t, tool).title}</span>
-                                </ToolLink>
-                            ))}
-                        </section>
-                    </div>
-
-                    <div className="grid grid-cols-4 gap-x-1 p-2.5 xl:gap-x-3 xl:p-4">
+                    <div className="grid grid-cols-3 gap-x-1 p-2.5 xl:gap-x-3 xl:p-4">
                         {NAV_GROUPS.map((group) => (
                             <section key={group} aria-labelledby={`nav-group-${group}`} data-menu-column className="min-w-0">
                                 <h2 id={`nav-group-${group}`} className="px-2.5 pt-1.5 pb-2.5 text-label text-quaternary">

@@ -142,7 +142,7 @@ Check what the live backend can run: https://studiotools.onrender.com/api/health
 | `FRONTEND_URL` | `http://localhost:5173` | Allowed browser origin(s), comma-separated |
 | `MAX_IMAGE_SIZE_MB` | `10` | Image upload limit |
 | `DOCUMENTS_MAX_PDF_MB` | `100` | PDF upload limit |
-| `REMBG_MODEL` | `bria-rmbg` | Background-removal model (see licences) |
+| `BACKGROUND_REMOVAL` | `on` | `off` skips the background-removal model (small servers) |
 | `UPSCAYL_MODEL` | `upscayl-standard-4x` | Upscaling model |
 | `RETOUCH_PROVIDER` | `auto` | `auto`, `local`, `lama` or `iopaint` |
 | `OCR_PROVIDER` | `auto` | `auto`, `paddle` or `tesseract` |
@@ -187,5 +187,7 @@ Licences of the processing engines and models: [THIRD_PARTY_NOTICES.md](THIRD_PA
 | Document Scanner | `/document-scanner` | Browser only | Nothing. Edge detection, perspective correction, clean-up and PDF export run on the device. The camera needs HTTPS. |
 
 **Models and licences**: LaMa (Apache-2.0); GFPGAN v1.4 (Apache-2.0, ONNX conversion from `huggingface.co/Neus/GFPGANv1.4`); ECCV16 *Colorful Image Colorization* (BSD-2-Clause), exported to ONNX from the official weights by `backend/python/scripts/export_colorization_onnx.py` (needs PyTorch); Real-ESRGAN via Upscayl (see `THIRD_PARTY_NOTICES.md`). Weights are downloaded by `scripts/setup-ml.sh` into `backend/python/.models/` (git-ignored, checksums verified).
+
+**High quality inpainting (optional)**: Object Remover and AI Retouch (Remove, Repair) can use PowerPaint v2-1 (SD 1.5 + BrushNet; Apache-2.0 weights, MIT code, based on Realistic Vision 6.0 under CreativeML OpenRAIL-M) instead of LaMa. A **Quality** setting appears on those pages only when the server can run it. It runs in its own process (`backend/python/inpaint_service`, its own `.venv-inpaint` because it needs diffusers 0.27), starts on first use, and unloads after 90 s idle. If it can't run or fails, LaMa does the job and the page says so (`X-Inpaint-Fallback`); a result is never labelled PowerPaint unless it was. Install with `PREMIUM_INPAINT=on scripts/setup-ml.sh`. Benchmark: `backend/python/benchmarks/inpaint_bench.py` (see its header). Smooth, Enhance and Relight remain classical.
 
 **Deployment**: the free Render service (`deploy/render/Dockerfile`, 512 MB, no GPU) doesn't ship these models. With `VITE_AI_API_BASE_URL` pointing at the AI server (`npm run ai-server`), Object Remover and Photo Restoration run there. Without it, Object Remover reports that AI inpainting isn't available, and Photo Restoration offers only its OpenCV steps. The resizer and the scanner need no server.

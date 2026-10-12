@@ -7,6 +7,8 @@
 # Nothing is installed system-wide. Everything lands under backend/python/ and backend/vendor/ (both git-ignored).
 # The script explains what it will download and asks before doing it (pass --yes to skip the prompt).
 #
+# Optional: PREMIUM_INPAINT=on adds High quality inpainting (PowerPaint v2-1, ~8 GB).
+#
 # Usage: scripts/setup-ml.sh [--yes] [--skip-image-service] [--skip-upscayl] [--skip-ocr]
 
 set -euo pipefail
@@ -307,6 +309,28 @@ if ! $SKIP_UPSCAYL; then
     fi
   fi
   rm -rf "$PROBE"
+fi
+
+# ---- Optional: High quality inpainting (PowerPaint v2-1) -------------------------------------------------
+# Off by default: ~8 GB download, and it needs ~12 GB of RAM to run well (measured: it thrashes swap on an
+# 8 GB Mac). Enable with PREMIUM_INPAINT=on scripts/setup-ml.sh. LaMa stays the fast default either way.
+if [[ "${PREMIUM_INPAINT:-off}" == "on" && -x "$VENV/bin/python" ]]; then
+  bold "High quality inpainting (PowerPaint v2-1)"
+  INPAINT_VENV="$PY_DIR/.venv-inpaint"
+  [[ -x "$INPAINT_VENV/bin/python" ]] || "$VENV/bin/python" -m venv "$INPAINT_VENV"
+  "$INPAINT_VENV/bin/pip" install -q --upgrade pip
+  "$INPAINT_VENV/bin/pip" install -q -r "$PY_DIR/inpaint_service/requirements-inpaint.txt"
+  # Weights: PowerPaint v2-1 (Apache-2.0; its base is Realistic Vision 6.0, CreativeML OpenRAIL-M) and SD 1.5's text encoder.
+  "$VENV/bin/python" - <<PY
+from huggingface_hub import snapshot_download
+home = "$MODELS_HOME"
+snapshot_download("JunhaoZhuang/PowerPaint-v2-1", local_dir=f"{home}/powerpaint-v2-1", allow_patterns=["PowerPaint_Brushnet/*", "realisticVisionV60B1_v51VAE/unet/*", "realisticVisionV60B1_v51VAE/vae/*", "realisticVisionV60B1_v51VAE/text_encoder/*", "realisticVisionV60B1_v51VAE/tokenizer/*", "realisticVisionV60B1_v51VAE/scheduler/*", "realisticVisionV60B1_v51VAE/feature_extractor/*", "realisticVisionV60B1_v51VAE/model_index.json"])
+snapshot_download("stable-diffusion-v1-5/stable-diffusion-v1-5", local_dir=f"{home}/sd15-parts", allow_patterns=["text_encoder/config.json", "text_encoder/model.fp16.safetensors"])
+PY
+  for step in unet text brushnet; do
+    PYTHONPATH="$PY_DIR/inpaint_service" "$INPAINT_VENV/bin/python" "$PY_DIR/inpaint_service/convert_fp16.py" "$MODELS_HOME/powerpaint-v2-1" "$MODELS_HOME/powerpaint-fp16" "$step"
+  done
+  ok "PowerPaint ready (set INPAINT_PREMIUM=on to use it on a machine with less than 12 GB)"
 fi
 
 echo

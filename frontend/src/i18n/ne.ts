@@ -144,6 +144,7 @@ export const ne: Dictionary = {
         },
     },
 
+    support: { coffee: "मलाई कफी खुवाउनुहोस्", label: "eSewa मार्फत सहयोग: यो QR कोड स्क्यान गर्नुहोस्", close: "बन्द गर्नुहोस्" },
     footer: {
         trust: "प्रशोधनपछि फाइलहरू आफैं मेटिन्छन्",
         backToTop: "माथि जानुहोस्",
@@ -158,6 +159,7 @@ export const ne: Dictionary = {
         about: "हाम्रो बारेमा",
         privacy: "गोपनीयता",
         terms: "सर्तहरू",
+        designedBy: "डिजाइन:",
         rights: (year: number) => `© ${year} Studio Tools. सर्वाधिकार सुरक्षित।`,
         privacyNote: "फाइलहरू सुरक्षित रूपमा प्रशोधन गरिन्छन् र अस्थायी फाइलहरू आफैं हटाइन्छन्।",
     },

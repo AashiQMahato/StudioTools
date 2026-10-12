@@ -1,5 +1,6 @@
 import { RouterProvider } from "react-aria-components";
 import { useHref, useNavigate } from "react-router-dom";
+import { SupportDialog } from "@/components/common/SupportDialog";
 import { AppRoutes } from "@/routes/AppRoutes";
 
 export default function App() {
@@ -9,6 +10,7 @@ export default function App() {
     return (
         <RouterProvider navigate={navigate} useHref={useHref}>
             <AppRoutes />
+            <SupportDialog />
         </RouterProvider>
     );
 }

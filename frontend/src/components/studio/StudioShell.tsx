@@ -22,9 +22,11 @@ interface StudioContextValue {
     uploadError: string | null;
     /** Clears the image (asking first when there are edits that would be lost). */
     clearImage: () => void;
+    /** An image is open: canvases show the round remove button. */
+    hasImage: boolean;
 }
 
-const StudioContext = createContext<StudioContextValue>({ openPicker: () => undefined, uploadError: null, clearImage: () => undefined });
+const StudioContext = createContext<StudioContextValue>({ openPicker: () => undefined, uploadError: null, clearImage: () => undefined, hasImage: false });
 export const useStudio = () => useContext(StudioContext);
 
 interface StudioShellProps {
@@ -110,7 +112,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
         "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 pointer-coarse:size-11";
 
     return (
-        <StudioContext.Provider value={{ openPicker, uploadError: upload.error, clearImage: requestNewImage }}>
+        <StudioContext.Provider value={{ openPicker, uploadError: upload.error, clearImage: requestNewImage, hasImage: Boolean(original) }}>
             <div className="flex min-h-dvh flex-col bg-secondary lg:h-dvh">
                 <input {...upload.inputProps} aria-hidden />
                 {onFiles && (
@@ -168,11 +170,11 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                     </div>
                 </header>
 
-                <div className="flex flex-1 flex-col gap-3 p-2 sm:p-3 lg:min-h-0 lg:flex-row">
+                <div className="flex flex-1 flex-col gap-3 p-2 pt-1 sm:p-3 sm:pt-1.5 lg:min-h-0 lg:flex-row lg:pl-0">
                     <StudioSidebar current={tool} id={sidebarId} collapsed={sidebar.collapsed} drawerOpen={sidebar.drawerOpen} onCloseDrawer={sidebar.closeDrawer} />
 
                     {/* A section, not <main>: the page's <main> (AppLayout) already contains the whole studio. */}
-                    <section aria-labelledby={headingId} className="flex min-w-0 flex-1 flex-col gap-3 rounded-2xl border border-[var(--card-line)] bg-primary p-2 sm:p-3 lg:min-h-0">
+                    <section aria-labelledby={headingId} className="flex min-w-0 flex-1 flex-col max-lg:has-[.studio-drop]:flex-none gap-3 rounded-2xl border border-[var(--card-line)] bg-primary p-2 sm:p-3 lg:min-h-0">
                         {/* The page's heading: the tool's name (shown in the header bar; here for search engines and screen readers). */}
                         <h1 id={headingId} className="sr-only">
                             {t.nav.toolItems[tool].title}

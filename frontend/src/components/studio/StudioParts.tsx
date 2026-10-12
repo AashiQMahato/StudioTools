@@ -1,5 +1,5 @@
-import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, Trash2, X } from "lucide-react";
-import { type KeyboardEvent, type PointerEvent, type ReactNode, useId, useRef, useState } from "react";
+import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, X } from "lucide-react";
+import { type PointerEvent, type ReactNode, useId, useRef, useState } from "react";
 import { CompareSlider } from "@/components/common/CompareSlider";
 import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
@@ -14,8 +14,9 @@ import { useStudio } from "./StudioShell";
  * phones — except while it holds the upload card: then it fills the card, however tall the upload card
  * is (no clipped picture, no scrolling inside a box, no empty space below).
  */
-export function StudioCanvas({ children, className }: { children: ReactNode; className?: string }) {
-    return <div className={cn("relative flex h-[58svh] min-h-[20rem] flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-secondary has-[.studio-drop]:max-lg:h-auto has-[.studio-drop]:max-lg:min-h-0 has-[.studio-drop]:max-lg:flex-1 lg:h-auto lg:min-h-0 lg:flex-1", className)}>{children}</div>;
+export function StudioCanvas({ children, className, clearable = true }: { children: ReactNode; className?: string; /** Show the remove-image button (hidden while a job runs, which has its own Cancel). */ clearable?: boolean }) {
+    const { hasImage } = useStudio();
+    return <div className={cn("relative flex h-[58svh] min-h-[20rem] flex-col overflow-hidden rounded-xl border border-[var(--card-line)] bg-secondary has-[.studio-drop]:max-lg:h-auto has-[.studio-drop]:max-lg:min-h-0 has-[.studio-drop]:max-lg:border-0 has-[.studio-drop]:max-lg:bg-transparent lg:h-auto lg:min-h-0 lg:flex-1", className)}>{hasImage && clearable && <ClearImageX />}{children}</div>;
 }
 
 export interface DropFeature {
@@ -192,31 +193,31 @@ export function StudioNotice({ notice }: { notice: Notice }) {
     );
 }
 
-/** Removes the image from the studio (and every tool), back to the empty drop zone. */
-export function ClearImageButton({ className }: { className?: string }) {
-    const t = useT();
-    const { clearImage } = useStudio();
-    return (
-        <Button size="lg" color="tertiary" iconLeading={Trash2} onPress={clearImage} className={cn("press-scale pointer-coarse:min-h-12", className)}>
-            {t.studio.clearImage}
-        </Button>
-    );
-}
-
-/** A round X in the canvas's top corner that clears the image. */
+/**
+ * A round glass button in the canvas's top-right corner that removes the image (back to the empty drop zone).
+ * Its name appears beside it on hover and keyboard focus, after a short pause so it never flickers while the
+ * pointer passes; on touch screens it's the icon alone, at a 44 px target.
+ */
 export function ClearImageX() {
     const t = useT();
     const { clearImage } = useStudio();
     return (
-        <button
-            type="button"
-            onClick={clearImage}
-            aria-label={t.studio.clearImage}
-            title={t.studio.clearImage}
-            className="press-scale absolute top-3 right-3 z-10 grid size-9 cursor-pointer place-items-center rounded-full bg-primary/80 text-secondary shadow-sm ring-1 ring-[var(--card-line)] backdrop-blur-md outline-focus-ring transition-colors duration-150 hover:bg-primary hover:text-primary focus-visible:outline-2 pointer-coarse:size-11"
-        >
-            <X className="size-4" aria-hidden />
-        </button>
+        <div className="group absolute top-3 right-3 z-20 flex items-center">
+            <span
+                role="tooltip"
+                className="pointer-events-none absolute right-full mr-2 translate-x-1 rounded-full bg-neutral-900/85 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-white opacity-0 shadow-lg backdrop-blur-md transition-[opacity,translate] duration-150 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-300 motion-reduce:transition-none pointer-coarse:hidden"
+            >
+                {t.studio.clearImage}
+            </span>
+            <button
+                type="button"
+                onClick={clearImage}
+                aria-label={t.studio.clearImage}
+                className="press-scale grid size-9 cursor-pointer place-items-center rounded-full bg-neutral-900/55 text-white shadow-sm ring-1 ring-white/20 backdrop-blur-xl backdrop-saturate-150 outline-focus-ring transition-[background-color,transform] duration-150 hover:bg-neutral-900/80 focus-visible:outline-2 pointer-coarse:size-11"
+            >
+                <X className="size-4" strokeWidth={2.25} aria-hidden />
+            </button>
+        </div>
     );
 }
 
@@ -234,39 +235,27 @@ export interface PanelTab<T extends string> {
 
 /** Tabs across the top of the right-hand panel (arrow keys move between them). */
 export function PanelTabs<T extends string>({ tabs, value, onChange, label }: { tabs: readonly PanelTab<T>[]; value: T; onChange: (tab: T) => void; label: string }) {
-    const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-        if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-        event.preventDefault();
-        const enabled = tabs.filter((tab) => !tab.disabled);
-        const index = enabled.findIndex((tab) => tab.id === value);
-        const next = enabled[(index + (event.key === "ArrowRight" ? 1 : -1) + enabled.length) % enabled.length];
-        if (!next) return;
-        onChange(next.id);
-        (event.currentTarget.querySelector(`[data-tab="${next.id}"]`) as HTMLElement | null)?.focus();
-    };
+    // A segmented control: one track, and a thumb that glides (spring) to the chosen tab. Phones keep the words,
+    // which say more than the icons in the space there is.
     return (
-        <div role="tablist" aria-label={label} onKeyDown={onKeyDown} className="flex shrink-0 gap-1 border-b border-[var(--card-line)] bg-secondary p-1.5">
-            {tabs.map((tab) => (
-                <button
-                    key={tab.id}
-                    type="button"
-                    role="tab"
-                    data-tab={tab.id}
-                    aria-selected={value === tab.id}
-                    tabIndex={value === tab.id ? 0 : -1}
-                    disabled={tab.disabled}
-                    onClick={() => onChange(tab.id)}
-                    className={cn(
-                        "relative flex h-11 min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-xl px-2 text-sm font-medium transition-colors duration-150 outline-focus-ring focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-40",
-                        value === tab.id ? "bg-primary text-[var(--brand)] shadow-xs" : "text-tertiary hover:text-primary",
-                    )}
-                >
-                    {/* Phones keep the words, which say more than the icons in the space there is. */}
-                    <span className="hidden shrink-0 sm:inline-flex">{tab.icon}</span>
-                    <span className="truncate">{tab.label}</span>
-                    {value === tab.id && <span aria-hidden className="absolute inset-x-5 -bottom-1.5 h-0.5 rounded-full bg-[var(--brand)]" />}
-                </button>
-            ))}
+        <div className="shrink-0 border-b border-[var(--card-line)] p-3">
+            <Segmented
+                kind="tab"
+                fill
+                label={label}
+                value={value}
+                onChange={onChange}
+                options={tabs.map((tab) => ({
+                    value: tab.id,
+                    disabled: tab.disabled,
+                    label: (
+                        <>
+                            <span className="hidden shrink-0 sm:inline-flex">{tab.icon}</span>
+                            <span className="truncate">{tab.label}</span>
+                        </>
+                    ),
+                }))}
+            />
         </div>
     );
 }

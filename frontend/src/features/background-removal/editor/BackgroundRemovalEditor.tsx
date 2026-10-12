@@ -2,7 +2,7 @@ import { ChevronDown, Download, Image as ImageIcon, LoaderCircle, PencilLine, Re
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Segmented } from "@/components/common/Segmented";
-import { ClearImageButton, type Notice, PanelBody, PanelTabs, StudioActions, StudioCanvas, StudioNotice } from "@/components/studio/StudioParts";
+import { type Notice, PanelBody, PanelTabs, StudioActions, StudioCanvas, StudioNotice } from "@/components/studio/StudioParts";
 import { StudioShell } from "@/components/studio/StudioShell";
 import { studioExportButton } from "@/components/studio/styles";
 import { usePopover } from "@/components/studio/usePopover";
@@ -423,7 +423,6 @@ export function BackgroundRemovalEditor({ background, session }: BackgroundRemov
             <StudioNotice notice={notice} />
 
             <StudioActions>
-                <ClearImageButton />
                 <Button size="lg" color="secondary" onPress={() => void continueEditing()} isDisabled={!engine.ready || exporting !== null} className="press-scale pointer-coarse:min-h-12">
                     <span className="flex items-center justify-center gap-2">
                         {exporting === "continue" ? <LoaderCircle className="size-4 animate-spin motion-reduce:animate-none" aria-hidden /> : <PencilLine className="size-4" aria-hidden />}

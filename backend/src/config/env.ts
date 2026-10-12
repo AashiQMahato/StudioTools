@@ -103,6 +103,21 @@ export const env = {
         maxWorkingSize: Math.floor(parsePositive(env_.RETOUCH_MAX_WORKING_SIZE, 2048)),
     },
 
+    /** High-quality inpainting (PowerPaint v2-1): its own Python process and environment, run on demand. */
+    premiumInpaint: {
+        /** auto: on only where the machine has the memory (see minMemoryGb); on / off force it. */
+        mode: parseChoice(env_.INPAINT_PREMIUM, ["auto", "on", "off"] as const, "auto"),
+        pythonPath: resolvePath(env_.INPAINT_PYTHON_PATH, "python/.venv-inpaint/bin/python"),
+        serviceDir: resolvePath(undefined, "python/inpaint_service"),
+        modelsDir: resolvePath(env_.MODELS_DIR ?? env_.REMBG_MODELS_DIR, "python/.models"),
+        /** Measured: ~4.5 GB working set, which thrashes swap on an 8 GB Mac. */
+        minMemoryGb: parsePositive(env_.INPAINT_MIN_MEMORY_GB, 12),
+        /** Denoising steps and the region's working size: the quality/speed presets. */
+        steps: Math.floor(parsePositive(env_.INPAINT_STEPS, 20)),
+        side: Math.floor(parsePositive(env_.INPAINT_SIDE, 512)),
+        timeoutMs: parsePositive(env_.INPAINT_TIMEOUT_MS, 600_000),
+    },
+
     documents: {
         /** Where uploads and results live while a job runs: outside anything served, wiped on start and after each job. */
         tempDir: resolvePath(env_.DOCUMENTS_TEMP_DIR, path.join(os.tmpdir(), "studio-tools-documents")),

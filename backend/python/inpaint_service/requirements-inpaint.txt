@@ -1,0 +1,16 @@
+# Premium inpainting (PowerPaint v2-1) — its own environment (.venv-inpaint, made by scripts/setup-ml.sh):
+# the vendored pipeline is written for diffusers 0.27, which needs an older transformers and huggingface_hub
+# than the image service's PyTorch stack.
+torch==2.14.1
+diffusers==0.27.0
+transformers==4.44.2
+huggingface_hub==0.25.2
+tokenizers<0.20
+accelerate
+safetensors==0.8.0
+numpy>=2.2,<2.3
+pillow==12.3.0
+opencv-python-headless==5.0.0.93
+fastapi==0.141.1
+uvicorn==0.53.0
+python-multipart==0.0.32

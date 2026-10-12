@@ -98,7 +98,7 @@ export const en = {
         mega: {
             tools: "Tools",
             popular: "Popular",
-            groups: { image: "Image tools", ai: "AI tools", ocr: "OCR & text", pdf: "PDF & documents" },
+            groups: { ai: "AI tools", image: "Image & text", pdf: "PDF & documents" },
             searchField: "Search tools…",
             viewAll: "View all tools",
             viewAllPdf: "All PDF & document tools",
@@ -984,11 +984,19 @@ export const en = {
         removing: "Removing with AI…",
         done: (engine: string) => `Removed with ${engine}. Compare it, then keep it or try again.`,
         aiEngine: "AI inpainting",
-        engines: { "lama-onnx": "LaMa AI inpainting", "iopaint-lama": "LaMa AI inpainting (IOPaint)" } as Record<string, string>,
+        engines: { "lama-onnx": "LaMa AI inpainting", "iopaint-lama": "LaMa AI inpainting (IOPaint)", "powerpaint-v2-1": "PowerPaint (high quality)" } as Record<string, string>,
     },
 
     retouch: {
         controlsLabel: "Retouch controls",
+        quality: {
+            title: "Quality",
+            fast: "Fast",
+            high: "High",
+            hintFast: "LaMa: a few seconds, good for most photos.",
+            hintHigh: "PowerPaint: keeps textures and detail, but takes a minute or more.",
+            fellBack: "High quality couldn't run here, so the fast engine did this one.",
+        },
         tabs: { retouch: "Retouch", export: "Export" },
 
         // modes

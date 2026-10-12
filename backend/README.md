@@ -3,7 +3,7 @@
 Express 5 + TypeScript (strict) API. It is the only thing the browser talks to; the image-processing engines run behind it and are never exposed.
 
 ```text
-React ──► Express API ──► rembg service (Python, localhost-only, token-protected)
+React ──► Express API ──► image service (Python, localhost-only, token-protected)
                      └──► upscayl-bin (Upscayl / upscayl-ncnn, spawned per job, no shell)
 ```
 
@@ -12,12 +12,12 @@ React ──► Express API ──► rembg service (Python, localhost-only, tok
 ```bash
 npm install
 cp .env.example .env
-../scripts/setup-ml.sh          # Python venv + rembg model, Upscayl binary + models (asks before downloading)
-npm run dev                     # also launches the rembg service; http://localhost:5000
+../scripts/setup-ml.sh          # Python venv + BiRefNet model, Upscayl binary + models (asks before downloading)
+npm run dev                     # also launches the image service; http://localhost:5000
 ../scripts/check-processing.sh  # what's ready, and why not
 ```
 
-`npm run build` compiles to `dist/`; `npm run start` runs it (the rembg service is launched the same way).
+`npm run build` compiles to `dist/`; `npm run start` runs it (the image service is launched the same way).
 
 On macOS, port 5000 is taken by AirPlay Receiver — disable it or set `PORT=5050` (and `API_PROXY_TARGET=http://localhost:5050` in `frontend/.env`).
 
@@ -68,7 +68,7 @@ curl -X POST -F "file=@photo.jpg" -F "scale=2" http://localhost:5000/api/upscale
 2. **Validation** (`services/image-processing/imageValidation.service.ts`): extension and declared type, real format from the file signature, then a full decode with a pixel limit.
 3. **Concurrency limiter** per engine (`BACKGROUND_REMOVAL_CONCURRENCY`, `UPSCALE_CONCURRENCY`) with a bounded queue (`PROCESSING_MAX_QUEUE`) → `SERVER_BUSY` when full.
 4. **Engine**
-   - rembg: HTTP to the internal service, with a timeout (`REMBG_TIMEOUT_MS`).
+   - image service: HTTP to the internal service, with a timeout (the request timeout).
    - Upscayl: a private `mkdtemp` directory per request, EXIF-oriented PNG written with a fixed name, `upscayl-bin` spawned with an argument array (no shell), killed on timeout (`UPSCALE_TIMEOUT_MS`) or client disconnect, directory always deleted.
 5. The result is streamed back. Nothing is stored.
 
@@ -83,7 +83,7 @@ src/
 ├── middleware/      rate limiters, upload, error handler (safe messages only)
 ├── routes/          /api router
 ├── services/
-│   ├── background-removal/   rembgProcess (lifecycle), rembgProvider, service (+ limiter)
+│   ├── background-removal/   image-service process (lifecycle), background-removal service (+ limiter)
 │   ├── upscaling/            upscaylProvider (probe, spawn, encode), service (+ limiter)
 │   ├── ocr/                  providers (PaddleOCR, Tesseract), preprocessing, layout, formatting, reconstruction
 │   ├── pdf/                  merge/split/organize, images → PDF, PDF → images (PDFium render), page ranges
@@ -91,7 +91,7 @@ src/
 │   ├── files/                private per-job workspaces in the documents temp folder
 │   └── image-processing/     imageValidation.service
 └── utils/           AppError, ConcurrencyLimiter, withTempDir, http helpers
-python/rembg_service/  internal FastAPI service (see its README)
+python/image_service/  internal FastAPI service (see its README)
 python/ocr_service/    internal PaddleOCR service (own venv: python/.venv-ocr); the document model is built in services/ocr/
 vendor/upscayl/        upscayl-bin + models (installed by scripts/setup-ml.sh; git-ignored)
 ```

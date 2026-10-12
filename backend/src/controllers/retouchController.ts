@@ -5,6 +5,15 @@ import type { RetouchMode } from "../types/image.js";
 import { AppError } from "../utils/AppError.js";
 import { processingContext, safeBaseName, sendImage } from "../utils/http.js";
 
+/** "high" asks for the premium engine (it's used only where it's available); anything else is the fast default. */
+const wantsHighQuality = (value: unknown) => value === "high";
+
+/** Tells the page which engine really did the work, and when High quality was asked for but LaMa ran instead. */
+const reportEngine = (res: Parameters<RequestHandler>[1]) => (engine: string, fellBack: boolean) => {
+    res.set("X-Inpaint-Engine", engine);
+    if (fellBack) res.set("X-Inpaint-Fallback", "1");
+};
+
 function parseMode(value: unknown): RetouchMode {
     if (!RETOUCH_MODES.includes(value as RetouchMode)) throw new AppError("Choose a retouch mode.", 400, "INVALID_MODE");
     return value as RetouchMode;
@@ -28,9 +37,9 @@ export const removeObjectHandler: RequestHandler = async (req, res) => {
     const mask = files.mask?.[0];
     if (!mask || mask.size === 0) throw new AppError("Brush over what you want removed first.", 400, "EMPTY_MASK");
 
-    const output = await retouching.retouch(input, mask.buffer, { mode: "remove", strength: 1, texture: 0 }, processingContext(req, res), engine);
-    // Which model filled the area, so the page can say so (never a classical fill: see aiInpainter).
-    res.set("X-Inpaint-Engine", retouching.providerName("remove", engine));
+    // Which model filled the area is reported back (never a classical fill: see aiInpainter).
+    const high = wantsHighQuality((req.body as Record<string, unknown> | undefined)?.quality);
+    const output = await retouching.retouch(input, mask.buffer, { mode: "remove", strength: 1, texture: 0 }, processingContext(req, res), high ? "powerpaint" : engine, reportEngine(res));
     sendImage(res, output, `${safeBaseName(input.originalName)}-object-removed.${output.extension}`, input);
 };
 
@@ -43,6 +52,6 @@ export const retouchHandler: RequestHandler = async (req, res) => {
     if (!mask || mask.size === 0) throw new AppError("Select an area to retouch first.", 400, "EMPTY_MASK");
 
     const options = { mode, strength: parseFraction(body.strength, 0.5), texture: parseFraction(body.texture, 0.6) };
-    const output = await retouching.retouch(input, mask.buffer, options, processingContext(req, res));
+    const output = await retouching.retouch(input, mask.buffer, options, processingContext(req, res), wantsHighQuality(body.quality) ? "powerpaint" : undefined, reportEngine(res));
     sendImage(res, output, `${safeBaseName(input.originalName)}-retouched.${output.extension}`, input);
 };

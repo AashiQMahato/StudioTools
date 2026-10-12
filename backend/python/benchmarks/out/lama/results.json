@@ -1,0 +1,62 @@
+{
+  "engine": "lama",
+  "load_s": 0.2,
+  "side": 512,
+  "steps": 20,
+  "cases": {
+    "small-object": {
+      "seconds": 5.37,
+      "work": [
+        280,
+        264
+      ],
+      "outside_untouched": true,
+      "peak_mb": 648
+    },
+    "person": {
+      "seconds": 2.95,
+      "work": [
+        464,
+        512
+      ],
+      "outside_untouched": true,
+      "peak_mb": 794
+    },
+    "texture": {
+      "seconds": 6.43,
+      "work": [
+        512,
+        384
+      ],
+      "outside_untouched": true,
+      "peak_mb": 794
+    },
+    "face-blemish": {
+      "seconds": 3.36,
+      "work": [
+        248,
+        208
+      ],
+      "outside_untouched": true,
+      "peak_mb": 794
+    },
+    "dark-shadow": {
+      "seconds": 4.97,
+      "work": [
+        512,
+        480
+      ],
+      "outside_untouched": true,
+      "peak_mb": 794
+    },
+    "large-region": {
+      "seconds": 5.29,
+      "work": [
+        512,
+        296
+      ],
+      "outside_untouched": true,
+      "peak_mb": 794
+    }
+  }
+}

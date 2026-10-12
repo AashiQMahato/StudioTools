@@ -59,7 +59,7 @@ export function Navbar() {
 
     return (
         <header className={cn("nav-bar sticky top-0 z-40 border-b", elevated ? "border-secondary bg-primary shadow-xs" : "border-transparent bg-transparent")}>
-            <div className="page-container relative flex h-18 items-center gap-6">
+            <div className="page-container relative flex h-18 items-center gap-6 lg:grid lg:grid-cols-[1fr_auto_1fr] lg:gap-4">
                 <Logo className="nav-logo" />
 
                 <DesktopNav className="hidden lg:block" />

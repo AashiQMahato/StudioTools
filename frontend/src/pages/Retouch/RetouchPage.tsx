@@ -21,6 +21,8 @@ import { RetouchModeSelector } from "@/features/retouch/RetouchModeSelector";
 import { ExportControls, RetouchResultPanel } from "@/features/retouch/RetouchResultPanel";
 import { RetouchToolbar } from "@/features/retouch/RetouchToolbar";
 import { type SelectionStroke, useSelectionMask } from "@/features/retouch/useSelectionMask";
+import { Segmented } from "@/components/common/Segmented";
+import { getProcessorHealth } from "@/lib/api/processorsApi";
 import { type RetouchMode, removeObject, retouchImage } from "@/lib/api/retouchApi";
 import { cn } from "@/lib/utils/cn";
 import { downloadFile } from "@/lib/utils/download";
@@ -144,6 +146,20 @@ function RetouchStudio({ original, session: imageSession, variant }: { original:
     const fileNameFor = useCallback((image: ImageFile) => `${baseName(image.name)}-${remover ? "object-removed" : "retouched"}.png`, [remover]);
     /** The model that filled the last removal (Object Remover only), from the X-Inpaint-Engine header. */
     const [engine, setEngine] = useState<string | null>(null);
+    /** High quality (PowerPaint) is offered only where this server can run it, and only for the filling modes. */
+    const [quality, setQuality] = useState<"fast" | "high">("fast");
+    const [premium, setPremium] = useState(false);
+    /** The last result asked for High quality but the fast engine ran instead. */
+    const [fellBack, setFellBack] = useState(false);
+    useEffect(() => {
+        const controller = new AbortController();
+        getProcessorHealth(controller.signal)
+            .then((health) => setPremium(Boolean(health.retouch?.premium?.available)))
+            .catch(() => undefined);
+        return () => controller.abort();
+    }, []);
+    const fills = remover || mode === "remove" || mode === "heal";
+    const askHigh = premium && fills && quality === "high";
     const job = useProcessingJob(original, fileNameFor);
     const pending = job.status === "success" ? job.result : null;
     const busy = job.status === "uploading" || job.status === "processing";
@@ -164,14 +180,21 @@ function RetouchStudio({ original, session: imageSession, variant }: { original:
         if (!settled) return;
         setCompareOn(true);
         setShowBefore(false);
-        setNotice({ tone: "success", text: remover ? removerCopy.done(removerCopy.engines[engine ?? ""] ?? removerCopy.aiEngine) : copy.notices.done });
-    }, [settled, copy.notices.done, remover, removerCopy, engine]);
+        const done = remover ? removerCopy.done(removerCopy.engines[engine ?? ""] ?? removerCopy.aiEngine) : copy.notices.done;
+        setNotice({ tone: "success", text: fellBack ? `${done} ${copy.quality.fellBack}` : done });
+    }, [settled, copy.notices.done, copy.quality.fellBack, remover, removerCopy, engine, fellBack]);
 
     /** What the comparison shows: a waiting result against its base, or everything kept against the upload. */
     const comparePair = pending ? { before: base, after: pending, beforeLabel: copy.before } : session.version > 0 ? { before: versions.current[0]!, after: base, beforeLabel: copy.original } : null;
     const comparing = Boolean(comparePair && compareOn && (!pending || settled));
     const paintable = !busy && !pending && !preparing && !comparing;
     const hasSelection = !selection.empty;
+
+    const noteEngine = <T extends { header: (name: string) => string | null }>(result: T): T => {
+        setEngine(result.header("X-Inpaint-Engine"));
+        setFellBack(result.header("X-Inpaint-Fallback") === "1");
+        return result;
+    };
 
     const run = async () => {
         if (busy || preparing || pending) return;
@@ -193,14 +216,11 @@ function RetouchStudio({ original, session: imageSession, variant }: { original:
         }
         setSheetOpen(false);
         setNotice({ tone: "info", text: busyLabel });
-        const request = { image: base.blob, fileName: original.name, mask: maskPng, mode, strength, texture: config.texture ? texture : undefined };
+        const request = { image: base.blob, fileName: original.name, mask: maskPng, mode, strength, texture: config.texture ? texture : undefined, quality: askHigh ? ("high" as const) : ("fast" as const) };
         void job.run((_file, options) =>
             remover
-                ? removeObject(request, options).then((result) => {
-                      setEngine(result.header("X-Inpaint-Engine"));
-                      return result;
-                  })
-                : retouchImage(request, options),
+                ? removeObject(request, options).then(noteEngine)
+                : retouchImage(request, options).then(noteEngine),
         );
     };
 
@@ -407,6 +427,21 @@ function RetouchStudio({ original, session: imageSession, variant }: { original:
                 </section>
             ) : (
                 <RetouchModeSelector mode={mode} onModeChange={changeMode} strength={strength} onStrengthChange={setStrength} texture={texture} onTextureChange={setTexture} disabled={busy || Boolean(pending)} />
+            )}
+            {premium && fills && (
+                <section className="flex flex-col gap-2">
+                    <h3 className="text-sm font-semibold text-primary">{copy.quality.title}</h3>
+                    <Segmented
+                        label={copy.quality.title}
+                        value={quality}
+                        onChange={busy || Boolean(pending) ? undefined : setQuality}
+                        options={[
+                            { value: "fast", label: copy.quality.fast },
+                            { value: "high", label: copy.quality.high },
+                        ]}
+                    />
+                    <p className="text-xs text-quaternary">{quality === "high" ? copy.quality.hintHigh : copy.quality.hintFast}</p>
+                </section>
             )}
             <div className="border-t border-[var(--card-line)] pt-5">
                 <BrushSettings tool={tool} onToolChange={setTool} brush={brush} onBrushChange={changeBrush} maxSize={maxBrush} coverage={coverage} onClear={clearSelection} disabled={!paintable} />

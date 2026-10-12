@@ -78,6 +78,8 @@ export const getProcessorHealth: RequestHandler = async (_req, res) => {
             retouch: {
                 available: retouching.isAvailable(),
                 engines: retouching.engines(),
+                // High quality (PowerPaint): available here, or why not (not-installed | off | low-memory).
+                premium: retouching.premium(),
                 queue: retouching.stats(),
             },
             limits: {

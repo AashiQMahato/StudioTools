@@ -27,6 +27,7 @@ export function createApp() {
                 "Content-Disposition",
                 "X-Image-Width",
                 "X-Inpaint-Engine",
+                "X-Inpaint-Fallback",
                 "X-Restore-Steps",
                 "X-Image-Height",
                 "X-Original-Width",

@@ -786,7 +786,7 @@ export const en = {
         refining: "Refining edges",
         finishing: "Finalising",
         notice: "AI is removing the background…",
-        modeLabel: "Quality",
+        modeLabel: "Mode",
         modes: { fast: "Fast", quality: "Quality", ultra: "Ultra" },
     },
 

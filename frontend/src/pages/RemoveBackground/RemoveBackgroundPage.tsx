@@ -1,5 +1,5 @@
 import { Eraser, Image as ImageIcon, Wand2 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
@@ -16,6 +16,18 @@ import { type BackgroundRemovalStatus, getBackgroundRemovalStatus, type RemovalM
 import { useImageStore, useToolImage } from "@/store/useImageStore";
 import type { ImageFile } from "@/types/image";
 import { errorMessage, useT } from "@/i18n";
+
+const MODE_KEY = "bg-removal-mode";
+const readMode = (): RemovalMode => {
+    try {
+        const stored = localStorage.getItem(MODE_KEY);
+        return stored === "ultra" || stored === "fast" ? stored : "quality";
+    } catch {
+        return "quality";
+    }
+};
+/** The modes this server offers (ultra only where it's stable; fast only where it's actually faster). */
+const offeredModes = (status: BackgroundRemovalStatus | null) => (["fast", "quality", "ultra"] as const).filter((value) => value === "quality" || Boolean(status?.modes?.[value]));
 
 const fileNameFor = (image: ImageFile) => `${baseName(image.name)}-no-background.png`;
 
@@ -36,14 +48,22 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
     const alreadyEdited = !resumed && original?.editedBy === "removeBackground";
     /** Removal was started and then stopped, for the status line. */
     const [cancelled, setCancelled] = useState(false);
-    const [mode, setMode] = useState<RemovalMode>("quality");
-    const status = useRemovalStatus(Boolean(original) && !resumed);
+    const [chosen, setChosen] = useState<RemovalMode>(readMode);
+    const status = useRemovalStatus(!resumed);
+    // A remembered choice this server doesn't offer (Ultra on a small server) shows as Quality once its modes are
+    // known. Until then the choice stands: removal starts before they arrive, and the server falls back by itself.
+    const mode = !status || offeredModes(status).includes(chosen) ? chosen : "quality";
+    const run = (next: RemovalMode) => void job.run((file, options) => removeBackground(file, options, next));
+    /** What the auto-start (an effect that must not re-run on every render) needs, read when it fires. */
+    const latest = useRef({ run, mode });
+    latest.current = { run, mode };
 
     // A photo that's just been added starts straight away; only a stopped or already-edited one waits for the button.
+    const idle = job.status === "selected";
     useEffect(() => {
-        if (job.status !== "selected" || resumed || alreadyEdited || cancelled) return;
-        void job.run((file, options) => removeBackground(file, options, mode));
-    }, [job, resumed, alreadyEdited, cancelled, mode]);
+        if (!idle || resumed || alreadyEdited || cancelled) return;
+        latest.current.run(latest.current.mode);
+    }, [idle, resumed, alreadyEdited, cancelled, original?.id]);
 
     // The moment the cut-out arrives it's the shared image, and the studio remembers it — so leaving
     // straight away (or coming back later) never means removing the background again.
@@ -68,7 +88,14 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
             original={original}
             job={job}
             mode={mode}
-            onMode={setMode}
+            onMode={(next) => {
+                setChosen(next);
+                try {
+                    localStorage.setItem(MODE_KEY, next);
+                } catch {
+                    // Not remembered; the choice still applies now.
+                }
+            }}
             status={status}
             finishing={done}
             cancelled={cancelled}
@@ -79,7 +106,7 @@ function RemoveBackgroundStudio({ original, session }: { original: ImageFile | n
             }}
             onStart={() => {
                 setCancelled(false);
-                void job.run((file, options) => removeBackground(file, options, mode));
+                run(mode);
             }}
         />
     );
@@ -109,10 +136,17 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
     const busy = finishing || job.status === "uploading" || job.status === "processing";
     const stage = useStage(job.status === "processing", finishing, job.status === "uploading", status?.typicalSecondsByMode?.[mode] ?? status?.typicalSeconds ?? null);
     // The modes this server offers (ultra only where it's stable; fast only where it's actually faster).
-    const modes = (["fast", "quality", "ultra"] as const).filter((value) => value === "quality" || Boolean(status?.modes?.[value]));
+    const modes = offeredModes(status);
     const stageLabel = t.bgStages[stage];
     const ready = job.status === "selected";
     const failed = job.status === "error" || job.status === "unsupported";
+    /** Quality / Ultra: offered when a photo isn't being processed (before one goes in, or to start again after a stop). */
+    const modePicker = modes.length > 1 && (
+        <div className="flex shrink-0 items-center justify-center gap-3 pb-4">
+            <span className="text-sm font-medium text-tertiary">{t.bgStages.modeLabel}</span>
+            <Segmented label={t.bgStages.modeLabel} value={mode} onChange={onMode} options={modes.map((value) => ({ value, label: t.bgStages.modes[value] }))} />
+        </div>
+    );
 
     const panel = (
         <>
@@ -126,17 +160,8 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
                 ]}
             />
             <PanelBody>
-                {original ? (
-                    <section className="flex flex-col gap-2.5">
-                        <h3 className="text-sm font-semibold text-primary">{t.bgStages.modeLabel}</h3>
-                        <Segmented label={t.bgStages.modeLabel} value={mode} onChange={busy ? undefined : onMode} options={modes.map((value) => ({ value, label: t.bgStages.modes[value] }))} />
-                    </section>
-                ) : (
-                    <>
-                        <PanelIntro title={copy.howItWorks} steps={intro.steps} />
-                        <p className="rounded-xl bg-secondary p-3 text-xs text-tertiary">{copy.panelEmpty}</p>
-                    </>
-                )}
+                <PanelIntro title={copy.howItWorks} steps={intro.steps} />
+                {!original && <p className="rounded-xl bg-secondary p-3 text-xs text-tertiary">{copy.panelEmpty}</p>}
             </PanelBody>
         </>
     );
@@ -145,7 +170,11 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
         <StudioShell tool="removeBackground" panel={panel} panelLabel={t.bgEditor.controlsLabel}>
             <StudioCanvas clearable={!busy}>
                 {!original ? (
-                    <StudioDropzone title={copy.dropTitle} hint={intro.hint} />
+                    <>
+                        <StudioDropzone title={copy.dropTitle} hint={intro.hint} />
+                        {/* Chosen before the photo goes in: removal starts the moment it does. */}
+                        {modePicker}
+                    </>
                 ) : failed ? (
                     <StudioError title={copy.errorTitle} message={errorMessage(t, job.error)} onRetry={job.status === "error" ? onStart : undefined} />
                 ) : (
@@ -184,7 +213,8 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
                 />
             )}
             {ready && (cancelled || alreadyEdited) && (
-                <div className="flex justify-center">
+                <div className="flex flex-col items-center gap-3">
+                    {modePicker}
                     <Button size="lg" color="primary" iconLeading={Eraser} onPress={onStart} className="press-scale pointer-coarse:min-h-12 sm:min-w-48">
                         {t.pages.removeBackground.action}
                     </Button>

@@ -46,10 +46,10 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                 inert={collapsed}
                 className={cn(
                     "hidden shrink-0 overflow-hidden transition-[width,margin-right,opacity] duration-300 ease-[var(--ease-out)] motion-reduce:transition-none lg:flex",
-                    collapsed ? "w-0 opacity-0 lg:-mr-3" : "opacity-100 lg:w-[4.25rem] xl:w-64",
+                    collapsed ? "w-0 opacity-0 lg:-mr-3" : "opacity-100 lg:w-[4.25rem] xl:w-[13.75rem]",
                 )}
             >
-                <SidebarNav current={current} className="lg:w-[4.25rem] xl:w-64" />
+                <SidebarNav current={current} className="lg:w-[4.25rem] lg:rounded-l-none lg:border-l-0 xl:w-[13.75rem]" />
             </div>
 
             {/* Narrow screens: a drawer from the left, over the page. */}
@@ -62,13 +62,13 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                     aria-label={t.studio.toolsNav}
                     tabIndex={-1}
                     className={cn(
-                        "absolute inset-y-0 left-0 flex w-[min(14.5rem,66vw)] flex-col gap-1 rounded-r-3xl bg-secondary p-2 pt-[max(0.5rem,env(safe-area-inset-top))] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
+                        "absolute inset-y-0 left-0 flex w-[min(14.5rem,66vw)] flex-col rounded-r-3xl bg-primary pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
                         drawerOpen ? "translate-x-0" : "-translate-x-full",
                     )}
                 >
                     <SidebarNav
                         current={current}
-                        className="min-h-0 flex-1"
+                        className="min-h-0 flex-1 rounded-none border-0 bg-transparent p-3"
                         onNavigate={onCloseDrawer}
                         header={
                             <div className="mb-2 flex shrink-0 items-center justify-between pl-2">
@@ -101,7 +101,7 @@ function SidebarNav({ current, className, onNavigate, header }: { current: ToolK
     }, [pathname]);
 
     return (
-        <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2 xl:p-3", className)}>
+        <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2", className)}>
             {header}
             <div ref={list} className="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-1">
                 {sidebarSections(menu).map((section) => (
@@ -133,7 +133,7 @@ function SidebarNav({ current, className, onNavigate, header }: { current: ToolK
                                     >
                                         <Icon className="size-4" strokeWidth={1.9} aria-hidden />
                                     </span>
-                                    <span className={cn("min-w-0 truncate text-sm font-medium lg:sr-only xl:not-sr-only", active ? "font-semibold text-[var(--brand)]" : "text-secondary")}>{title}</span>
+                                    <span className={cn("min-w-0 truncate text-[0.8125rem] font-medium whitespace-nowrap lg:sr-only xl:not-sr-only", active ? "font-semibold text-[var(--brand)]" : "text-secondary")}>{title}</span>
                                 </Link>
                             );
                         })}

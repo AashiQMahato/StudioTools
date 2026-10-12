@@ -6,7 +6,7 @@ import { GitCompareArrows, PenLine, ScanText, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { ImageProcessingPreview } from "@/components/studio/ImageProcessingPreview";
-import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioNotice, ClearImageButton } from "@/components/studio/StudioParts";
+import { type Notice, PanelBody, PanelIntro, PanelTabs, StudioActions, StudioCanvas, StudioDropzone, StudioNotice } from "@/components/studio/StudioParts";
 import { Button } from "@/components/ui/base/buttons/button";
 import { baseName } from "@/features/image-processing/format";
 import { type EditorMode, fitFontSizes, pageColours, plainText, toEditorContent } from "@/features/ocr/convert";
@@ -214,7 +214,6 @@ function OcrStudio({ image }: { image: ImageFile }) {
                 <>
                     {(notice ?? failure) && <StudioNotice notice={(notice ?? failure)!} />}
                     <StudioActions>
-                        <ClearImageButton />
                         <Button size="lg" color="primary" iconLeading={ScanText} onPress={() => void extract()} className="press-scale pointer-coarse:min-h-12">
                             {t.ocr.extract}
                         </Button>

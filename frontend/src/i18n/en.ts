@@ -686,7 +686,7 @@ export const en = {
         hideTools: "Hide tools",
         switchTool: "Switch tool",
         newImage: "New image",
-        clearImage: "Clear image",
+        clearImage: "Remove image",
         privateTitle: "Private by design",
         privateNote: "Images are processed for your request only and never stored.",
         backHome: "Back to home",
@@ -725,7 +725,7 @@ export const en = {
         upscaling: (scale: number) => `Upscaling ${scale}×…`,
         intros: {
             removeBackground: {
-                hint: "Press Remove background — then change it, refine the edges and export.",
+                hint: "The cut-out starts as soon as you add a photo — then change the background, refine the edges and export.",
                 steps: ["Upload a JPG, PNG or WebP image.", "Press Remove background — the AI does it in seconds.", "Pick a new background, refine the edges, then download."],
             },
             upscaler: {

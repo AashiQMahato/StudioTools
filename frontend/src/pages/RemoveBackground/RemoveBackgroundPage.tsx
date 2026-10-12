@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Segmented } from "@/components/common/Segmented";
 import { Button } from "@/components/ui/base/buttons/button";
 import { ImageProcessingPreview, useSettled } from "@/components/studio/ImageProcessingPreview";
-import { ClearImageX, PanelBody, PanelIntro, PanelTabs, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
+import { PanelBody, PanelIntro, PanelTabs, StudioCanvas, StudioDropzone, StudioError, StudioNotice, Fitted } from "@/components/studio/StudioParts";
 import { ToolUnavailable } from "@/components/studio/ToolUnavailable";
 import { useToolOffOnServer } from "@/hooks/useToolOffOnServer";
 import { StudioShell } from "@/components/studio/StudioShell";
@@ -143,8 +143,7 @@ function WaitingStudio({ original, job, mode, onMode, status, finishing, cancell
 
     return (
         <StudioShell tool="removeBackground" panel={panel} panelLabel={t.bgEditor.controlsLabel}>
-            <StudioCanvas>
-                {original && !busy && <ClearImageX />}
+            <StudioCanvas clearable={!busy}>
                 {!original ? (
                     <StudioDropzone title={copy.dropTitle} hint={intro.hint} />
                 ) : failed ? (

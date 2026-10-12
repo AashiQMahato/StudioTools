@@ -24,6 +24,8 @@ interface SegmentedProps<T extends string | number> {
     className?: string;
     /** Let the control scroll sideways when it doesn't fit. */
     scrollable?: boolean;
+    /** Span the full width, segments sharing it equally, with squarer corners (panel tabs). */
+    fill?: boolean;
 }
 
 /**
@@ -39,6 +41,7 @@ export function Segmented<T extends string | number>({
     size = "md",
     className,
     scrollable = false,
+    fill = false,
 }: SegmentedProps<T>) {
     const trackRef = useRef<HTMLDivElement>(null);
     const [thumb, setThumb] = useState<{ left: number; width: number; animate: boolean } | null>(null);
@@ -84,7 +87,8 @@ export function Segmented<T extends string | number>({
             aria-label={kind === "nav" ? undefined : label}
             onKeyDown={onKeyDown}
             className={cn(
-                "relative isolate flex w-max items-center rounded-full bg-[var(--seg-track)] p-[3px]",
+                "relative isolate flex items-center bg-[var(--seg-track)] p-[3px]",
+                fill ? "w-full rounded-xl" : "w-max rounded-full",
                 scrollable && "scrollbar-hide max-w-full overflow-x-auto",
                 className,
             )}
@@ -92,17 +96,18 @@ export function Segmented<T extends string | number>({
             {thumb && (
                 <span
                     aria-hidden
-                    className={cn("absolute top-[3px] bottom-[3px] -z-10 rounded-full bg-[var(--seg-thumb)] shadow-[var(--seg-thumb-shadow)]", thumb.animate && "transition-[left,width] duration-500 ease-[var(--ease-spring)] motion-reduce:transition-none")}
+                    className={cn("absolute top-[3px] bottom-[3px] -z-10 bg-[var(--seg-thumb)] shadow-[var(--seg-thumb-shadow)]", fill ? "rounded-[0.625rem]" : "rounded-full", thumb.animate && "transition-[left,width] duration-500 ease-[var(--ease-spring)] motion-reduce:transition-none")}
                     style={{ left: thumb.left, width: thumb.width }}
                 />
             )}
             {options.map((option, i) => {
                 const selected = i === index;
                 const itemClass = cn(
-                    "relative flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-full px-3.5 font-medium whitespace-nowrap tabular-nums transition-[color,opacity] duration-200 select-none",
+                    "relative flex cursor-pointer items-center justify-center gap-1.5 px-3.5 font-medium whitespace-nowrap tabular-nums transition-[color,opacity] duration-200 select-none",
                     "outline-none focus-visible:ring-2 focus-visible:ring-[var(--color-focus-ring)]",
                     "active:opacity-70 disabled:cursor-not-allowed disabled:opacity-35",
                     height,
+                    fill ? "min-w-0 flex-1 rounded-[0.625rem] pointer-coarse:min-h-11" : "shrink-0 rounded-full",
                     selected ? "text-primary" : "text-tertiary hover:text-primary",
                 );
                 if (option.href) {

@@ -73,6 +73,8 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
     const store = useSectionImageStore();
     const original = store((state) => state.original);
     const clearImage = store((state) => state.clear);
+    const customName = store((state) => state.customName);
+    const rename = store((state) => state.rename);
     const upload = useImageUpload({ navigateTo: null, intercept: interceptFile, accept });
     const multiInput = useRef<HTMLInputElement>(null);
     const { acceptFile } = upload;
@@ -152,7 +154,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                         </span>
                     </Link>
                     <span aria-hidden className="mx-1 hidden h-6 w-px bg-[var(--card-line)] md:block" />
-                    <ToolBreadcrumb tool={tool} fileName={original?.name} onNewImage={original ? requestNewImage : undefined} />
+                    <ToolBreadcrumb tool={tool} fileName={customName ?? original?.name} onRename={original ? rename : undefined} onNewImage={original ? requestNewImage : undefined} />
 
                     <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
                         {actions}
@@ -323,7 +325,7 @@ function usePageDrop(receive: (files: File[]) => void) {
 }
 
 /** "Tool › file". On small screens, where the sidebar is hidden, the tool name also switches tools. */
-function ToolBreadcrumb({ tool, fileName, onNewImage }: { tool: ToolKey; fileName?: string; onNewImage?: () => void }) {
+function ToolBreadcrumb({ tool, fileName, onRename, onNewImage }: { tool: ToolKey; fileName?: string; onRename?: (name: string) => void; onNewImage?: () => void }) {
     const t = useT();
     const copy = t.studio;
     const { open, setOpen, wrap, trigger } = usePopover();
@@ -331,8 +333,8 @@ function ToolBreadcrumb({ tool, fileName, onNewImage }: { tool: ToolKey; fileNam
     const menuRef = useRef<HTMLDivElement>(null);
 
     return (
-        <nav aria-label={copy.breadcrumb} className="flex min-w-0 flex-1 items-center gap-1.5 text-sm lg:flex-none">
-            <span className="hidden min-w-0 items-center gap-1.5 lg:flex">
+        <nav aria-label={copy.breadcrumb} className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
+            <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
                 <Icon className="size-4 shrink-0 text-tertiary" aria-hidden />
                 <span className="truncate font-medium text-primary" aria-current="page">
                     {t.nav.toolItems[tool].title}
@@ -394,12 +396,79 @@ function ToolBreadcrumb({ tool, fileName, onNewImage }: { tool: ToolKey; fileNam
                     <span aria-hidden className="hidden text-quaternary md:inline">
                         ›
                     </span>
-                    <span className="hidden max-w-56 truncate text-tertiary md:block" title={fileName}>
-                        {fileName}
-                    </span>
+                    <FileName name={fileName} onRename={onRename} />
                 </>
             )}
         </nav>
+    );
+}
+
+/**
+ * The image's name in the top bar: shown in full when there's room (it truncates only when the bar is tight,
+ * with the whole name on hover), and a click turns it into a field. Enter or leaving the field keeps the
+ * new name, Escape cancels, and the file extension is kept unless a new one is typed.
+ */
+function FileName({ name, onRename }: { name: string; onRename?: (name: string) => void }) {
+    const t = useT();
+    const [editing, setEditing] = useState(false);
+    const [draft, setDraft] = useState(name);
+    const field = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        if (!editing) return;
+        const dot = name.lastIndexOf(".");
+        field.current?.focus();
+        field.current?.setSelectionRange(0, dot > 0 ? dot : name.length);
+    }, [editing, name]);
+
+    const commit = () => {
+        setEditing(false);
+        // No path or reserved characters: the name becomes the download's file name.
+        const next = draft.replace(/[\\/:*?"<>|]/g, "").trim();
+        if (!next || next === name) return;
+        const dot = name.lastIndexOf(".");
+        onRename?.(/\.[a-z0-9]{2,5}$/i.test(next) || dot <= 0 ? next : next + name.slice(dot));
+    };
+
+    if (!onRename) {
+        return (
+            <span className="hidden min-w-0 truncate text-tertiary md:block" title={name}>
+                {name}
+            </span>
+        );
+    }
+    if (editing) {
+        return (
+            <input
+                ref={field}
+                value={draft}
+                onChange={(event) => setDraft(event.target.value)}
+                onBlur={commit}
+                onKeyDown={(event) => {
+                    if (event.key === "Enter") commit();
+                    if (event.key === "Escape") setEditing(false);
+                }}
+                aria-label={t.studio.renameImage}
+                spellCheck={false}
+                maxLength={120}
+                style={{ width: `${Math.min(Math.max(draft.length, 8) + 2, 48)}ch` }}
+                className="hidden h-8 max-w-full min-w-0 rounded-lg border border-[var(--brand-line)] bg-primary px-2 text-sm text-primary outline-focus-ring focus-visible:outline-2 md:block"
+            />
+        );
+    }
+    return (
+        <button
+            type="button"
+            onClick={() => {
+                setDraft(name);
+                setEditing(true);
+            }}
+            title={`${name} — ${t.studio.renameImage}`}
+            aria-label={`${t.studio.renameImage}: ${name}`}
+            className="hidden h-8 min-w-0 cursor-text truncate rounded-lg px-2 text-left text-tertiary outline-focus-ring transition-colors duration-150 hover:bg-primary_hover hover:text-primary focus-visible:outline-2 md:block"
+        >
+            {name}
+        </button>
     );
 }
 

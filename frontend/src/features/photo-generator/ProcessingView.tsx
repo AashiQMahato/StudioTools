@@ -7,6 +7,7 @@ import { apiUrl, type Rect, type StepId, type WarningCode } from "@/lib/api/phot
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import { type Preview, STEPS, type StepState } from "./usePhotoJob";
+import { formatAngle } from "./formatAngle";
 
 interface ProcessingViewProps {
     steps: Record<StepId, StepState>;
@@ -85,7 +86,6 @@ export function ProcessingView({ steps, previews, crop, warnings, startedAt, con
 }
 
 /** "6.8", "−3.2" — degrees as people read them. */
-export const formatAngle = (degrees: number) => `${degrees < 0 ? "−" : ""}${Math.abs(degrees).toFixed(1)}`;
 
 function StepRow({ step, state, convertedFrom }: { step: StepId; state: StepState; convertedFrom?: string }) {
     const t = useT();

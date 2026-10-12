@@ -681,6 +681,7 @@ export const ne: Dictionary = {
         switchTool: "उपकरण बदल्नुहोस्",
         newImage: "नयाँ तस्बिर",
         clearImage: "तस्बिर हटाउनुहोस्",
+        renameImage: "तस्बिरको नाम बदल्नुहोस्",
         privateTitle: "गोपनीयता पहिलो",
         privateNote: "तस्बिरहरू तपाईंको अनुरोधका लागि मात्र प्रशोधन हुन्छन्, कहिल्यै भण्डारण हुँदैनन्।",
         backToDocuments: "कागजातमा फर्कनुहोस्",

@@ -687,6 +687,7 @@ export const en = {
         switchTool: "Switch tool",
         newImage: "New image",
         clearImage: "Remove image",
+        renameImage: "Rename image",
         privateTitle: "Private by design",
         privateNote: "Images are processed for your request only and never stored.",
         backHome: "Back to home",

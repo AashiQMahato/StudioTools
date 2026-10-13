@@ -63,6 +63,67 @@ async function segments(path: string, page: number, signal: AbortSignal): Promis
     return (await response.json()) as { width: number; height: number; segments: Segment[] };
 }
 
+/** A page as the Word builder (image service) is to make it: its own text, or OCR lines over the page picture. */
+interface DocxPage {
+    index: number;
+    mode: "text" | "ocr";
+    /** OCR lines in PDF points (top-left origin): the text of a scan, or the check against a broken text layer. */
+    ocr?: { text: string; box: [number, number, number, number]; size: number; bold: boolean; font: string; colour: string | null; confidence: number }[];
+}
+
+/** OCR's lines in PDF points. The OCR boxes are in the rendered page's pixels (turned, if OCR turned the page). */
+function ocrLines(read: OcrDocument, page: { width: number; height: number }): NonNullable<DocxPage["ocr"]> {
+    const { width, height, rotation, pageWidth } = read.document;
+    const turned = rotation === 90 || rotation === 270;
+    // Pixels → points, measured in the turned image (its width is the page's height when turned a quarter).
+    const scale = (turned ? page.height : page.width) / Math.max(1, width);
+    const toPage = (box: Box): [number, number, number, number] => {
+        const x0 = box.x * scale;
+        const y0 = box.y * scale;
+        const x1 = (box.x + box.width) * scale;
+        const y1 = (box.y + box.height) * scale;
+        const w = width * scale;
+        const h = height * scale;
+        // Undo the turn: map the box's corners back onto the page as printed.
+        if (rotation === 90) return [y0, w - x1, y1, w - x0];
+        if (rotation === 180) return [w - x1, h - y1, w - x0, h - y0];
+        if (rotation === 270) return [h - y1, x0, h - y0, x1];
+        return [x0, y0, x1, y1];
+    };
+    const perPoint = (turned ? page.height : page.width) / Math.max(1, pageWidth);
+    return read.blocks.flatMap((block) =>
+        block.lines
+            .filter((line) => line.text.trim())
+            .map((line) => ({
+                text: line.text.trim(),
+                box: toPage(line.bbox),
+                size: Math.max(5, Math.round(block.style.fontSize * perPoint * 2) / 2),
+                bold: (line.style?.fontWeight ?? block.style.fontWeight) >= 600,
+                font: DEVANAGARI.test(line.text) ? "Nirmala UI" : /serif/i.test(block.style.fontFamily) && !/sans/i.test(block.style.fontFamily) ? "Times New Roman" : "Arial",
+                colour: (line.style?.color ?? block.style.color)?.replace("#", "").toUpperCase() ?? null,
+                confidence: line.confidence,
+            })),
+    );
+}
+
+/** Builds the Word file in the image service from the page plan. */
+async function buildDocx(source: string, target: string, plan: DocxPage[], signal: AbortSignal) {
+    const connection = imageService.connection;
+    if (!connection) throw renderingUnavailable();
+    const form = new FormData();
+    form.append("source", source);
+    form.append("target", target);
+    form.append("pages", JSON.stringify(plan));
+    // A few seconds a page at most; generous so long documents finish.
+    const timeout = 60_000 + plan.length * 20_000;
+    const response = await fetchBuffered(`${connection.url}/pdf/docx`, { method: "POST", body: form, headers: { "x-internal-token": connection.token }, signal: AbortSignal.any([signal, AbortSignal.timeout(timeout)]) }).catch(() => {
+        if (signal.aborted) throw new AppError("The request was cancelled.", 499, "REQUEST_CANCELLED");
+        throw renderingUnavailable();
+    });
+    if (!response.ok) throw new AppError("We couldn't convert this PDF to Word.", 422, "INVALID_PDF");
+    return (await response.json()) as { pages: { page: number; method: string; pictures: number; tables: number; rules: number }[] };
+}
+
 const median = (values: number[]) => [...values].sort((a, b) => a - b)[Math.floor(values.length / 2)] ?? 0;
 const inside = (box: Box, x: number, y: number) => x >= box.x && x <= box.x + box.width && y >= box.y && y <= box.y + box.height;
 
@@ -191,12 +252,14 @@ export async function pdfToWord(input: { path: string; name: string }, options: 
     context.progress("reading");
     const count = (await loadPdf(input.path)).getPageCount();
     const pages: WordPage[] = [];
+    const plan: DocxPage[] = [];
     let figureBytes = 0;
     let ocrAvailable = true;
     for (let number = 1; number <= count; number++) {
         if (context.signal.aborted) return;
         context.progress("converting", number - 1, count);
         const layer = await segments(input.path, number, context.signal);
+        let check: OcrDocument | null = null;
         const png = await renderPage(input.path, number, DPI, context.signal);
         const letters = layer.segments.reduce((sum, segment) => sum + (segment.text.match(/[\p{L}\p{N}]/gu) ?? []).length, 0);
         let result: WordPage = { page: number, method: "none", document: null, figures: [] };
@@ -223,6 +286,7 @@ export async function pdfToWord(input: { path: string; name: string }, options: 
             // Nepali text layers are often broken (legacy fonts, shaping): OCR checks them.
             if (DEVANAGARI.test(blocksText(fromText.document.blocks))) {
                 const read = await readByOcr();
+                check = read;
                 if (read && agreement(blocksText(fromText.document.blocks), blocksText(read.blocks)) < 0.5) result = { page: number, method: "ocr", document: read, figures: [] };
             }
         } else {
@@ -245,10 +309,26 @@ export async function pdfToWord(input: { path: string; name: string }, options: 
             }
         }
         pages.push(result);
+        // The Word file: a digital page is rebuilt from its own text (OCR lines along, to repair broken Nepali lines);
+        // a scan, or a text layer OCR had to replace, from the OCR lines over the page's picture.
+        const size = { width: layer.width, height: layer.height };
+        if (result.method === "ocr" && result.document) plan.push({ index: number - 1, mode: layer.segments.length && check ? "text" : "ocr", ocr: ocrLines(result.document, size) });
+        else plan.push({ index: number - 1, mode: "text", ...(check ? { ocr: ocrLines(check, size) } : {}) });
     }
     context.progress("saving", count, count);
+    const docx = context.workspace.file("docx");
+    const built = await buildDocx(input.path, docx, plan, context.signal);
+    await context.addFile({ name: `${safeDocumentName(input.name)}.docx`, mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document", path: docx });
     const json = context.workspace.file("json");
     await writeFile(json, JSON.stringify({ pages }), "utf8");
     await context.addFile({ name: `${safeDocumentName(input.name)}-document.json`, mimeType: "application/json", path: json });
-    context.summary({ pages: count, textPages: pages.filter((page) => page.method === "text").length, ocrPages: pages.filter((page) => page.method === "ocr").length, figures: pages.reduce((sum, page) => sum + page.figures.length, 0), ocrUnavailable: ocrAvailable ? 0 : 1 });
+    context.summary({
+        pages: count,
+        textPages: pages.filter((page) => page.method === "text").length,
+        ocrPages: pages.filter((page) => page.method === "ocr").length,
+        // Pictures kept in the Word file (logos, photos, signatures, stamps, drawings), and pages laid out exactly.
+        figures: built.pages.reduce((sum, page) => sum + page.pictures, 0),
+        fixedPages: built.pages.filter((page) => page.method === "fixed").length,
+        ocrUnavailable: ocrAvailable ? 0 : 1,
+    });
 }

@@ -1,0 +1,19 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@page{size:Letter;margin:0.75in}
+body{font-family:"Times New Roman",Times,serif;font-size:10.5pt;line-height:1.35;color:#111}
+h1{font-size:18pt;text-align:center;margin:0 0 4px}.au{text-align:center;font-style:italic;margin-bottom:14px}
+.abs{margin:0 40px 14px;font-size:9.5pt;text-align:justify}
+.cols{column-count:2;column-gap:24px;text-align:justify}
+h2{font-size:11pt;margin:8px 0 4px}
+p{margin:0 0 6px;text-indent:14px}
+img{width:100%;margin:6px 0}
+.cap{font-size:8.5pt;text-align:center;margin-bottom:8px}
+</style></head><body>
+<h1>Layout-Preserving Conversion of Mixed Documents</h1><div class="au">A. K. Mahato and S. Tools — Kathmandu</div>
+<div class="abs"><b>Abstract.</b> We study how digitally generated and scanned documents can be converted to editable formats while keeping their visual structure. A per-page strategy chooses between the embedded text layer and optical recognition, and a reconstruction step maps positions, fonts and rules into native word-processor constructs.</div>
+<div class="cols">
+<h2>1. Introduction</h2><p>Office documents travel between formats many times in their life. Each conversion risks losing structure: columns collapse into one, tables lose their rules, and pictures disappear.</p><p>Converters that place every line in a floating text box look right but are hard to edit. Converters that ignore positions are easy to edit but look nothing like the source. We seek a middle ground.</p>
+<h2>2. Method</h2><p>Each page is classified by the amount of text in its text layer. Pages with text are analysed from that layer directly; pages without are recognised from their image.</p><img src="photo.jpg"><div class="cap">Figure 1. A sample illustration placed inside a column.</div><p>Lines are grouped into paragraphs by their spacing and indentation, and columns are found from the gaps between text blocks that run down the page.</p>
+<h2>3. Results</h2><p>On a set of business letters, invoices and papers, the reconstructed documents keep their reading order and spacing, and rules and pictures appear where they were.</p><p>Remaining differences come from font substitution when the original typeface is not available, which changes line breaks slightly.</p>
+<h2>4. Conclusion</h2><p>Combining exact text extraction with careful mapping to native constructs yields documents that are both faithful and editable.</p>
+</div></body></html>

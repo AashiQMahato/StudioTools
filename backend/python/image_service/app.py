@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import hmac
 import io
+import json
 import logging
 import os
 import threading
@@ -1234,6 +1235,29 @@ def pdf_segments(path: str, page_index: int) -> dict:
             return {"width": shown_width, "height": shown_height, "segments": segments}
         finally:
             document.close()
+
+
+@app.post("/pdf/docx")
+async def pdf_docx_endpoint(source: str = Form(...), target: str = Form(...), pages: str = Form(...), x_internal_token: str | None = Header(default=None)):
+    """The Word file for a PDF, page by page as the caller planned it (its own text, or OCR lines for a scan)."""
+    if not authorised(x_internal_token):
+        return error(401, "UNAUTHORIZED", "Unauthorized.")
+    real_source, real_target = inside_documents(source), inside_documents(target)
+    if not real_source or not real_target or not os.path.isfile(real_source) or os.path.dirname(real_source) != os.path.dirname(real_target):
+        return error(400, "INVALID_REQUEST", "Invalid document.")
+    try:
+        plan = json.loads(pages)
+        if not isinstance(plan, list) or not all(isinstance(page, dict) and isinstance(page.get("index"), int) for page in plan):
+            raise ValueError
+    except ValueError:
+        return error(400, "INVALID_REQUEST", "Invalid page plan.")
+    try:
+        from pdf_docx import build_docx
+
+        return await run_in_threadpool(build_docx, real_source, real_target, plan)
+    except Exception:  # noqa: BLE001
+        log.exception("pdf to docx failed")
+        return error(422, "INVALID_PDF", "The PDF could not be converted.")
 
 
 @app.post("/pdf/segments")

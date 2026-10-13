@@ -14,3 +14,6 @@ pillow-heif==1.8.0
 pypdfium2==5.13.0
 # PDF compression and protection: qpdf, through pikepdf.
 pikepdf==10.15.0
+# PDF → Word: page analysis (text with fonts and positions, rules, tables) and the Word writer. Both MIT.
+pdfplumber==0.11.7
+python-docx==1.2.0

@@ -31,3 +31,7 @@ __pycache__/
 
 # graphify knowledge-graph output (local only)
 graphify-out/
+
+# Third-party PDFs the docx QA downloads (not redistributed)
+backend/python/tests/docx_fixtures/.cache/
+backend/python/tests/docx_fixtures/out/

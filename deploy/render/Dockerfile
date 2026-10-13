@@ -9,7 +9,7 @@
 FROM node:22-bookworm-slim
 
 RUN apt-get update \
-    && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates tesseract-ocr tesseract-ocr-eng tesseract-ocr-nep libglib2.0-0 \
+    && apt-get install -y --no-install-recommends python3 python3-venv curl ca-certificates tesseract-ocr tesseract-ocr-eng tesseract-ocr-nep libglib2.0-0 fonts-liberation \
     && rm -rf /var/lib/apt/lists/*
 
 USER node

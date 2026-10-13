@@ -22,7 +22,7 @@ import { useT } from "@/i18n";
 import { ExportDialog, type ExportFormat } from "./ExportDialog";
 import { Figure, figureNode, withoutFigures } from "./figure";
 
-type WordFormat = "docx" | "pdf" | "txt";
+type WordFormat = "layout" | "docx" | "pdf" | "txt";
 import "@/features/ocr/ocr.css";
 
 type Method = "text" | "ocr" | "none";
@@ -90,15 +90,24 @@ export function WordResult({ job, name, onStartOver }: { job: Job; name: string;
 
     const docs = () => (pages ?? []).map(({ page }) => editors.current.get(page.page)).filter((editor): editor is Editor => Boolean(editor));
 
+    // The server's Word file keeps the page layout; the editor's export reflects any edits made here.
+    const layoutFile = job.files.find((candidate) => candidate.name.endsWith(".docx"));
     const formats: ExportFormat<WordFormat>[] = [
-        { value: "docx", label: t.ocr.export.docx, extension: "docx" },
+        ...(layoutFile ? [{ value: "layout" as const, label: copy.layoutFormat, extension: "docx", hint: copy.layoutHint }] : []),
+        { value: "docx", label: layoutFile ? copy.editedFormat : t.ocr.export.docx, extension: "docx" },
         { value: "pdf", label: t.ocr.export.pdf, extension: "pdf", prints: true, hint: t.ocr.export.pdfHint },
         { value: "txt", label: t.ocr.export.txt, extension: "txt" },
     ];
     /** The pages as edited, in the chosen format — Word keeps the pictures and each page starts a new page. */
     const exportPages = async (format: WordFormat, fileName: string, baseName: string, chosen: number[] | null) => {
         const selected = docs().filter((_, index) => !chosen || chosen.includes(index + 1));
-        if (format === "docx") {
+        if (format === "layout" && layoutFile) {
+            const blob = await fetchJobFile(job.id, layoutFile.id);
+            const url = URL.createObjectURL(blob);
+            downloadFile(url, fileName);
+            window.setTimeout(() => URL.revokeObjectURL(url), 30_000);
+            setNotice(t.documents.result.downloadFile(fileName));
+        } else if (format === "docx") {
             const blob = await exportDocx(
                 selected.map((editor) => editor.state.doc),
                 baseName,

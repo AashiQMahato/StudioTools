@@ -47,6 +47,8 @@ Every feature runs in one of three places:
 | PDF to Word | Preview, `.docx` download (original layout, or as edited) | Jobs, layout | pdfplumber + python-docx, PaddleOCR / Tesseract for scans |
 | **Text tools** | | | |
 | Text Editor, Text Cleaner, Case Converter, Word Counter | Tiptap | — | — |
+| **Whiteboard** | | | |
+| Whiteboard (`/whiteboard`) | Excalidraw editor, autosave in IndexedDB | — | — |
 
 ## Tech stack
 
@@ -194,3 +196,14 @@ QA: `backend/python/scripts/docx_visual_qa.py` converts the test PDFs (`backend/
 **High quality inpainting (optional)**: Object Remover and AI Retouch (Remove, Repair) can use PowerPaint v2-1 (SD 1.5 + BrushNet; Apache-2.0 weights, MIT code, based on Realistic Vision 6.0 under CreativeML OpenRAIL-M) instead of LaMa. A **Quality** setting appears on those pages only when the server can run it. It runs in its own process (`backend/python/inpaint_service`, its own `.venv-inpaint` because it needs diffusers 0.27), starts on first use, and unloads after 90 s idle. If it can't run or fails, LaMa does the job and the page says so (`X-Inpaint-Fallback`); a result is never labelled PowerPaint unless it was. Install with `PREMIUM_INPAINT=on scripts/setup-ml.sh`. Benchmark: `backend/python/benchmarks/inpaint_bench.py` (see its header). Smooth, Enhance and Relight remain classical.
 
 **Deployment**: the free Render service (`deploy/render/Dockerfile`, 512 MB, no GPU) doesn't ship these models. With `VITE_AI_API_BASE_URL` pointing at the AI server (`npm run ai-server`), Object Remover and Photo Restoration run there. Without it, Object Remover reports that AI inpainting isn't available, and Photo Restoration offers only its OpenCV steps. The resizer and the scanner need no server.
+
+## Whiteboard
+
+`/whiteboard` (navbar: **Whiteboard**) is the official [Excalidraw](https://github.com/excalidraw/excalidraw) editor, `@excalidraw/excalidraw` 0.18.1 (MIT), embedded full screen. The site's navbar and footer step aside; the way back is the **Studio Tools** button next to Library, or the first item in the editor's menu. Everything runs in the browser.
+
+- **Native editor**: the drawing tools, style panel, selection, grouping, layers, arrow binding, text, images, eraser, hand tool, zoom, context menu, command palette, find, keyboard shortcuts and help dialog are Excalidraw's own. Its AI features (text to diagram, wireframe to code) are off (`aiEnabled={false}`); there is no live collaboration or share link.
+- **Files**: *Open* and *Save to…* read and write `.excalidraw` JSON, *Export image…* writes PNG or SVG (optionally with the scene embedded) or copies PNG to the clipboard, and *Reset the canvas* clears it after a confirmation. These use the browser's file pickers where it has them (Chrome, Edge) and downloads / file inputs elsewhere.
+- **Autosave** (`src/features/whiteboard/`): each change is saved to IndexedDB (`studio-tools-whiteboard`) in the native format via `serializeAsJSON`, 400 ms after editing pauses (at most every 3 s while drawing), and when the tab is hidden or closed. Images are kept with the drawing; scroll and zoom are kept too. On load the save is restored through `loadFromBlob`, which validates and migrates it; a save that can't be read is kept aside under `scene-unreadable` and the editor opens blank. The shape library is saved in the same database (`useHandleLibrary`), and *Browse libraries* adds libraries from libraries.excalidraw.com.
+- **Theme and language**: the editor starts in the site's theme, and its own dark-mode toggle (Shift+Alt+D) switches the site too. The language picker in the menu offers Excalidraw's languages (it has no Nepali, so a Nepali site starts the editor in English).
+- **Fonts**: Excalidraw's fonts (Excalifont, Virgil, Nunito, Comic Shanns, Lilita One, Cascadia Code, Liberation Sans, Xiaolai and Assistant) are served from this site, not a CDN: `vite.config.ts` copies them from the installed package to `dist/excalidraw/<version>/fonts/` and `src/features/whiteboard/assetPath.ts` sets `window.EXCALIDRAW_ASSET_PATH` to match. CJK text loads only the Xiaolai pieces it needs.
+- **Bundle**: the route is lazy-loaded, so the editor (≈180 kB gzipped for the page chunk, plus Excalidraw's shared chunks and its optional Mermaid support, loaded on demand) never loads on other pages. The build emits ~14 MB of fonts, fetched one file at a time only when used.

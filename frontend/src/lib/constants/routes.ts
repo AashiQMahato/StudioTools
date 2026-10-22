@@ -35,6 +35,7 @@ export const ROUTES = {
     textCleaner: "/text/cleaner",
     caseConverter: "/text/case-converter",
     wordCounter: "/text/word-counter",
+    whiteboard: "/whiteboard",
 } as const;
 
 export type AppRoute = (typeof ROUTES)[keyof typeof ROUTES];

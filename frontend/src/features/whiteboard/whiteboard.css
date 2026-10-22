@@ -1,0 +1,74 @@
+/*
+ * The whiteboard's own few pieces, drawn with the editor's design tokens (its CSS variables) so they
+ * sit among its controls as if they were native. Nothing here restyles the editor itself.
+ */
+
+/* The editor fills its container, so the container is the whole viewport. */
+.whiteboard {
+    position: fixed;
+    inset: 0;
+    isolation: isolate;
+}
+
+/* "Studio Tools" — the way back, next to the Library button, shaped like it. */
+.excalidraw .whiteboard-home {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    height: var(--lg-button-size);
+    padding: 0 0.75rem;
+    border: none;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 0 0 1px var(--color-surface-lowest);
+    background-color: var(--color-surface-low);
+    color: var(--color-on-surface);
+    font-family: var(--ui-font);
+    font-size: 0.75rem;
+    letter-spacing: 0.4px;
+    line-height: 0;
+    cursor: pointer;
+}
+
+.excalidraw .whiteboard-home:hover {
+    background-color: var(--button-hover-bg, var(--island-bg-color));
+    color: var(--text-primary-color);
+}
+
+.excalidraw .whiteboard-home:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--focus-highlight-color);
+}
+
+.excalidraw .whiteboard-home svg {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* The language picker in the main menu, as on the reference editor. */
+.excalidraw .whiteboard-language {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    width: 100%;
+    padding: 0 0.5rem 0 0.625rem;
+    color: var(--color-on-surface);
+}
+
+.excalidraw .whiteboard-language svg {
+    flex: none;
+    width: 1rem;
+    height: 1rem;
+}
+
+.excalidraw .whiteboard-language select {
+    flex: 1;
+    min-width: 0;
+}
+
+.excalidraw .whiteboard-title {
+    font-family: var(--ui-font);
+    font-size: 2.25rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    color: var(--color-primary);
+}

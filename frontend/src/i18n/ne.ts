@@ -101,6 +101,7 @@ export const ne: Dictionary = {
             aiStudioHint: "कठिन काम गर्ने स्मार्ट उपकरण",
             allAi: "सबै AI उपकरण",
             pdfTools: "PDF उपकरण",
+            whiteboard: "ह्वाइटबोर्ड",
             openStudio: "स्टुडियो खोल्नुहोस्",
             search: {
                 label: "उपकरण खोज्नुहोस्",
@@ -504,6 +505,14 @@ export const ne: Dictionary = {
                 { q: "के मेरा सम्पादन सुरक्षित हुन्छन्?", a: "पृष्ठ खुला रहुन्जेल रहन्छन्, पूर्ण अनडू र रिडूसहित। नतिजा राख्न निर्यात गर्नुहोस्।" },
             ],
         },
+    },
+
+    whiteboard: {
+        title: "ह्वाइटबोर्ड",
+        brand: "Studio Tools",
+        back: "Studio Tools मा फर्कनुहोस्",
+        backTitle: "ह्वाइटबोर्ड छोडेर Studio Tools मा फर्कनुहोस्",
+        welcome: "रेखाचित्र र विचारहरू कोर्नुहोस्। तपाईंको चित्र यही ब्राउजरमा आफैँ सेभ हुन्छ।",
     },
 
     workspace: {

@@ -226,6 +226,12 @@
             "heading": "Remove a PDF password",
             "description": "Remove the password from a PDF you're allowed to open, or lift its printing and copying restrictions. Free online PDF unlocker.",
             "priority": 0.7
+        },
+        "/whiteboard": {
+            "title": "Free Online Whiteboard — Sketch Diagrams & Ideas | Studio Tools",
+            "heading": "Whiteboard",
+            "description": "A free, hand-drawn style whiteboard in your browser: sketch diagrams, wireframes and ideas, add images, and export PNG, SVG or .excalidraw files.",
+            "priority": 0.8
         }
     }
 }

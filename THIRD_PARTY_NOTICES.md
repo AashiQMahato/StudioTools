@@ -82,6 +82,43 @@ Optional fallback: [Tesseract](https://github.com/tesseract-ocr/tesseract) (Apac
 | Nepali stamps | [Noto Sans Devanagari](https://github.com/notofonts/devanagari) (SIL Open Font License 1.1; licence in `backend/assets/fonts/OFL.txt`), shaped by HarfBuzz/Pango through sharp (LGPL-3.0 libvips, dynamically linked) |
 | Previews | PDF.js (Apache-2.0), in the browser |
 
+## Whiteboard — Excalidraw
+
+| | |
+| --- | --- |
+| Project | [Excalidraw](https://github.com/excalidraw/excalidraw), npm package [`@excalidraw/excalidraw`](https://www.npmjs.com/package/@excalidraw/excalidraw) 0.18.1 |
+| Licence | MIT — Copyright (c) 2020 Excalidraw |
+| Used as | Unmodified library, bundled into the `/whiteboard` page; runs only in the browser |
+| Fonts | Copied unmodified from the package's `dist/prod/fonts` and served from this site: Excalifont, Virgil, Nunito, Lilita One, Cascadia Code, Liberation Sans, Xiaolai and Assistant (SIL Open Font License 1.1) and Comic Shanns (MIT). Check each font's upstream licence before redistributing them separately. |
+
+The page is called **Whiteboard** and says it is part of Studio Tools; it is not the Excalidraw website and is not endorsed by it. Excalidraw's own dependencies (bundled with it) include roughjs (MIT), perfect-freehand (MIT), Radix UI (MIT), jotai (MIT), browser-fs-access (Apache-2.0), pako (MIT and Zlib), pica (MIT) and @excalidraw/mermaid-to-excalidraw with Mermaid (MIT).
+
+MIT licence (Excalidraw):
+
+```
+MIT License
+
+Copyright (c) 2020 Excalidraw
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Frontend
 
 UI built with [Untitled UI React](https://www.untitledui.com/react) (MIT), [React Aria Components](https://react-spectrum.adobe.com/react-aria/) (Apache-2.0), [Lucide](https://lucide.dev) (ISC) and Tailwind CSS (MIT). Landing-page photography is CC0 — see `frontend/src/assets/images/landing/CREDITS.md`.

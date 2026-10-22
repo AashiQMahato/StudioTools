@@ -9,7 +9,8 @@ npm run build     # type-check + production build
 npm run preview   # serve the production build
 ```
 
-- Routes: `/`, `/remove-background`, `/upscale`, `/crop`, `/editor` (`src/routes/AppRoutes.tsx`)
+- Routes: `/`, `/remove-background`, `/upscale`, `/crop`, `/editor`, `/whiteboard` and more (`src/routes/AppRoutes.tsx`)
+- Whiteboard (`/whiteboard`): the Excalidraw editor in `src/features/whiteboard/`, lazy-loaded, with IndexedDB autosave; its fonts are copied into the build by `vite.config.ts` (see the root README)
 - Untitled UI components: `src/components/ui/` — add more with `npx untitledui@latest add <name> -p components/ui`, then change `@/utils/cx` imports to `@/lib/utils/cx`
 - Landing page: `src/pages/Home/HomePage.tsx` composes the sections in `src/components/landing/`. Its demos (background removal, before/after, upscale loupe, crop editor) run entirely in the browser on sample photos; nothing is sent to the API.
 - Landing photography lives in `src/assets/images/landing/` (CC0, credits in `CREDITS.md`). The cut-outs are real output from a segmentation model (BiRefNet-lite via `rembg`), not hand-made masks.

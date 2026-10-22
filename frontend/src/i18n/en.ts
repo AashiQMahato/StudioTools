@@ -106,6 +106,7 @@ export const en = {
             aiStudioHint: "Smart tools that do the hard work",
             allAi: "All AI tools",
             pdfTools: "PDF Tools",
+            whiteboard: "Whiteboard",
             openStudio: "Open Studio",
             search: {
                 label: "Search tools",
@@ -510,6 +511,14 @@ export const en = {
             ],
         },
     } satisfies Record<string, ToolGuide>,
+
+    whiteboard: {
+        title: "Whiteboard",
+        brand: "Studio Tools",
+        back: "Back to Studio Tools",
+        backTitle: "Leave the whiteboard and go back to Studio Tools",
+        welcome: "Sketch diagrams and ideas. Your drawing is saved in this browser as you go.",
+    },
 
     workspace: {
         downloadFormat: "Download as",

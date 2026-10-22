@@ -1,4 +1,4 @@
-import { FileText, LayoutGrid, Sparkles } from "lucide-react";
+import { FileText, LayoutGrid, Presentation, Sparkles } from "lucide-react";
 import { useLocation } from "react-router-dom";
 import { DOCUMENT_ROUTES, TOOL_ROUTES } from "@/lib/constants/navigation";
 import { ROUTES } from "@/lib/constants/routes";
@@ -8,7 +8,7 @@ import { NavItem } from "./NavItem";
 import { AiStudioMenu, ToolsMegaMenu } from "./NavMenus";
 import { AI_ROUTES } from "./toolRegistry";
 
-/** Three entries only — Tools, AI Studio, PDF Tools — so the bar stays calm however many tools there are. */
+/** Four entries only — Tools, AI Studio, PDF Tools, Whiteboard — so the bar stays calm however many tools there are. */
 export function DesktopNav({ className }: { className?: string }) {
     const t = useT();
     const { pathname } = useLocation();
@@ -34,6 +34,14 @@ export function DesktopNav({ className }: { className?: string }) {
                         <span className="flex items-center gap-2">
                             <FileText className="size-4" aria-hidden />
                             {t.nav.mega.pdfTools}
+                        </span>
+                    </NavItem>
+                </li>
+                <li>
+                    <NavItem href={ROUTES.whiteboard} active={pathname === ROUTES.whiteboard}>
+                        <span className="flex items-center gap-2">
+                            <Presentation className="size-4" aria-hidden />
+                            {t.nav.mega.whiteboard}
                         </span>
                     </NavItem>
                 </li>

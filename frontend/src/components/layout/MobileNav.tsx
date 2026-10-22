@@ -1,4 +1,4 @@
-import { ArrowRight, ChevronDown, Plus, Search } from "lucide-react";
+import { ArrowRight, ChevronDown, Plus, Presentation, Search } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Segmented } from "@/components/common/Segmented";
@@ -94,6 +94,12 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
                     </div>
 
                     <ul>
+                        <li>
+                            <NavItem size="sheet" href={ROUTES.whiteboard} onNavigate={onClose} className="justify-between">
+                                {t.nav.mega.whiteboard}
+                                <Presentation className="size-5 text-quaternary" aria-hidden />
+                            </NavItem>
+                        </li>
                         {SECTION_LINKS.map((link) => (
                             <li key={link.key}>
                                 <NavItem

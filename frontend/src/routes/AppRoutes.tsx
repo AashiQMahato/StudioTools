@@ -42,6 +42,8 @@ const ImagesToPdfPage = lazy(() => import("@/pages/Pdf/ImagesToPdfPage").then((m
 const ObjectRemoverPage = lazy(() => import("@/pages/ObjectRemover/ObjectRemoverPage").then((module) => ({ default: module.ObjectRemoverPage })));
 const PhotoRestorationPage = lazy(() => import("@/pages/PhotoRestoration/PhotoRestorationPage").then((module) => ({ default: module.PhotoRestorationPage })));
 const SocialResizerPage = lazy(() => import("@/pages/SocialResizer/SocialResizerPage").then((module) => ({ default: module.SocialResizerPage })));
+// The whiteboard brings the whole Excalidraw editor (and its fonts): only its own page loads it.
+const WhiteboardPage = lazy(() => import("@/pages/Whiteboard/WhiteboardPage").then((module) => ({ default: module.WhiteboardPage })));
 const DocumentScannerPage = lazy(() => import("@/pages/DocumentScanner/DocumentScannerPage").then((module) => ({ default: module.DocumentScannerPage })));
 
 // A tall placeholder while a page loads, so the footer isn't pushed down (a layout shift) when it arrives.
@@ -87,6 +89,8 @@ export function AppRoutes() {
                 <Route path={ROUTES.compress} element={<CompressorPage />} />
                 <Route path={ROUTES.crop} element={<CropperPage />} />
                 <Route path={ROUTES.editor} element={<EditorPage />} />
+                {/* A blank screen while it loads: the editor fills the viewport, there's no footer to hold down. */}
+                <Route path={ROUTES.whiteboard} element={<Suspense fallback={<div aria-hidden className="fixed inset-0 bg-primary" />}><WhiteboardPage /></Suspense>} />
                 <Route path="*" element={<Navigate to={ROUTES.home} replace />} />
             </Route>
         </Routes>

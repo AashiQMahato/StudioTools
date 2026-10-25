@@ -20,6 +20,8 @@ export interface SavedScene {
     scene: string;
     /** Where the canvas was scrolled and zoomed to (not part of the .excalidraw format). */
     view?: SavedView;
+    /** The board's title (the .excalidraw format leaves the name out). */
+    name?: string;
 }
 
 export interface SavedView {
@@ -46,6 +48,7 @@ export function readSavedScene(value: unknown): SavedScene | null {
         savedAt: isFiniteNumber(record.savedAt) ? record.savedAt : 0,
         scene: record.scene,
         view: readView(record.view),
+        name: typeof record.name === "string" && record.name.trim() ? record.name.slice(0, 200) : undefined,
     };
 }
 

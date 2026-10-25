@@ -6,7 +6,7 @@ const scene = JSON.stringify({ type: "excalidraw", version: 2, elements: [], app
 
 test("a well-formed record is read back with its view", () => {
     const record = readSavedScene({ version: SAVED_SCENE_VERSION, savedAt: 5, scene, view: { scrollX: 10, scrollY: -4, zoom: 1.5 } });
-    assert.deepEqual(record, { version: SAVED_SCENE_VERSION, savedAt: 5, scene, view: { scrollX: 10, scrollY: -4, zoom: 1.5 } });
+    assert.deepEqual(record, { version: SAVED_SCENE_VERSION, savedAt: 5, scene, view: { scrollX: 10, scrollY: -4, zoom: 1.5 }, name: undefined });
 });
 
 test("malformed, empty or unknown-version records read as nothing", () => {
@@ -22,4 +22,9 @@ test("a broken view is dropped but the drawing is kept", () => {
         assert.equal(record?.view, undefined);
         assert.equal(record?.savedAt, 0);
     }
+});
+
+test("the board name is kept when it's real text, dropped otherwise", () => {
+    assert.equal(readSavedScene({ version: SAVED_SCENE_VERSION, scene, name: "Sprint plan" })?.name, "Sprint plan");
+    for (const name of ["", "   ", 42, null]) assert.equal(readSavedScene({ version: SAVED_SCENE_VERSION, scene, name })?.name, undefined);
 });

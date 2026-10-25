@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { searchTools } from "./searchTools";
+import { matchRanges, searchTools } from "./searchTools";
 
 const tools = [
     { id: "a", name: "Image Compressor", description: "Smaller files, same look", keywords: ["reduce", "shrink"] },
@@ -23,4 +23,12 @@ test("every word must match, accents and case are ignored", () => {
 test("an empty or unmatched query finds nothing", () => {
     assert.deepEqual(searchTools(tools, "   "), []);
     assert.deepEqual(searchTools(tools, "zzz"), []);
+});
+
+test("match ranges cover every word, merged and in order", () => {
+    assert.deepEqual(matchRanges("Compress PDF", "pdf"), [[9, 12]]);
+    assert.deepEqual(matchRanges("Compress PDF", "comp press"), [[0, 8]]);
+    assert.deepEqual(matchRanges("PDF to PDF", "pdf"), [[0, 3], [7, 10]]);
+    assert.deepEqual(matchRanges("Crop", "zoom"), []);
+    assert.deepEqual(matchRanges("Crop", "  "), []);
 });

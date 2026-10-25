@@ -91,7 +91,7 @@ Optional fallback: [Tesseract](https://github.com/tesseract-ocr/tesseract) (Apac
 | Used as | Unmodified library, bundled into the `/whiteboard` page; runs only in the browser |
 | Fonts | Copied unmodified from the package's `dist/prod/fonts` and served from this site: Excalifont, Virgil, Nunito, Lilita One, Cascadia Code, Liberation Sans, Xiaolai and Assistant (SIL Open Font License 1.1) and Comic Shanns (MIT). Check each font's upstream licence before redistributing them separately. |
 
-The page is called **Whiteboard** and says it is part of Studio Tools; it is not the Excalidraw website and is not endorsed by it. Excalidraw's own dependencies (bundled with it) include roughjs (MIT), perfect-freehand (MIT), Radix UI (MIT), jotai (MIT), browser-fs-access (Apache-2.0), pako (MIT and Zlib), pica (MIT) and @excalidraw/mermaid-to-excalidraw with Mermaid (MIT).
+The page is called **Whiteboard** and says it is part of Studio Tools; it is not the Excalidraw website and is not endorsed by it. The header, tool strip, menus and theme around the editor are Studio Tools' own; the drawing engine is used through its public API and is not modified. The More menu links to the Excalidraw project ("Built on Excalidraw (MIT licence)"). Excalidraw's own dependencies (bundled with it) include roughjs (MIT), perfect-freehand (MIT), Radix UI (MIT), jotai (MIT), browser-fs-access (Apache-2.0), pako (MIT and Zlib), pica (MIT) and @excalidraw/mermaid-to-excalidraw with Mermaid (MIT).
 
 MIT licence (Excalidraw):
 

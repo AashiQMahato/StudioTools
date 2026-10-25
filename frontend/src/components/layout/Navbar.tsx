@@ -17,7 +17,7 @@ import { ThemeToggle } from "./ThemeToggle";
 
 const DESKTOP = "(min-width: 64rem)";
 const MOBILE_NAV_ID = "mobile-nav";
-const SHORTCUT = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform) ? "⌘ K" : "Ctrl K";
+const SHORTCUT = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform) ? "⌘K" : "Ctrl+K";
 
 /**
  * Transparent over the hero, so the page's first view is one surface; once content scrolls under
@@ -65,16 +65,17 @@ export function Navbar() {
                 <DesktopNav className="hidden lg:block" />
 
                 <div className="ml-auto flex items-center gap-1 sm:gap-1.5">
+                    {/* An icon only: the search itself opens as a palette (also ⌘K / Ctrl+K). */}
                     <button
                         type="button"
                         onClick={() => openSearch(true)}
                         aria-label={t.nav.mega.search.label}
-                        title={`${t.nav.mega.search.label} (⌘K)`}
-                        className="flex size-11 cursor-pointer items-center justify-center gap-2 rounded-full text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 2xl:h-10 2xl:w-60 2xl:justify-start 2xl:rounded-xl 2xl:border 2xl:border-secondary 2xl:bg-primary 2xl:px-3 2xl:text-sm 2xl:font-normal 2xl:text-tertiary"
+                        aria-haspopup="dialog"
+                        aria-keyshortcuts="Meta+K Control+K"
+                        title={`${t.nav.mega.search.label} (${SHORTCUT})`}
+                        className="grid size-11 cursor-pointer place-items-center rounded-full text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2"
                     >
-                        <Search className="size-5 2xl:size-4" aria-hidden />
-                        <span className="hidden flex-1 text-left 2xl:inline">{t.nav.mega.searchField}</span>
-                        <kbd className="hidden rounded-md border border-secondary bg-secondary px-1.5 py-0.5 font-sans text-xs text-tertiary 2xl:inline">{SHORTCUT}</kbd>
+                        <Search className="size-5" aria-hidden />
                     </button>
                     <LanguageMenu className="hidden lg:block" />
                     <ThemeToggle />

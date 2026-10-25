@@ -38,3 +38,25 @@ export function searchTools<T extends Searchable>(items: readonly T[], query: st
     // Array.sort is stable, so equal scores keep the registry's order.
     return scored.sort((a, b) => b.score - a.score).map((entry) => entry.item);
 }
+
+/**
+ * Where a query's words appear in a piece of text, as merged [start, end) ranges — for highlighting a
+ * result. Case-insensitive; text whose length changes when lower-cased is left unhighlighted.
+ */
+export function matchRanges(text: string, query: string): [number, number][] {
+    const lower = text.toLowerCase();
+    if (lower.length !== text.length) return [];
+    const words = query.toLowerCase().split(/\s+/).filter(Boolean);
+    const ranges: [number, number][] = [];
+    for (const word of words) {
+        for (let at = lower.indexOf(word); at !== -1; at = lower.indexOf(word, at + word.length)) ranges.push([at, at + word.length]);
+    }
+    ranges.sort((a, b) => a[0] - b[0]);
+    const merged: [number, number][] = [];
+    for (const range of ranges) {
+        const last = merged.at(-1);
+        if (last && range[0] <= last[1]) last[1] = Math.max(last[1], range[1]);
+        else merged.push([...range]);
+    }
+    return merged;
+}

@@ -1,74 +1,201 @@
 /*
- * The whiteboard's own few pieces, drawn with the editor's design tokens (its CSS variables) so they
- * sit among its controls as if they were native. Nothing here restyles the editor itself.
+ * The whiteboard in Studio Tools' design language. Three parts:
+ *
+ * 1. Layout: header, tool strip and canvas fill the viewport (the editor needs a sized container).
+ * 2. Theme: Studio Tools tokens (neutrals, hairlines, the brand accent, the UI font) mapped onto the
+ *    editor's own CSS variables — the hook it provides for theming. Light and dark both follow the
+ *    site's tokens, which switch with html.dark-mode (kept in step with the editor's theme).
+ * 3. Chrome: the editor's own toolbar, menu button, zoom/undo footer and help button are replaced by
+ *    the Studio Tools header and tool strip, so they're taken out of view here. Everything else —
+ *    the canvas, selection, the styling panel, context menu, dialogs, library, toasts — is the editor's.
+ *
+ * The hand-drawn rendering and the fonts people pick for text on the canvas are never changed.
  */
 
-/* The editor fills its container, so the container is the whole viewport. */
+/* 1. Layout */
+
 .whiteboard {
     position: fixed;
     inset: 0;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
     isolation: isolate;
 }
 
-/* "Studio Tools" — the way back, next to the Library button, shaped like it. */
-.excalidraw .whiteboard-home {
+.whiteboard-body {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    height: var(--lg-button-size);
-    padding: 0 0.75rem;
-    border: none;
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 0 0 1px var(--color-surface-lowest);
-    background-color: var(--color-surface-low);
-    color: var(--color-on-surface);
-    font-family: var(--ui-font);
-    font-size: 0.75rem;
-    letter-spacing: 0.4px;
-    line-height: 0;
-    cursor: pointer;
+    flex: 1;
+    min-height: 0;
 }
 
-.excalidraw .whiteboard-home:hover {
-    background-color: var(--button-hover-bg, var(--island-bg-color));
-    color: var(--text-primary-color);
-}
-
-.excalidraw .whiteboard-home:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 2px var(--focus-highlight-color);
-}
-
-.excalidraw .whiteboard-home svg {
-    width: 1rem;
-    height: 1rem;
-}
-
-/* The language picker in the main menu, as on the reference editor. */
-.excalidraw .whiteboard-language {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-    width: 100%;
-    padding: 0 0.5rem 0 0.625rem;
-    color: var(--color-on-surface);
-}
-
-.excalidraw .whiteboard-language svg {
-    flex: none;
-    width: 1rem;
-    height: 1rem;
-}
-
-.excalidraw .whiteboard-language select {
+.whiteboard-canvas {
+    position: relative;
     flex: 1;
     min-width: 0;
 }
 
-.excalidraw .whiteboard-title {
-    font-family: var(--ui-font);
-    font-size: 2.25rem;
+/* 2. Theme — `:root .excalidraw` outranks the editor's `.excalidraw`, and the dark rule its `.excalidraw.theme--dark`. */
+
+:root .excalidraw,
+:root .excalidraw.theme--dark {
+    --ui-font: var(--font-body);
+
+    /* Accent: Studio Tools blue, used for what's selected, active or focused. */
+    --color-primary: var(--brand);
+    --color-primary-darker: var(--brand-strong);
+    --color-primary-darkest: var(--brand-strong);
+    --color-primary-hover: var(--brand-strong);
+    --color-primary-light: var(--brand-soft);
+    --color-primary-light-darker: var(--brand-line);
+    --color-brand-hover: var(--brand-strong);
+    --color-brand-active: var(--brand-strong);
+    --color-surface-primary-container: var(--brand-soft);
+    --color-on-primary-container: var(--brand);
+    --color-promo: var(--brand);
+    --color-logo-icon: var(--brand);
+    --focus-highlight-color: var(--brand-line);
+    --select-highlight-color: var(--brand);
+    --link-color: var(--brand);
+    --color-slider-thumb: var(--brand);
+    --color-slider-track: var(--color-bg-tertiary);
+
+    /* Surfaces and text: the site's neutrals. */
+    --island-bg-color: var(--color-bg-primary);
+    --popup-bg-color: var(--color-bg-primary);
+    --sidebar-bg-color: var(--color-bg-primary);
+    --default-bg-color: var(--color-bg-primary);
+    --input-bg-color: var(--color-bg-primary);
+    --input-hover-bg-color: var(--color-bg-secondary);
+    --popup-secondary-bg-color: var(--color-bg-secondary);
+    --color-surface-lowest: var(--color-bg-primary);
+    --color-surface-low: var(--color-bg-secondary);
+    --color-surface-mid: var(--color-bg-secondary);
+    --color-surface-high: var(--color-bg-tertiary);
+    --button-hover-bg: var(--color-bg-tertiary);
+    --button-active-bg: var(--color-bg-tertiary);
+    --color-on-surface: var(--color-text-secondary);
+    --text-primary-color: var(--color-text-primary);
+    --popup-text-color: var(--color-text-secondary);
+    --input-label-color: var(--color-text-tertiary);
+    --keybinding-color: var(--color-text-quaternary);
+    --icon-fill-color: var(--color-text-secondary);
+
+    /* Lines instead of shadows: hairline borders, one soft lift for floating panels. */
+    --default-border-color: var(--color-border-secondary);
+    --dialog-border-color: var(--color-border-secondary);
+    --sidebar-border-color: var(--color-border-secondary);
+    --input-border-color: var(--color-border-primary);
+    --color-border-outline-variant: var(--color-border-secondary);
+    --shadow-island: 0 0 0 1px var(--color-border-secondary), 0 8px 24px -12px rgb(16 24 40 / 0.18);
+    --modal-shadow: 0 24px 64px -24px rgb(16 24 40 / 0.35);
+    --sidebar-shadow: none;
+    --library-dropdown-shadow: 0 8px 24px -12px rgb(16 24 40 / 0.25);
+    --border-radius-md: 0.5rem;
+    --border-radius-lg: 0.75rem;
+
+    /* The canvas selection outline and handles, in the accent. The dark theme draws the canvas through
+       an inverting filter, so its colour is the one that inverts to the light accent. */
+    --color-selection: #0369a1;
+}
+
+:root .excalidraw.theme--dark {
+    --color-selection: #075985;
+}
+
+/* 3. Chrome the Studio Tools shell replaces. The undo/redo and zoom buttons stay in the page (the
+   header drives undo/redo through them; see useEditorHistory) but out of sight and out of the tab order. */
+
+.excalidraw .main-menu-trigger,
+.excalidraw .layer-ui__wrapper__top-right,
+.excalidraw .layer-ui__wrapper__footer-left,
+.excalidraw .layer-ui__wrapper__footer-right,
+.excalidraw .App-toolbar--mobile,
+.excalidraw .mobile-misc-tools-container {
+    display: none !important;
+}
+
+/* The desktop toolbar island goes, but the hint under it ("Press Enter to add text…") stays. */
+.excalidraw .shapes-section .App-toolbar {
+    visibility: hidden;
+    background: none;
+    box-shadow: none;
+}
+
+.excalidraw .shapes-section .HintViewer {
+    visibility: visible;
+    top: 0;
+    margin-top: 0;
+    color: var(--color-text-quaternary);
+    font-size: 0.75rem;
+}
+
+/* On phones the hint has no toolbar to sit under: put it at the top of the canvas. */
+.excalidraw.excalidraw--mobile .HintViewer {
+    color: var(--color-text-quaternary);
+}
+
+/* Styling panel: a calm, bordered sheet with quiet section labels. */
+.excalidraw .App-menu__left {
+    width: 13.5rem;
+    padding: 0.875rem;
+}
+
+.excalidraw .App-menu__left h3,
+.excalidraw .App-menu__left legend,
+.excalidraw .App-menu__left .control-label,
+.excalidraw .App-mobile-menu h3 {
+    margin-bottom: 0.375rem;
+    color: var(--color-text-tertiary);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+/* Phone action bar (edit style, duplicate, delete, undo, redo): a docked strip like the header. */
+.excalidraw.excalidraw--mobile .App-bottom-bar .Island {
+    border-radius: var(--border-radius-lg);
+}
+
+/* Welcome screen: Studio Tools type for the interface text (the canvas keeps its hand-drawn fonts). */
+.excalidraw .welcome-screen-center__logo {
+    margin-bottom: 0.25rem;
+}
+
+.excalidraw .whiteboard-welcome-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    font-size: 1.5rem;
     font-weight: 700;
     letter-spacing: -0.02em;
-    color: var(--color-primary);
+}
+
+.excalidraw .welcome-screen-center__heading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.375rem;
+    max-width: 28rem;
+    font-family: var(--font-body);
+    text-align: center;
+}
+
+.excalidraw .whiteboard-welcome-heading {
+    color: var(--color-text-secondary);
+    font-size: 1.125rem;
+    font-weight: 600;
+}
+
+.excalidraw .whiteboard-welcome-text {
+    color: var(--color-text-tertiary);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.excalidraw .welcome-screen-menu-item {
+    font-family: var(--font-body);
 }

@@ -86,7 +86,7 @@ export function ShowcaseSection() {
                 />
 
                 <div
-                    className="reveal card mt-12 bg-[var(--color-bg-secondary)] p-4 sm:p-6 md:mt-14 md:p-8 [--i:3]"
+                    className="reveal card mt-12 bg-tertiary shadow-none p-4 sm:p-6 md:mt-14 md:p-8 [--i:3]"
                     role="region"
                     aria-roledescription="carousel"
                     aria-label={t.showcase.region}

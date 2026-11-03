@@ -20,17 +20,17 @@ export function WorkflowSection() {
                     badge={t.workflow.badge}
                     title={t.workflow.title}
                     description={t.workflow.description}
-                    action={<UploadButton size="lg" label={t.workflow.getStarted} showIcon={false} buttonClassName="btn-primary rounded-full px-6 ring-0 before:hidden" />}
+                    action={<UploadButton size="lg" label={t.workflow.getStarted} showIcon={false} buttonClassName="btn-ink rounded-full px-6 ring-0! before:hidden" />}
                 />
-                <ol className="mt-12 grid gap-6 md:mt-14 md:grid-cols-3">
+                <ol className="mt-12 grid gap-4 md:mt-14 md:grid-cols-3 lg:gap-5">
                     {steps.map((step, index) => (
                         <li key={step.title} className="reveal card overflow-hidden" style={{ "--i": index + 3 } as CSSProperties}>
                             <div aria-hidden className="relative flex h-48 items-center justify-center overflow-hidden border-b border-[var(--card-line)] bg-[var(--color-bg-secondary)]">
                                 {step.visual}
                             </div>
                             <div className="p-6">
-                                <span className="flex size-11 items-center justify-center rounded-full bg-[var(--brand)] text-lg font-semibold text-white">{index + 1}</span>
-                                <h3 className="mt-5 text-2xl font-semibold tracking-[-0.01em] text-primary">{step.title}</h3>
+                                <span className="flex size-8 items-center justify-center rounded-full bg-tertiary font-mono text-sm font-semibold text-secondary tabular-nums">{String(index + 1).padStart(2, "0")}</span>
+                                <h3 className="mt-4 text-xl font-semibold tracking-[-0.015em] text-primary">{step.title}</h3>
                                 <p className="mt-3 text-[0.9375rem] leading-relaxed text-tertiary">{step.description}</p>
                             </div>
                         </li>
@@ -77,7 +77,7 @@ function DownloadVisual() {
                 <p className="truncate text-sm font-semibold text-primary">kingfisher.png</p>
                 <p className="text-xs text-quaternary">PNG · 1600 × 1000</p>
             </div>
-            <span className="flex size-9 items-center justify-center rounded-full bg-[var(--brand)] text-white">
+            <span className="flex size-9 items-center justify-center rounded-full bg-brand-solid text-primary_on-brand">
                 <Download className="size-4" />
             </span>
         </div>

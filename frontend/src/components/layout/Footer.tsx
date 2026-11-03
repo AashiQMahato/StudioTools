@@ -58,7 +58,7 @@ function Column({ title, children }: { title: string; children: React.ReactNode 
 }
 
 /**
- * The site footer: a soft, light gradient (a deep navy one in dark mode) with the brand and what the
+ * The site footer: a quiet, warm paper band (near-black in dark mode) with the brand and what the
  * app does on the left, and the tools and resources on the right.
  */
 export function Footer() {
@@ -91,6 +91,9 @@ export function Footer() {
                             {t.nav.toolItems[item.key].title}
                         </FooterItem>
                     ))}
+                    <FooterItem to={ROUTES.imageTools} strong>
+                        {t.nav.imageMenu.viewAll}
+                    </FooterItem>
                 </Column>
 
                 <Column title={copy.documents}>
@@ -105,6 +108,7 @@ export function Footer() {
                 </Column>
 
                 <Column title={copy.resources}>
+                    <FooterItem to={ROUTES.whiteboard}>{t.nav.mega.whiteboard}</FooterItem>
                     <FooterItem to={`${ROUTES.home}#how-it-works`}>{t.nav.howItWorks}</FooterItem>
                     <FooterItem to={`${ROUTES.home}#features`}>{t.nav.features}</FooterItem>
                     <FooterItem to={`${ROUTES.home}#faq`}>{copy.faq}</FooterItem>

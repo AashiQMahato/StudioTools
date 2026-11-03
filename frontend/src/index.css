@@ -14,47 +14,81 @@
  *
  * `.dark-mode` (not just `html.dark-mode`) so a single section can opt into the dark palette.
  */
+/*
+ * STUDIO TOOLS DESIGN SYSTEM — warm, quiet surfaces with a single confident ink and a small set of
+ * refined accents. The page sits on a warm paper tone; working surfaces are white (light) or graphite
+ * (dark). One accent — indigo — carries primary actions, links and focus. Five companion hues
+ * (violet, sky, green, amber, coral) tell tools and categories apart, always alongside a label.
+ *
+ * `.dark-mode` (not just `html.dark-mode`) so a single section can opt into the dark palette.
+ */
 :root {
-    /* SF Pro on Apple devices (system font — it cannot be served as a web font), Inter elsewhere, Noto for Devanagari. */
-    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", "Noto Sans Devanagari", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-display: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Inter", "Noto Sans Devanagari", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    /* Geist for Latin, Noto Sans Devanagari for Nepali, the platform font as fallback. */
+    --font-body: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-display: "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans Devanagari", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 
-    /* Slate neutrals with an indigo accent. */
-    --color-bg-primary: #ffffff;
-    --color-bg-secondary: #f6f7fb;
-    --color-bg-tertiary: #eceef6;
-    --color-bg-primary_hover: #f6f7fb;
-    --color-bg-active: #eceef6;
-    --color-text-primary: #1a202c;
-    --color-text-secondary: #2d3748;
-    --color-text-tertiary: #4a5568;
-    --color-text-quaternary: #718096;
-    --color-fg-primary: #1a202c;
-    --color-fg-quaternary: #a0aec0;
-    --color-border-primary: #cbd5e0;
-    --color-border-secondary: #e6e8f2;
+    /* Palette */
+    --ink: #202124;
+    --paper: #f7f5f0;
+    --paper-2: #f0eee8;
+    --paper-3: #e8e5dd;
+    --surface: #ffffff;
 
-    --brand: #0369a1;
-    --brand-strong: #075985;
-    --brand-soft: #e4f2fa;
-    --brand-line: rgb(3 105 161 / 0.22);
+    --page-bg: var(--paper);
+    --color-bg-primary: var(--surface);
+    --color-bg-secondary: var(--paper);
+    --color-bg-tertiary: var(--paper-2);
+    --color-bg-primary_hover: #f4f2ec;
+    --color-bg-secondary_hover: var(--paper-2);
+    --color-bg-active: var(--paper-2);
+    --color-text-primary: var(--ink);
+    --color-text-secondary: #3a3b3f;
+    --color-text-tertiary: #5c5d63;
+    --color-text-quaternary: #7d7e85;
+    --color-fg-primary: var(--ink);
+    --color-fg-quaternary: #a3a39f;
+    --color-border-primary: #d9d5cb;
+    --color-border-secondary: #e9e6de;
 
-    --color-bg-brand-solid: var(--brand);
-    --color-bg-brand-solid_hover: var(--brand-strong);
+    --brand: #4c5fe0;
+    --brand-strong: #3a4bc4;
+    --brand-soft: #ecefff;
+    --brand-line: rgb(83 103 232 / 0.24);
+    --brand-solid: #5367e8;
+    --violet: #8866e8;
+    --sky: #36a5d6;
+    --green: #20a77a;
+    --amber: #e4a23a;
+    --coral: #e46f78;
+
+    --color-bg-brand-solid: var(--ink);
+    --color-bg-brand-solid_hover: #000000;
     --color-text-primary_on-brand: #ffffff;
 
     --accent: var(--brand);
-    --color-focus-ring: var(--brand);
+    --color-focus-ring: var(--brand-solid);
 
-    /* Cards: white, faint lavender hairline, soft indigo-tinted depth. */
-    --card-bg: #ffffff;
-    --card-line: rgb(3 105 161 / 0.13);
-    --card-shadow: 0 1px 2px rgb(26 32 44 / 0.03), 0 24px 60px -28px rgb(3 105 161 / 0.26);
+    /* Cards: white on paper, a warm hairline, soft depth. */
+    --card-bg: var(--surface);
+    --card-line: rgb(32 33 36 / 0.08);
+    --card-shadow: 0 1px 2px rgb(32 33 36 / 0.04), 0 18px 48px -28px rgb(32 33 36 / 0.22);
 
     --checker-a: #ffffff;
-    --checker-b: #eceef4;
-    --canvas: #f6f7fb;
-    --tile: #f6f7fb;
+    --checker-b: #ece9e2;
+    --canvas: var(--paper);
+    --tile: var(--paper-2);
+
+    /* LIQUID GLASS — a translucent pane over content: blur and saturation behind it, a bright inner
+     * edge on top (light catching the rim), a hairline outside, and depth that grows with elevation. */
+    --glass-bg: rgb(255 255 255 / 0.66);
+    --glass-bg-strong: rgb(255 255 255 / 0.84);
+    --glass-tint: linear-gradient(180deg, rgb(255 255 255 / 0.5), rgb(255 255 255 / 0) 55%);
+    --glass-rim: rgb(255 255 255 / 0.9);
+    --glass-edge: rgb(32 33 36 / 0.09);
+    --glass-shadow: 0 1px 1px rgb(32 33 36 / 0.03), 0 10px 30px -12px rgb(32 33 36 / 0.2);
+    --glass-shadow-lg: 0 2px 4px rgb(32 33 36 / 0.03), 0 28px 64px -24px rgb(32 33 36 / 0.32);
+    --glass-blur: blur(22px) saturate(180%);
 
     --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
     --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
@@ -63,40 +97,62 @@
 }
 
 .dark-mode {
-    --color-bg-primary: #0b0d14;
-    --color-bg-secondary: #12141d;
-    --color-bg-tertiary: #1c1f2b;
-    --color-bg-primary_hover: #161925;
-    --color-bg-active: #1c1f2b;
-    --color-text-primary: #f1f3f9;
-    --color-text-secondary: #d5d9e5;
-    --color-text-tertiary: #a3aabd;
-    --color-text-quaternary: #7c849a;
-    --color-fg-primary: #f1f3f9;
-    --color-fg-quaternary: #5e667c;
-    --color-border-primary: #343a4d;
-    --color-border-secondary: #232736;
+    --ink: #f2f1ee;
+    --paper: #111318;
+    --paper-2: #1f222b;
+    --paper-3: #2a2e39;
+    --surface: #1a1d25;
 
-    --brand: #7dd3fc;
-    --brand-strong: #a5e4fd;
-    --brand-soft: rgb(125 211 252 / 0.13);
-    --brand-line: rgb(125 211 252 / 0.3);
+    --page-bg: var(--paper);
+    --color-bg-primary: var(--surface);
+    --color-bg-secondary: #15171e;
+    --color-bg-tertiary: var(--paper-2);
+    --color-bg-primary_hover: #22252f;
+    --color-bg-secondary_hover: var(--paper-2);
+    --color-bg-active: var(--paper-2);
+    --color-text-primary: var(--ink);
+    --color-text-secondary: #d6d5d1;
+    --color-text-tertiary: #a6a7ad;
+    --color-text-quaternary: #7f818a;
+    --color-fg-primary: var(--ink);
+    --color-fg-quaternary: #5f626c;
+    --color-border-primary: #353946;
+    --color-border-secondary: #262a34;
 
-    --color-bg-brand-solid: #0b74b0;
-    --color-bg-brand-solid_hover: #7482f0;
-    --color-text-primary_on-brand: #ffffff;
+    --brand: #9aa6ff;
+    --brand-strong: #b7bfff;
+    --brand-soft: rgb(124 140 255 / 0.14);
+    --brand-line: rgb(154 166 255 / 0.3);
+    --brand-solid: #5f72ee;
+    --violet: #a68cf2;
+    --sky: #5bbbe4;
+    --green: #3cc495;
+    --amber: #f0b75a;
+    --coral: #f08a92;
+
+    --color-bg-brand-solid: #f2f1ee;
+    --color-bg-brand-solid_hover: #ffffff;
+    --color-text-primary_on-brand: #15171e;
 
     --accent: var(--brand);
     --color-focus-ring: var(--brand);
 
-    --card-bg: #12141d;
+    --card-bg: var(--surface);
     --card-line: rgb(255 255 255 / 0.07);
-    --card-shadow: 0 30px 70px -35px rgb(0 0 0 / 0.8);
+    --card-shadow: 0 0 0 1px rgb(0 0 0 / 0.2), 0 28px 64px -32px rgb(0 0 0 / 0.75);
 
-    --checker-a: #1c1f2b;
-    --checker-b: #161925;
-    --canvas: #161925;
-    --tile: #12141d;
+    --checker-a: #20232c;
+    --checker-b: #191b22;
+    --canvas: #0d0f13;
+    --tile: #171a21;
+
+    --glass-bg: rgb(32 35 44 / 0.62);
+    --glass-bg-strong: rgb(30 33 42 / 0.86);
+    --glass-tint: linear-gradient(180deg, rgb(255 255 255 / 0.06), rgb(255 255 255 / 0) 55%);
+    --glass-rim: rgb(255 255 255 / 0.1);
+    --glass-edge: rgb(0 0 0 / 0.4);
+    --glass-shadow: 0 1px 1px rgb(0 0 0 / 0.2), 0 12px 34px -12px rgb(0 0 0 / 0.65);
+    --glass-shadow-lg: 0 2px 4px rgb(0 0 0 / 0.2), 0 30px 70px -24px rgb(0 0 0 / 0.8);
 
     color-scheme: dark;
 }
@@ -114,7 +170,8 @@
     }
 
     body {
-        @apply min-h-dvh bg-primary text-primary;
+        @apply min-h-dvh text-primary;
+        background-color: var(--page-bg);
         font-size: 1rem;
         letter-spacing: 0;
     }
@@ -246,25 +303,92 @@
     }
 }
 
-/* Floating material for toolbars over imagery (Apple "thin material"). */
-@utility material {
-    background-color: rgb(255 255 255 / 0.72);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+/* LIQUID GLASS
+ * Used where a surface floats over content — the navbar, toolbars over imagery, menus, popovers,
+ * dialogs and a few showcase panels. Never on the canvas or on reading surfaces: the image, the PDF
+ * and the text always sit on solid ground. Falls back to a solid surface when transparency is reduced.
+ */
+@utility glass {
+    background-color: var(--glass-bg);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
     box-shadow:
-        0 0 0 0.5px rgb(0 0 0 / 0.08),
-        0 8px 24px -8px rgb(0 0 0 / 0.2);
-
-    :where(.dark-mode) & {
-        background-color: rgb(30 30 32 / 0.72);
-        box-shadow:
-            0 0 0 0.5px rgb(255 255 255 / 0.12),
-            0 8px 24px -8px rgb(0 0 0 / 0.6);
-    }
+        inset 0 1px 0 var(--glass-rim),
+        inset 0 0 0 1px rgb(255 255 255 / 0.04),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow);
 
     @media (prefers-reduced-transparency: reduce) {
         background-color: var(--color-bg-primary);
         backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+/* A more opaque pane for menus and dialogs, where text sits directly on the glass. */
+@utility glass-strong {
+    background-color: var(--glass-bg-strong);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow:
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow-lg);
+
+    @media (prefers-reduced-transparency: reduce) {
+        background-color: var(--color-bg-primary);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+/* Floating material for toolbars over imagery (kept as an alias: many tools already use it). */
+@utility material {
+    background-color: var(--glass-bg-strong);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow:
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow);
+
+    @media (prefers-reduced-transparency: reduce) {
+        background-color: var(--color-bg-primary);
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+
+/* The quiet fill behind a hovered or current item on glass: a warm tint, not a grey slab. */
+@utility nav-fill {
+    background-color: rgb(120 113 98 / 0.09);
+
+    :where(.dark-mode) & {
+        background-color: rgb(255 255 255 / 0.07);
+    }
+}
+
+/* Primary action in ink: confident and neutral, so the image — not the button — carries colour. */
+@utility btn-ink {
+    background-color: var(--color-bg-brand-solid);
+    color: var(--color-text-primary_on-brand);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.14),
+        0 1px 2px rgb(0 0 0 / 0.12),
+        0 8px 20px -10px rgb(0 0 0 / 0.45);
+    transition:
+        background-color 200ms var(--ease-out),
+        box-shadow 200ms var(--ease-out),
+        scale 150ms var(--ease-out);
+
+    &:hover {
+        background-color: var(--color-bg-brand-solid_hover);
+    }
+    &:active {
+        scale: 0.97;
     }
 }
 
@@ -454,25 +578,25 @@
  * stage. Dark: graphite chrome around a near-black stage. Segmented controls use Apple's system values.
  */
 :root {
-    --studio-chrome: #ffffff;
-    --studio-stage: #f6f7fb;
-    --studio-line: rgb(3 105 161 / 0.11);
+    --studio-chrome: var(--surface);
+    --studio-stage: #f3f1eb;
+    --studio-line: rgb(32 33 36 / 0.08);
     --studio-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 30px 80px -40px rgb(0 0 0 / 0.28);
-    --seg-track: rgb(118 118 128 / 0.12);
+    --seg-track: rgb(120 113 98 / 0.1);
     --seg-thumb: #ffffff;
     --seg-thumb-shadow: 0 3px 8px rgb(0 0 0 / 0.12), 0 3px 1px rgb(0 0 0 / 0.04), 0 0 0 0.5px rgb(0 0 0 / 0.04);
     /* Crop: what lies outside the frame, and the frame itself. */
-    --crop-scrim: rgb(242 242 245 / 0.8);
-    --crop-scrim-active: rgb(242 242 245 / 0.55);
+    --crop-scrim: rgb(243 241 235 / 0.8);
+    --crop-scrim-active: rgb(243 241 235 / 0.55);
 }
 
 .dark-mode {
-    --studio-chrome: #12141d;
-    --studio-stage: #0a0b11;
+    --studio-chrome: var(--surface);
+    --studio-stage: #0d0f13;
     --studio-line: rgb(255 255 255 / 0.08);
     --studio-shadow: 0 0 0 1px rgb(255 255 255 / 0.06), 0 40px 90px -40px rgb(0 0 0 / 0.9);
     --seg-track: rgb(118 118 128 / 0.24);
-    --seg-thumb: #3a3f55;
+    --seg-thumb: #3a3e4b;
     --seg-thumb-shadow: 0 3px 8px rgb(0 0 0 / 0.12);
     --crop-scrim: rgb(12 12 13 / 0.66);
     --crop-scrim-active: rgb(12 12 13 / 0.45);
@@ -513,52 +637,51 @@
     box-shadow: var(--card-shadow);
 }
 
-/* Uppercase pill label above section titles. */
+/* Eyebrow above section titles: a small dot in the section's hue, then the label. */
 @utility section-badge {
     display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
     border-radius: 9999px;
-    border: 1px solid var(--hue-line, var(--tool-line));
-    background-color: var(--hue-soft, var(--tool-soft));
-    padding: 0.3rem 0.9rem;
+    border: 1px solid var(--card-line);
+    background-color: color-mix(in srgb, var(--color-bg-primary) 70%, transparent);
+    padding: 0.3125rem 0.875rem 0.3125rem 0.75rem;
     font-size: 0.8125rem;
     line-height: 1.25rem;
     font-weight: 500;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: var(--hue, var(--tool));
+    letter-spacing: -0.005em;
+    color: var(--color-text-secondary);
+
+    &::before {
+        content: "";
+        width: 0.4375rem;
+        height: 0.4375rem;
+        border-radius: 9999px;
+        background-color: var(--hue, var(--tool-solid));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--hue, var(--tool-solid)) 18%, transparent);
+    }
 }
 
-/* Primary call to action: indigo, with a soft light-catching gradient and glow. */
+/* Primary call to action: ink, with a light-catching top edge. */
 @utility btn-primary {
-    background-image: linear-gradient(
-        100deg,
-        color-mix(in srgb, var(--tool-solid) 78%, black) 0%,
-        var(--tool-solid) 62%,
-        color-mix(in srgb, var(--tool-solid) 88%, white) 100%
-    );
-    color: #ffffff;
-    box-shadow: 0 10px 30px -10px color-mix(in srgb, var(--tool-solid) 60%, transparent);
-    transition: box-shadow 250ms var(--ease-out), filter 250ms var(--ease-out), scale 150ms var(--ease-out);
+    background-color: var(--color-bg-brand-solid);
+    color: var(--color-text-primary_on-brand);
+    box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.14),
+        0 1px 2px rgb(0 0 0 / 0.1),
+        0 10px 24px -12px rgb(0 0 0 / 0.5);
+    transition: box-shadow 250ms var(--ease-out), background-color 250ms var(--ease-out), scale 150ms var(--ease-out);
 
     &:hover {
-        filter: brightness(1.05);
-        box-shadow: 0 14px 34px -10px color-mix(in srgb, var(--tool-solid) 70%, transparent);
+        background-color: var(--color-bg-brand-solid_hover);
     }
 }
 
-/* Faint lavender glow behind the hero. */
+/* Faint warm light behind a hero: indigo and violet from above, never a blob. */
 @utility hero-glow {
     background-image:
-        radial-gradient(58% 52% at 22% -4%, color-mix(in srgb, var(--tool-solid) 16%, transparent), transparent 70%),
-        radial-gradient(44% 46% at 88% 6%, color-mix(in srgb, var(--a-teal-solid) 12%, transparent), transparent 70%),
-        radial-gradient(50% 40% at 55% 0%, color-mix(in srgb, var(--tool-solid) 7%, transparent), transparent 72%);
-
-    :where(.dark-mode) & {
-        background-image:
-            radial-gradient(58% 52% at 22% -4%, color-mix(in srgb, var(--tool) 18%, transparent), transparent 70%),
-            radial-gradient(44% 46% at 88% 6%, color-mix(in srgb, var(--a-teal) 12%, transparent), transparent 70%);
-    }
+        radial-gradient(60% 50% at 30% -10%, color-mix(in srgb, var(--brand-solid) 10%, transparent), transparent 70%),
+        radial-gradient(40% 40% at 85% 0%, color-mix(in srgb, var(--violet) 9%, transparent), transparent 70%);
 }
 
 
@@ -698,33 +821,43 @@
 }
 
 /* ------------------------------------------------------------------ ACCENTS
- * The brand stays indigo; around it sits a small categorical set. Colour is used to tell things
- * apart — which tool you are in, which kind of guidance a card holds — never on its own: every
- * coloured element also carries a label or an icon, so the meaning survives without the hue.
+ * A small categorical set around the indigo brand. Colour tells things apart — which tool you are
+ * in, which kind of guidance a card holds — never on its own: every coloured element also carries a
+ * label or an icon, so the meaning survives without the hue.
  *
- * Each hue is a triple: `base` (text and icons, ≥4.5:1 on both white and its own soft tint),
+ * Each hue is a triple: `base` (text and icons, ≥4.5:1 on white and on its own soft tint),
  * `soft` (fill), `line` (hairline). `solid` is the one that takes white text as a button.
  */
 :root {
-    --a-blue: #0369a1;
-    --a-blue-soft: #e4f2fa;
-    --a-blue-line: rgb(3 105 161 / 0.22);
-    --a-blue-solid: #0369a1;
+    --a-blue: #4256d6;
+    --a-blue-soft: #eef0ff;
+    --a-blue-line: rgb(83 103 232 / 0.24);
+    --a-blue-solid: #5367e8;
 
-    --a-teal: #0f766e;
-    --a-teal-soft: #e4f5f3;
-    --a-teal-line: rgb(15 118 110 / 0.22);
-    --a-teal-solid: #0f766e;
+    --a-violet: #6b4bd1;
+    --a-violet-soft: #f3efff;
+    --a-violet-line: rgb(136 102 232 / 0.26);
+    --a-violet-solid: #7a58e0;
 
-    --a-amber: #b45309;
-    --a-amber-soft: #fdf1e1;
-    --a-amber-line: rgb(180 83 9 / 0.22);
-    --a-amber-solid: #b45309;
+    --a-sky: #1d76a3;
+    --a-sky-soft: #e9f5fb;
+    --a-sky-line: rgb(54 165 214 / 0.3);
+    --a-sky-solid: #2689b8;
 
-    --a-rose: #d1215a;
-    --a-rose-soft: #fdebf0;
-    --a-rose-line: rgb(209 33 90 / 0.2);
-    --a-rose-solid: #d1215a;
+    --a-teal: #127a58;
+    --a-teal-soft: #e7f6f0;
+    --a-teal-line: rgb(32 167 122 / 0.28);
+    --a-teal-solid: #178e67;
+
+    --a-amber: #96600c;
+    --a-amber-soft: #fcf3e3;
+    --a-amber-line: rgb(228 162 58 / 0.34);
+    --a-amber-solid: #b97a16;
+
+    --a-rose: #b83e4b;
+    --a-rose-soft: #fdeef0;
+    --a-rose-line: rgb(228 111 120 / 0.3);
+    --a-rose-solid: #cf5462;
 
     /* The current tool's identity. Pages set it through `data-tool`; this is the neutral default. */
     --tool: var(--a-blue);
@@ -734,41 +867,50 @@
 }
 
 .dark-mode {
-    --a-blue: #7dd3fc;
-    --a-blue-soft: rgb(125 211 252 / 0.13);
-    --a-blue-line: rgb(125 211 252 / 0.3);
-    --a-blue-solid: #0b74b0;
+    --a-blue: #a3adff;
+    --a-blue-soft: rgb(124 140 255 / 0.14);
+    --a-blue-line: rgb(163 173 255 / 0.3);
+    --a-blue-solid: #5367e8;
 
-    --a-teal: #5eead4;
-    --a-teal-soft: rgb(94 234 212 / 0.13);
-    --a-teal-line: rgb(94 234 212 / 0.28);
-    --a-teal-solid: #0d9488;
+    --a-violet: #bba5ff;
+    --a-violet-soft: rgb(168 140 242 / 0.14);
+    --a-violet-line: rgb(187 165 255 / 0.3);
+    --a-violet-solid: #7a58e0;
 
-    --a-amber: #fcd34d;
-    --a-amber-soft: rgb(252 211 77 / 0.13);
-    --a-amber-line: rgb(252 211 77 / 0.28);
-    --a-amber-solid: #b45309;
+    --a-sky: #7fcdee;
+    --a-sky-soft: rgb(91 187 228 / 0.14);
+    --a-sky-line: rgb(127 205 238 / 0.3);
+    --a-sky-solid: #2689b8;
 
-    --a-rose: #fda4af;
-    --a-rose-soft: rgb(253 164 175 / 0.13);
-    --a-rose-line: rgb(253 164 175 / 0.28);
-    --a-rose-solid: #be185d;
+    --a-teal: #6ad8b0;
+    --a-teal-soft: rgb(60 196 149 / 0.13);
+    --a-teal-line: rgb(106 216 176 / 0.28);
+    --a-teal-solid: #178e67;
 
+    --a-amber: #f3c574;
+    --a-amber-soft: rgb(240 183 90 / 0.13);
+    --a-amber-line: rgb(243 197 116 / 0.28);
+    --a-amber-solid: #b97a16;
+
+    --a-rose: #f6a1a8;
+    --a-rose-soft: rgb(240 138 146 / 0.13);
+    --a-rose-line: rgb(246 161 168 / 0.28);
+    --a-rose-solid: #c84b59;
 }
 
 /* Tool identity. Set on the page shell, inherited by everything inside it. */
 [data-tool="upscale"] {
+    --tool: var(--a-violet);
+    --tool-soft: var(--a-violet-soft);
+    --tool-line: var(--a-violet-line);
+    --tool-solid: var(--a-violet-solid);
+}
+
+[data-tool="remove-background"] {
     --tool: var(--a-blue);
     --tool-soft: var(--a-blue-soft);
     --tool-line: var(--a-blue-line);
     --tool-solid: var(--a-blue-solid);
-}
-
-[data-tool="remove-background"] {
-    --tool: var(--a-teal);
-    --tool-soft: var(--a-teal-soft);
-    --tool-line: var(--a-teal-line);
-    --tool-solid: var(--a-teal-solid);
 }
 
 [data-tool="crop"] {
@@ -785,10 +927,8 @@
     --tool-solid: var(--a-rose-solid);
 }
 
-/* Primary buttons and focus rings follow the tool, so the page reads as one colour story. */
+/* Focus rings and accents follow the tool; primary buttons stay ink, so actions read the same everywhere. */
 [data-tool] {
-    --color-bg-brand-solid: var(--tool-solid);
-    --color-bg-brand-solid_hover: color-mix(in srgb, var(--tool-solid) 86%, black);
     --color-focus-ring: var(--tool-solid);
     --accent: var(--tool);
 }
@@ -803,6 +943,21 @@
     --hue: var(--a-teal);
     --hue-soft: var(--a-teal-soft);
     --hue-line: var(--a-teal-line);
+}
+@utility hue-violet {
+    --hue: var(--a-violet);
+    --hue-soft: var(--a-violet-soft);
+    --hue-line: var(--a-violet-line);
+}
+@utility hue-sky {
+    --hue: var(--a-sky);
+    --hue-soft: var(--a-sky-soft);
+    --hue-line: var(--a-sky-line);
+}
+@utility hue-rose {
+    --hue: var(--a-rose);
+    --hue-soft: var(--a-rose-soft);
+    --hue-line: var(--a-rose-line);
 }
 @utility hue-amber {
     --hue: var(--a-amber);
@@ -956,8 +1111,6 @@
         }
         &:is(:hover, :focus-visible) .nav-tool-icon {
             scale: 1.06;
-            color: var(--brand);
-            border-color: var(--brand-line);
         }
         &:is(:hover, :focus-visible) .nav-tool-arrow {
             opacity: 1;
@@ -1136,14 +1289,15 @@
  * (transform-origin is set at that corner) and settles fast, without overshoot.
  */
 .material-popover {
-    background: color-mix(in srgb, var(--color-bg-primary) 82%, transparent);
-    -webkit-backdrop-filter: blur(24px) saturate(180%);
-    backdrop-filter: blur(24px) saturate(180%);
-    border: 1px solid rgb(0 0 0 / 0.07);
+    background-color: var(--glass-bg-strong);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    border: 1px solid transparent;
     box-shadow:
-        0 1px 0 rgb(255 255 255 / 0.6) inset,
-        0 18px 40px -14px rgb(15 23 42 / 0.28),
-        0 6px 14px -8px rgb(15 23 42 / 0.14);
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow-lg);
     transition:
         opacity 160ms ease-out,
         scale 240ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -1152,15 +1306,6 @@
         opacity: 0;
         scale: 0.94;
     }
-}
-
-.dark-mode .material-popover {
-    background: color-mix(in srgb, var(--color-bg-primary) 86%, transparent);
-    border-color: rgb(255 255 255 / 0.09);
-    box-shadow:
-        0 1px 0 rgb(255 255 255 / 0.06) inset,
-        0 20px 44px -12px rgb(0 0 0 / 0.65),
-        0 6px 14px -8px rgb(0 0 0 / 0.4);
 }
 
 /* A group inside the material: a quiet solid fill, never a second translucent layer. */
@@ -1206,52 +1351,43 @@
  * so contrast holds in both.
  */
 .site-footer {
-    --footer-line: rgb(3 105 161 / 0.14);
-    --footer-glass: rgb(255 255 255 / 0.62);
-    --footer-dot: rgb(3 105 161 / 0.28);
-    background:
-        radial-gradient(60rem 26rem at 8% -8%, rgb(56 189 248 / 0.2), transparent 62%),
-        radial-gradient(44rem 24rem at 96% 18%, rgb(167 139 250 / 0.16), transparent 64%),
-        radial-gradient(50rem 22rem at 50% 115%, rgb(125 211 252 / 0.22), transparent 70%),
-        linear-gradient(180deg, #fbfdff 0%, #f1f7fd 46%, #e7f0fb 100%);
-    border-top: 1px solid rgb(3 105 161 / 0.08);
+    --footer-line: var(--card-line);
+    --footer-glass: var(--color-bg-primary);
+    --footer-dot: rgb(32 33 36 / 0.22);
+    background-color: var(--paper-2);
+    border-top: 1px solid var(--card-line);
 }
 
 .dark-mode .site-footer {
-    --footer-line: rgb(255 255 255 / 0.1);
-    --footer-glass: rgb(255 255 255 / 0.04);
-    --footer-dot: rgb(255 255 255 / 0.26);
-    background:
-        radial-gradient(60rem 26rem at 8% -8%, rgb(56 189 248 / 0.12), transparent 62%),
-        radial-gradient(44rem 24rem at 96% 18%, rgb(129 140 248 / 0.14), transparent 64%),
-        radial-gradient(50rem 22rem at 50% 115%, rgb(14 165 233 / 0.1), transparent 70%),
-        linear-gradient(180deg, #0b1020 0%, #0f1733 55%, #070b16 100%);
-    border-top-color: rgb(255 255 255 / 0.06);
+    --footer-dot: rgb(255 255 255 / 0.24);
+    background-color: #0d0f13;
 }
 
 /* ------------------------------------------------------------------ hero
- * Light from above: a soft sky spotlight that fades before the reel, so the page reads top to
- * bottom — headline, way in, product. Nothing behind the type but light. The reel sits in a frosted window frame with a
- * brand glow behind it. Both themes have their own values.
+ * Paper, lit softly from above in indigo and violet — just enough to lift the product showcase off
+ * the page. The showcase sits in a glass frame; the step bar under it is a floating glass pill.
  */
 .hero-premium {
-    --hero-address: rgb(15 23 42 / 0.05);
+    --hero-address: rgb(32 33 36 / 0.05);
     background:
-        radial-gradient(56rem 30rem at 50% -6%, rgb(56 189 248 / 0.18), transparent 64%),
-        radial-gradient(36rem 22rem at 88% 22%, rgb(167 139 250 / 0.1), transparent 70%),
-        var(--color-bg-primary);
+        radial-gradient(52rem 28rem at 70% -8%, color-mix(in srgb, var(--violet) 12%, transparent), transparent 66%),
+        radial-gradient(44rem 26rem at 18% -12%, color-mix(in srgb, var(--brand-solid) 11%, transparent), transparent 66%),
+        var(--page-bg);
 }
 
 .hero-badge {
-    background: rgb(255 255 255 / 0.7);
-    border: 1px solid rgb(3 105 161 / 0.14);
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
-    backdrop-filter: blur(12px);
+    background-color: var(--glass-bg);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow:
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        0 4px 14px -8px rgb(32 33 36 / 0.2);
 }
 
-/* The headline's second line: the brand blue drawn out to sky and indigo. */
+/* The headline's second line: indigo drawn into violet — the only gradient text on the page. */
 .hero-accent {
-    background: linear-gradient(100deg, #0284c7 0%, #0369a1 45%, #4f46e5 100%);
+    background: linear-gradient(100deg, #4c5fe0 0%, #6a5fe6 45%, #8866e8 100%);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
@@ -1259,57 +1395,57 @@
 
 .hero-showcase-glow {
     background:
-        radial-gradient(40% 60% at 30% 50%, rgb(56 189 248 / 0.35), transparent 70%),
-        radial-gradient(40% 60% at 72% 50%, rgb(129 140 248 / 0.3), transparent 70%);
-    opacity: 0.8;
+        radial-gradient(40% 60% at 28% 50%, color-mix(in srgb, var(--brand-solid) 28%, transparent), transparent 70%),
+        radial-gradient(40% 60% at 74% 50%, color-mix(in srgb, var(--violet) 26%, transparent), transparent 70%);
+    opacity: 0.7;
 }
 
-/* The reel's edge: a hairline and long, soft depth (no window chrome — the video is the frame). */
+/* The showcase window: a glass bezel around the reel. */
 .hero-frame {
     box-shadow:
-        0 0 0 1px rgb(3 105 161 / 0.1),
-        0 2px 6px -2px rgb(15 23 42 / 0.08),
-        0 34px 70px -28px rgb(15 23 42 / 0.4);
+        0 0 0 1px rgb(32 33 36 / 0.07),
+        0 2px 6px -2px rgb(32 33 36 / 0.08),
+        0 40px 80px -32px rgb(32 33 36 / 0.42);
+}
+
+.hero-bezel {
+    background-color: var(--glass-bg);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow:
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow-lg);
 }
 
 .hero-steps {
-    background: rgb(255 255 255 / 0.86);
-    border: 1px solid rgb(3 105 161 / 0.1);
-    box-shadow: 0 12px 30px -14px rgb(15 23 42 / 0.3);
-    backdrop-filter: blur(16px) saturate(160%);
+    background-color: var(--glass-bg-strong);
+    background-image: var(--glass-tint);
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+    box-shadow:
+        inset 0 1px 0 var(--glass-rim),
+        0 0 0 1px var(--glass-edge),
+        var(--glass-shadow);
 }
 
 .dark-mode .hero-premium {
     --hero-address: rgb(255 255 255 / 0.06);
-    background:
-        radial-gradient(56rem 30rem at 50% -6%, rgb(56 189 248 / 0.14), transparent 64%),
-        radial-gradient(36rem 22rem at 88% 22%, rgb(129 140 248 / 0.1), transparent 70%),
-        var(--color-bg-primary);
-}
-
-.dark-mode .hero-badge {
-    background: rgb(255 255 255 / 0.05);
-    border-color: rgb(255 255 255 / 0.1);
 }
 
 .dark-mode .hero-accent {
-    background-image: linear-gradient(100deg, #38bdf8 0%, #60a5fa 45%, #a5b4fc 100%);
+    background-image: linear-gradient(100deg, #9aa6ff 0%, #b0a2ff 50%, #c7b4ff 100%);
 }
 
 .dark-mode .hero-showcase-glow {
-    opacity: 0.45;
+    opacity: 0.4;
 }
 
 .dark-mode .hero-frame {
     box-shadow:
-        0 0 0 1px rgb(255 255 255 / 0.1),
-        0 34px 80px -24px rgb(0 0 0 / 0.8);
-}
-
-.dark-mode .hero-steps {
-    background: rgb(17 24 39 / 0.82);
-    border-color: rgb(255 255 255 / 0.1);
-    box-shadow: 0 14px 34px -14px rgb(0 0 0 / 0.7);
+        0 0 0 1px rgb(255 255 255 / 0.08),
+        0 40px 90px -28px rgb(0 0 0 / 0.85);
 }
 
 /* The steps' highlight: one surface that glides from step to step with the reel (spatial continuity —
@@ -1327,27 +1463,27 @@
     }
 }
 
-/* ------------------------------------------------------------------ Documents page */
-
-/*
- * A tool card, coloured by its own --accent: a faint tint from the corner, the icon tile and the arrow.
+/* ------------------------------------------------------------------ Tool cards (suite pages)
+ * A tool, coloured by its own --accent: a soft icon tile, a hairline, and depth that comes up on hover.
  * Hover lifts it on a spring; pressing sinks it in at once (feedback on touch-down, not release).
  */
 .tool-card {
-    border-color: color-mix(in srgb, var(--accent) 18%, var(--card-line));
-    background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 7%, var(--color-bg-primary)), var(--color-bg-primary) 62%);
-    box-shadow: 0 1px 2px rgb(15 23 42 / 0.04);
+    border-color: var(--card-line);
+    background: var(--card-bg);
+    box-shadow: 0 1px 2px rgb(32 33 36 / 0.04);
     transition:
         translate 450ms var(--ease-spring),
         scale 450ms var(--ease-spring),
-        box-shadow 200ms ease-out,
-        border-color 200ms ease-out;
+        box-shadow 220ms ease-out,
+        border-color 220ms ease-out;
 
     @media (hover: hover) {
         &:hover {
             translate: 0 -2px;
-            border-color: color-mix(in srgb, var(--accent) 38%, var(--card-line));
-            box-shadow: 0 14px 30px -16px color-mix(in srgb, var(--accent) 50%, transparent);
+            border-color: color-mix(in srgb, var(--accent) 30%, var(--card-line));
+            box-shadow:
+                0 1px 2px rgb(32 33 36 / 0.04),
+                0 18px 36px -20px color-mix(in srgb, var(--accent) 45%, rgb(32 33 36 / 0.5));
         }
     }
     &:active {
@@ -1356,30 +1492,57 @@
         transition-duration: 90ms;
     }
 }
-.tool-card-icon {
-    background: linear-gradient(150deg, color-mix(in srgb, var(--accent) 72%, white), var(--accent) 70%);
-    box-shadow:
-        0 8px 18px -8px color-mix(in srgb, var(--accent) 75%, transparent),
-        inset 0 1px 0 rgb(255 255 255 / 0.35);
+.dark-mode .tool-card {
+    box-shadow: none;
 }
-.tool-card-arrow {
+.tool-card-icon {
     color: var(--accent);
-    background: color-mix(in srgb, var(--accent) 12%, transparent);
+    background: color-mix(in srgb, var(--accent) 12%, var(--color-bg-primary));
+    box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 18%, transparent);
     transition:
-        background-color 200ms ease-out,
-        color 200ms ease-out,
-        translate 450ms var(--ease-spring);
+        background-color 220ms ease-out,
+        color 220ms ease-out,
+        scale 450ms var(--ease-spring);
 
-    .tool-card:focus-visible & {
-        color: white;
-        background: var(--accent);
-    }
     @media (hover: hover) {
         .tool-card:hover & {
             color: white;
             background: var(--accent);
-            translate: 2px 0;
+            scale: 1.04;
         }
+    }
+}
+.tool-card-arrow {
+    color: var(--color-text-quaternary);
+    transition:
+        color 200ms ease-out,
+        opacity 200ms ease-out,
+        translate 450ms var(--ease-spring);
+
+    .tool-card:focus-visible & {
+        color: var(--accent);
+    }
+    @media (hover: hover) {
+        .tool-card:hover & {
+            color: var(--accent);
+            translate: 3px 0;
+        }
+    }
+}
+
+/* A filter or search swaps the catalogue: the new set settles in rather than snapping. */
+.suite-fade {
+    animation: suite-fade 320ms var(--ease-out) both;
+}
+@keyframes suite-fade {
+    from {
+        opacity: 0;
+        translate: 0 6px;
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .suite-fade {
+        animation: none;
     }
 }
 
@@ -1399,7 +1562,9 @@
     .tool-card,
     .tool-card:hover,
     .tool-card:active,
+    .tool-card-icon,
     .tool-card-arrow,
+    .tool-card:is(:hover, :focus-visible) .tool-card-icon,
     .tool-card:is(:hover, :focus-visible) .tool-card-arrow {
         translate: none;
         scale: none;
@@ -1416,19 +1581,19 @@
 
 /* ------------------------------------------------------------------ Studio (tool workspace) */
 
-/* The empty state's target: a dashed outline over a faint wash; it warms when the pointer is on it. */
+/* The empty state's target: a dashed outline over a faint warm wash; it warms when the pointer is on it. */
 .studio-drop {
-    border: 2px dashed color-mix(in srgb, #6366f1 22%, var(--card-line));
+    border: 1.5px dashed color-mix(in srgb, var(--brand-solid) 26%, var(--card-line));
     background:
-        radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, #6366f1 7%, transparent), transparent),
-        color-mix(in srgb, #6366f1 2.5%, var(--color-bg-primary));
+        radial-gradient(60% 50% at 50% 0%, color-mix(in srgb, var(--brand-solid) 6%, transparent), transparent),
+        var(--color-bg-primary);
     transition:
         border-color 200ms ease-out,
         background-color 200ms ease-out;
 
     @media (hover: hover) {
         &:hover {
-            border-color: color-mix(in srgb, #6366f1 55%, transparent);
+            border-color: color-mix(in srgb, var(--brand-solid) 55%, transparent);
         }
     }
 }
@@ -1442,12 +1607,13 @@
     }
 }
 
-/* The main action: blue into violet, pressed in at once (feedback on touch-down, not release). */
+/* The main action: the brand indigo, a light-catching top edge, pressed in at once on touch-down. */
 .studio-cta {
-    background: linear-gradient(90deg, #2563eb, #4f46e5 55%, #7c3aed);
+    background: linear-gradient(180deg, #6377f0, #4f62e3);
     box-shadow:
-        0 10px 24px -12px rgb(79 70 229 / 0.7),
-        inset 0 1px 0 rgb(255 255 255 / 0.2);
+        0 10px 24px -12px rgb(83 103 232 / 0.75),
+        inset 0 1px 0 rgb(255 255 255 / 0.22),
+        inset 0 0 0 1px rgb(0 0 0 / 0.06);
     transition:
         scale 450ms var(--ease-spring),
         box-shadow 200ms ease-out,
@@ -1458,8 +1624,8 @@
         &:is(a, button):hover {
             filter: brightness(1.06);
             box-shadow:
-                0 14px 30px -12px rgb(79 70 229 / 0.8),
-                inset 0 1px 0 rgb(255 255 255 / 0.2);
+                0 14px 30px -12px rgb(83 103 232 / 0.85),
+                inset 0 1px 0 rgb(255 255 255 / 0.22);
         }
     }
     :is(a, button):active > &,

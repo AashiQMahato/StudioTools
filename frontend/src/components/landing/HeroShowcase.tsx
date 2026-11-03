@@ -1,6 +1,7 @@
 import { Crop, Eraser, LayoutGrid, type LucideIcon, Pause, Play, RotateCw, SlidersHorizontal, ZoomIn } from "lucide-react";
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
+import { LogoMark } from "@/components/common/Logo";
 import poster from "@/assets/video/hero-poster.webp";
 import heroVideo from "@/assets/video/hero.mp4";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -140,35 +141,45 @@ export function HeroShowcase({ className }: { className?: string }) {
             {/* Light behind the frame: a soft brand glow, so the reel sits in the page rather than on it. */}
             <div aria-hidden className="hero-showcase-glow pointer-events-none absolute -inset-x-8 top-[8%] -bottom-6 -z-10 rounded-[3rem] blur-3xl sm:-inset-x-16" />
 
-            {/* The reel itself is the frame: rounded, with a hairline edge and long, soft depth. */}
-            <figure ref={frame} className="hero-frame group relative aspect-video overflow-hidden rounded-[1.5rem] bg-[#efe9df]">
-                <video ref={video} className="absolute inset-0 size-full object-cover" src={heroVideo} poster={poster} muted loop playsInline preload="metadata" aria-label={copy.label} />
-                {/* The whole reel is the play / pause control (moving content must be pausable). Invisible at
-                    rest; a small glyph shows on hover or keyboard focus — and the Play prompt when motion is reduced. */}
-                <button type="button" onClick={toggle} aria-label={playing ? copy.pause : copy.play} className="absolute inset-0 cursor-pointer outline-none">
-                    <span
-                        aria-hidden
-                        className={cn(
-                            "absolute grid place-items-center rounded-full bg-white/85 text-[var(--brand)] shadow-lg ring-1 ring-black/5 backdrop-blur transition-[opacity,scale] duration-200 group-focus-visible:opacity-100",
-                            !playing && reduceMotion ? "top-1/2 left-1/2 size-16 -translate-x-1/2 -translate-y-1/2 opacity-100" : "top-3 right-3 size-9 scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100",
-                        )}
-                    >
-                        {playing ? <Pause className="size-4 fill-current" /> : <Play className={cn("translate-x-px fill-current", !playing && reduceMotion ? "size-6" : "size-4")} />}
+            <div className="hero-bezel rounded-[1.75rem] p-1.5 sm:p-2">
+                <div aria-hidden className="flex h-7 items-center gap-2 px-2 pb-1.5 sm:h-8">
+                    <LogoMark className="size-4" />
+                    <span className="h-5 flex-1 rounded-full bg-[var(--hero-address)] px-3 text-[0.6875rem] leading-5 font-medium text-quaternary">studiotools.tech</span>
+                    <span className="hidden items-center gap-1 sm:flex">
+                        <span className="size-1.5 rounded-full bg-[var(--green)]" />
+                        <span className="text-[0.6875rem] font-medium text-quaternary">{copy.live}</span>
                     </span>
-                    <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[1.5rem] ring-[var(--brand)] group-has-[:focus-visible]:ring-2" />
-                </button>
-                <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-black/5">
-                    <span ref={bar} className="block h-full origin-left scale-x-0 bg-[var(--brand)]" />
-                </span>
-            </figure>
+                </div>
+                {/* The reel inside a pane of glass: a slim title strip, then the product running. */}
+                <figure ref={frame} className="hero-frame group relative aspect-video overflow-hidden rounded-[1.25rem] bg-[#efe9df]">
+                    <video ref={video} className="absolute inset-0 size-full object-cover" src={heroVideo} poster={poster} muted loop playsInline preload="metadata" aria-label={copy.label} />
+                    {/* The whole reel is the play / pause control (moving content must be pausable). Invisible at
+                        rest; a small glyph shows on hover or keyboard focus — and the Play prompt when motion is reduced. */}
+                    <button type="button" onClick={toggle} aria-label={playing ? copy.pause : copy.play} className="absolute inset-0 cursor-pointer outline-none">
+                        <span
+                            aria-hidden
+                            className={cn(
+                                "absolute grid place-items-center rounded-full glass text-primary transition-[opacity,scale] duration-200 group-focus-visible:opacity-100",
+                                !playing && reduceMotion ? "top-1/2 left-1/2 size-16 -translate-x-1/2 -translate-y-1/2 opacity-100" : "top-3 right-3 size-9 scale-90 opacity-0 group-hover:scale-100 group-hover:opacity-100",
+                            )}
+                        >
+                            {playing ? <Pause className="size-4 fill-current" /> : <Play className={cn("translate-x-px fill-current", !playing && reduceMotion ? "size-6" : "size-4")} />}
+                        </span>
+                        <span aria-hidden className="pointer-events-none absolute inset-0 rounded-[1.25rem] ring-[var(--brand)] group-has-[:focus-visible]:ring-2" />
+                    </button>
+                    <span aria-hidden className="pointer-events-none absolute inset-x-0 bottom-0 h-[3px] bg-black/5">
+                        <span ref={bar} className="block h-full origin-left scale-x-0 bg-[var(--brand)]" />
+                    </span>
+                </figure>
+            </div>
 
             {/* The steps, in the reel's order: the one on screen lit, each a way into its tool. */}
-            <nav aria-label={copy.stepsLabel} className="relative z-10 -mt-5 flex justify-center px-3 sm:-mt-6">
+            <nav aria-label={copy.stepsLabel} className="relative z-10 -mt-6 flex justify-center px-3 sm:-mt-7">
                 <ul ref={steps} className="hero-steps relative flex max-w-full items-center gap-1 overflow-x-auto rounded-full p-1 [scrollbar-width:none]">
                     {/* One highlight that glides to the step on screen. */}
                     <span
                         aria-hidden
-                        className="hero-step-thumb pointer-events-none absolute top-1 bottom-1 left-0 rounded-full bg-brand-solid shadow-[0_6px_16px_-6px_rgb(3_105_161/0.6)]"
+                        className="hero-step-thumb pointer-events-none absolute top-1 bottom-1 left-0 rounded-full bg-brand-solid shadow-[0_6px_16px_-6px_rgb(0_0_0/0.45)]"
                         style={{ transform: `translateX(${thumb?.x ?? 0}px)`, width: thumb?.width ?? 0, opacity: thumb ? 1 : 0 }}
                     />
                     {STEPS.map((step, index) => {
@@ -184,7 +195,7 @@ export function HeroShowcase({ className }: { className?: string }) {
                         );
                         const classes = cn(
                             "relative flex h-9 shrink-0 items-center gap-1.5 rounded-full px-3 text-xs font-medium whitespace-nowrap outline-focus-ring transition-[color,background-color,scale] duration-200 focus-visible:outline-2 active:scale-[0.96] sm:h-10 sm:px-3.5 sm:text-sm lg:h-9 lg:gap-1 lg:px-2.5 lg:text-[0.8125rem]",
-                            lit ? "text-white" : "text-secondary hover:bg-[var(--hero-address)] hover:text-primary",
+                            lit ? "text-primary_on-brand" : "text-secondary hover:bg-[var(--hero-address)] hover:text-primary",
                         );
                         return (
                             <li key={step.key} data-step>

@@ -7,7 +7,8 @@
     <link rel="icon" type="image/png" sizes="512x512" href="/logo-512.png" />
     <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="theme-color" content="#0369a1" />
+    <meta name="theme-color" content="#f7f5f0" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#111318" media="(prefers-color-scheme: dark)" />
     <meta name="color-scheme" content="light dark" />
     <link rel="manifest" href="/site.webmanifest" />
     <!-- seo:start — the home page's tags; the build writes each page's own (scripts/seo-pages.mjs) -->
@@ -17,7 +18,7 @@
     <!-- seo:end -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&family=Noto+Sans+Devanagari:wght@400..700&family=Noto+Serif+Devanagari:wght@400..700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Geist:wght@400..700&family=Geist+Mono:wght@400..600&family=Inter:ital,opsz,wght@0,14..32,400..700;1,14..32,400..700&family=Noto+Sans+Devanagari:wght@400..700&family=Noto+Serif+Devanagari:wght@400..700&family=Noto+Serif:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
     <script>
       // Apply the saved theme and language before first paint to avoid a flash.
       try {
@@ -29,7 +30,7 @@
       } catch {}
     </script>
   </head>
-  <body class="bg-primary text-primary">
+  <body class="text-primary">
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>

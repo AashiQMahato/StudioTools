@@ -21,10 +21,10 @@ export function NavItem({ href, children, active, onNavigate, size = "bar", clas
             onClick={onNavigate}
             aria-current={active ? "location" : undefined}
             className={cn(
-                "flex items-center rounded-lg font-medium transition-colors duration-150",
+                "flex items-center font-medium transition-colors duration-150",
                 "outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2",
-                size === "bar" ? "h-9 px-3 text-sm" : "min-h-12 px-3 text-md",
-                active ? "bg-primary_hover text-primary" : "text-secondary hover:bg-primary_hover hover:text-primary",
+                size === "bar" ? "h-9 rounded-full px-3.5 text-sm" : "min-h-12 rounded-xl px-3 text-md",
+                active ? "nav-fill text-primary" : "text-secondary hover:nav-fill hover:text-primary",
                 className,
             )}
         >

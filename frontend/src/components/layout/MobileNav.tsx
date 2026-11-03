@@ -43,17 +43,17 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
 
     return (
         <>
-            <div aria-hidden data-open={open || undefined} onClick={onClose} className="nav-scrim fixed inset-x-0 top-18 bottom-0 bg-overlay/25 lg:hidden" />
+            <div aria-hidden data-open={open || undefined} onClick={onClose} className="nav-scrim fixed inset-0 -z-10 bg-[rgb(17_19_24/0.22)] backdrop-blur-[2px] lg:hidden" />
 
             <div id={id} data-open={open || undefined} inert={!open} className="nav-sheet absolute inset-x-0 top-full px-[var(--page-gutter)] pt-2 lg:hidden">
-                <nav aria-label={t.nav.main} className="mx-auto max-h-[calc(100dvh-6rem)] max-w-xl overflow-y-auto rounded-2xl border border-secondary bg-primary p-2 shadow-xl">
+                <nav aria-label={t.nav.main} className="glass-strong mx-auto max-h-[calc(100dvh-6rem)] max-w-xl overflow-y-auto overscroll-contain rounded-[1.375rem] p-2">
                     <button
                         type="button"
                         onClick={() => {
                             onClose();
                             openSearch(true);
                         }}
-                        className="mb-1 flex min-h-12 w-full cursor-pointer items-center gap-2.5 rounded-lg border border-secondary bg-secondary/50 px-3 text-md text-tertiary outline-focus-ring transition-colors duration-150 hover:bg-secondary focus-visible:outline-2"
+                        className="mb-1 flex min-h-12 w-full cursor-pointer items-center gap-2.5 rounded-xl nav-fill px-3 text-md text-tertiary outline-focus-ring transition-colors duration-150 focus-visible:outline-2"
                     >
                         <Search className="size-4.5" aria-hidden />
                         {t.nav.mega.searchField}
@@ -131,7 +131,7 @@ export function MobileNav({ id, open, onClose, activeSection }: MobileNavProps) 
                             label={t.nav.mega.openStudio}
                             navigateTo={ROUTES.editor}
                             className="flex w-full md:hidden"
-                            buttonClassName="w-full rounded-full before:rounded-full"
+                            buttonClassName="btn-ink w-full rounded-full ring-0! before:hidden"
                         />
                     </div>
                 </nav>
@@ -165,7 +165,7 @@ function MobileMenu<K extends MenuSectionKey>({ menu, idPrefix, onClose }: { men
                             onClick={() => setOpenSection(open ? null : section.key)}
                             className="flex min-h-14 w-full cursor-pointer items-center gap-3 rounded-lg px-2 text-left transition-colors duration-150 outline-focus-ring hover:bg-primary_hover focus-visible:outline-2"
                         >
-                            <span className="grid size-8 shrink-0 place-items-center rounded-lg bg-secondary text-secondary">
+                            <span className="grid size-8 shrink-0 place-items-center rounded-[0.625rem] bg-[var(--brand-soft)] text-[var(--brand)]">
                                 <Icon className="size-[1.125rem]" strokeWidth={1.9} aria-hidden />
                             </span>
                             <span className="min-w-0 flex-1">

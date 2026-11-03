@@ -1,12 +1,13 @@
-import { ArrowRight, CornerDownLeft, Search, X } from "lucide-react";
-import { type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
+import { ArrowRight, CornerDownLeft, History, Search, X } from "lucide-react";
+import { type CSSProperties, Fragment, type KeyboardEvent, type ReactNode, useEffect, useId, useMemo, useRef, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useToolSearch } from "@/store/useToolSearch";
 import { matchRanges, searchTools } from "@/lib/utils/searchTools";
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
-import { buildSearchIndex, type SearchEntry, suggestedEntries } from "./searchIndex";
+import { buildSearchIndex, groupResults, type SearchEntry, suggestedEntries } from "./searchIndex";
+import { TOOL_ACCENT } from "./toolRegistry";
 
 /** The query's words, marked in a result's text. */
 function Highlight({ text, query }: { text: string; query: string }) {
@@ -28,7 +29,7 @@ function Highlight({ text, query }: { text: string; query: string }) {
 }
 
 function Key({ children }: { children: ReactNode }) {
-    return <kbd className="inline-grid h-5 min-w-5 place-items-center rounded-[5px] border border-secondary bg-secondary px-1 font-sans text-[0.6875rem] leading-none font-medium text-tertiary">{children}</kbd>;
+    return <kbd className="inline-grid h-5 min-w-5 place-items-center rounded-[5px] bg-[rgb(120_113_98/0.1)] px-1 font-sans text-[0.6875rem] leading-none font-medium text-tertiary shadow-[inset_0_-1px_0_rgb(0_0_0/0.08)] dark:bg-white/8">{children}</kbd>;
 }
 
 /**
@@ -64,7 +65,10 @@ export function SearchDialog() {
         const onKeyDown = (event: globalThis.KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === "k") {
                 event.preventDefault();
-                setOpen(!useToolSearch.getState().open);
+                const state = useToolSearch.getState();
+                // A page with its own search field takes the shortcut (unless the palette is already open).
+                if (!state.open && state.localSearch) return state.localSearch();
+                setOpen(!state.open);
             }
         };
         document.addEventListener("keydown", onKeyDown);
@@ -74,7 +78,16 @@ export function SearchDialog() {
     const index = useMemo(() => buildSearchIndex(t), [t]);
     const searchable = useMemo(() => index.map((entry) => ({ ...entry, name: entry.title })), [index]);
     const trimmed = query.trim();
-    const results: SearchEntry[] = useMemo(() => (trimmed ? searchTools(searchable, trimmed) : suggestedEntries(index)), [trimmed, searchable, index]);
+    const recentIds = useToolSearch((state) => state.recent);
+    const remember = useToolSearch((state) => state.remember);
+    // Before typing: what you opened lately (on this device), then the popular tools.
+    const recent = useMemo(() => (trimmed ? [] : recentIds.map((id) => index.find((entry) => entry.id === id)).filter((entry): entry is SearchEntry => Boolean(entry))), [trimmed, recentIds, index]);
+    const sections = useMemo(() => {
+        if (trimmed) return groupResults(searchTools(searchable, trimmed)).map(({ group, entries }) => ({ key: group, label: copy.groups[group], entries }));
+        const suggested = suggestedEntries(index).filter((entry) => !recent.includes(entry));
+        return [...(recent.length ? [{ key: "recent", label: copy.recent, entries: recent }] : []), { key: "suggested", label: copy.suggested, entries: suggested }];
+    }, [trimmed, searchable, index, recent, copy]);
+    const results: SearchEntry[] = useMemo(() => sections.flatMap((section) => section.entries), [sections]);
     const current = Math.min(active, Math.max(results.length - 1, 0));
 
     // Keep the highlighted row in view as the arrow keys move it.
@@ -88,6 +101,7 @@ export function SearchDialog() {
         setActive(0);
     };
     const go = (entry: SearchEntry) => {
+        remember(entry.id);
         navigate({ pathname: entry.route, search: entry.search });
         close();
     };
@@ -113,11 +127,11 @@ export function SearchDialog() {
             // A press on the backdrop (the dialog element itself, outside its panel) closes it.
             onClick={(event) => event.target === event.currentTarget && close()}
             className={cn(
-                "search-palette fixed inset-x-0 top-2 m-0 mx-auto flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-2xl border border-secondary bg-primary p-0 text-primary shadow-xl backdrop:bg-overlay/30",
+                "search-palette glass-strong fixed inset-x-0 top-2 m-0 mx-auto flex max-h-[calc(100dvh-1rem)] w-[calc(100vw-1rem)] flex-col overflow-hidden rounded-[1.375rem] p-0 text-primary backdrop:bg-[rgb(17_19_24/0.28)] backdrop:backdrop-blur-[2px]",
                 "sm:top-[12vh] sm:max-h-[min(34rem,76dvh)] sm:w-[min(38rem,calc(100vw-2rem))] [&:not([open])]:hidden",
             )}
         >
-            <div className="flex shrink-0 items-center gap-2.5 border-b border-secondary pr-2 pl-4">
+            <div className="flex shrink-0 items-center gap-2.5 border-b border-[var(--card-line)] pr-2 pl-4">
                 <Search className="size-[1.125rem] shrink-0 text-quaternary" aria-hidden />
                 <input
                     ref={input}
@@ -158,41 +172,54 @@ export function SearchDialog() {
             </div>
 
             <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain p-2">
-                <p aria-live="polite" className="px-2.5 pt-1.5 pb-1.5 text-xs font-medium text-quaternary">
-                    {trimmed ? (results.length ? copy.count(results.length) : "") : copy.suggested}
+                <p aria-live="polite" className="sr-only">
+                    {trimmed && results.length ? copy.count(results.length) : ""}
                 </p>
                 {results.length > 0 ? (
                     <ul ref={list} id={listId} role="listbox" aria-label={trimmed ? copy.count(results.length) : copy.suggested}>
-                        {results.map((entry, position) => {
-                            const Icon = entry.icon;
-                            const selected = position === current;
+                        {sections.map((section) => {
+                            const offset = results.indexOf(section.entries[0]!);
                             return (
-                                <li
-                                    key={entry.id}
-                                    id={optionId(position)}
-                                    role="option"
-                                    aria-selected={selected}
-                                    data-index={position}
-                                    onPointerMove={() => position !== current && setActive(position)}
-                                    // Keep focus in the input: the row is chosen with a press, not focused.
-                                    onPointerDown={(event) => event.preventDefault()}
-                                    onClick={() => go(entry)}
-                                    className={cn("flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-100", selected && "bg-secondary")}
-                                >
-                                    <span className={cn("grid size-9 shrink-0 place-items-center rounded-lg border bg-primary transition-colors duration-100", selected ? "border-[var(--brand-line)] text-[var(--brand)]" : "border-secondary text-secondary")}>
-                                        <Icon className="size-4" strokeWidth={1.9} aria-hidden />
-                                    </span>
-                                    <span className="min-w-0 flex-1">
-                                        <span className="block truncate text-sm font-semibold text-primary">
-                                            <Highlight text={entry.title} query={trimmed} />
-                                        </span>
-                                        <span className="block truncate text-xs text-tertiary">
-                                            <Highlight text={entry.description} query={trimmed} />
-                                        </span>
-                                    </span>
-                                    <span className="hidden shrink-0 rounded-md border border-secondary px-1.5 py-0.5 text-[0.6875rem] font-medium whitespace-nowrap text-tertiary sm:inline">{entry.category}</span>
-                                    <CornerDownLeft className={cn("size-4 shrink-0 text-quaternary transition-opacity duration-100", selected ? "opacity-100" : "opacity-0")} aria-hidden />
-                                </li>
+                                <Fragment key={section.key}>
+                                    <li role="presentation" className="flex items-center gap-1.5 px-2.5 pt-2.5 pb-1.5 text-[0.6875rem] font-semibold tracking-[0.05em] text-quaternary uppercase first:pt-1">
+                                        {section.key === "recent" && <History className="size-3" aria-hidden />}
+                                        {section.label}
+                                    </li>
+                                    {section.entries.map((entry, index) => {
+                                        const position = offset + index;
+                                        const Icon = entry.icon;
+                                        const selected = position === current;
+                                        return (
+                                            <li
+                                                key={entry.id}
+                                                id={optionId(position)}
+                                                role="option"
+                                                aria-selected={selected}
+                                                data-index={position}
+                                                onPointerMove={() => position !== current && setActive(position)}
+                                                // Keep focus in the input: the row is chosen with a press, not focused.
+                                                onPointerDown={(event) => event.preventDefault()}
+                                                onClick={() => go(entry)}
+                                                style={{ "--accent": TOOL_ACCENT[entry.id as keyof typeof TOOL_ACCENT] ?? "var(--brand-solid)" } as CSSProperties}
+                                                className={cn("flex cursor-pointer items-center gap-3 rounded-xl px-2.5 py-2 transition-colors duration-100", selected && "bg-[rgb(120_113_98/0.09)] dark:bg-white/6")}
+                                            >
+                                                <span className={cn("grid size-9 shrink-0 place-items-center rounded-[0.625rem] transition-colors duration-100", selected ? "bg-[var(--accent)] text-white" : "bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]")}>
+                                                    <Icon className="size-4" strokeWidth={1.9} aria-hidden />
+                                                </span>
+                                                <span className="min-w-0 flex-1">
+                                                    <span className="block truncate text-sm font-semibold text-primary">
+                                                        <Highlight text={entry.title} query={trimmed} />
+                                                    </span>
+                                                    <span className="block truncate text-xs text-tertiary">
+                                                        <Highlight text={entry.description} query={trimmed} />
+                                                    </span>
+                                                </span>
+                                                <span className="hidden shrink-0 text-[0.6875rem] font-medium whitespace-nowrap text-quaternary sm:inline">{entry.category}</span>
+                                                <CornerDownLeft className={cn("size-4 shrink-0 text-quaternary transition-opacity duration-100", selected ? "opacity-100" : "opacity-0")} aria-hidden />
+                                            </li>
+                                        );
+                                    })}
+                                </Fragment>
                             );
                         })}
                     </ul>
@@ -223,7 +250,7 @@ export function SearchDialog() {
                     </div>
                 )}
             </div>
-            <div className="hidden shrink-0 items-center gap-4 border-t border-secondary px-4 py-2.5 text-xs text-quaternary sm:flex">
+            <div className="hidden shrink-0 items-center gap-4 border-t border-[var(--card-line)] px-4 py-2.5 text-xs text-quaternary sm:flex">
                 <span className="flex items-center gap-1.5">
                     <Key>↑</Key>
                     <Key>↓</Key>

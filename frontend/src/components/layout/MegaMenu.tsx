@@ -1,9 +1,10 @@
 import { ArrowRight } from "lucide-react";
-import type { KeyboardEvent } from "react";
+import type { CSSProperties, KeyboardEvent } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils/cn";
 import { useT } from "@/i18n";
 import type { NavPanelProps } from "./NavDropdown";
+import { TOOL_ACCENT } from "./toolRegistry";
 import { isCurrentItem, type MenuSection, type MenuSectionKey, menuItemCopy, navSections, type ToolMenu } from "./toolMenus";
 
 /** Columns per menu size, and the panel's width to match. */
@@ -37,19 +38,19 @@ export function MegaMenu<K extends MenuSectionKey>({ menu, id, open, panelRef, o
 
     return (
         <div className={cn("pointer-events-none absolute top-full left-1/2 -translate-x-1/2", layout.width)}>
-            <div id={id} ref={panelRef} data-open={open || undefined} inert={!open} onKeyDown={onPanelKeyDown} className="nav-panel pt-5">
-                <div className="overflow-hidden rounded-[1.25rem] border border-secondary bg-primary shadow-xl">
+            <div id={id} ref={panelRef} data-open={open || undefined} inert={!open} onKeyDown={onPanelKeyDown} className="nav-panel pt-3">
+                <div className="glass-strong overflow-hidden rounded-[1.375rem]">
                     <div className={cn("grid gap-x-1 p-2.5 xl:gap-x-3 xl:p-4", layout.grid)}>
                         {sections.map((section) => (
                             <Column key={section.key} section={section} copy={menu.sectionCopy(t, section.key)} onNavigate={onNavigate} />
                         ))}
                     </div>
-                    <div className="flex justify-end border-t border-secondary bg-secondary/40 px-3 py-2 xl:px-5">
+                    <div className="flex justify-end border-t border-[var(--card-line)] px-3 py-2 xl:px-5">
                         <Link
                             to={menu.href}
                             data-nav-item
                             onClick={onNavigate}
-                            className="flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm font-semibold text-[var(--brand)] outline-focus-ring transition-colors duration-150 hover:bg-primary_hover focus-visible:outline-2"
+                            className="flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-semibold text-[var(--brand)] outline-focus-ring transition-colors duration-150 hover:nav-fill focus-visible:outline-2"
                         >
                             {menu.viewAll(t)}
                             <ArrowRight className="nav-arrow size-4" aria-hidden />
@@ -87,12 +88,13 @@ function Column({ section, copy, onNavigate }: { section: MenuSection; copy: { t
                                 data-nav-item
                                 onClick={onNavigate}
                                 aria-current={current ? "page" : undefined}
+                                style={{ "--accent": TOOL_ACCENT[item.key] ?? "var(--brand-solid)" } as CSSProperties}
                                 className={cn(
                                     "nav-tool flex items-center gap-2.5 rounded-xl px-2.5 py-2 outline-focus-ring transition-colors duration-150 focus-visible:outline-2",
-                                    current ? "bg-secondary" : "hover:bg-secondary",
+                                    current ? "nav-fill" : "hover:nav-fill",
                                 )}
                             >
-                                <span className="nav-tool-icon grid size-8 shrink-0 place-items-center rounded-lg border border-secondary bg-primary text-secondary">
+                                <span className="nav-tool-icon grid size-8 shrink-0 place-items-center rounded-[0.625rem] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">
                                     <ItemIcon className="size-4" strokeWidth={1.9} aria-hidden />
                                 </span>
                                 {/* Names only: the overview page has the descriptions. */}

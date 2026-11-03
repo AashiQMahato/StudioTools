@@ -3,7 +3,7 @@ import { test } from "node:test";
 import { DICTIONARIES } from "@/i18n";
 import { ROUTES } from "@/lib/constants/routes";
 import { searchTools } from "@/lib/utils/searchTools";
-import { buildSearchIndex, suggestedEntries } from "./searchIndex";
+import { buildSearchIndex, groupResults, SEARCH_GROUPS, suggestedEntries } from "./searchIndex";
 
 const routes = new Set<string>(Object.values(ROUTES));
 
@@ -33,4 +33,17 @@ test("suggestions are the popular tools, then the Whiteboard", () => {
     const suggested = suggestedEntries(buildSearchIndex(DICTIONARIES.en));
     assert.equal(suggested.at(-1)?.id, "whiteboard");
     assert.ok(suggested.length >= 4);
+});
+
+test("every entry is in a palette group, and grouping keeps the best match first", () => {
+    const index = buildSearchIndex(DICTIONARIES.en);
+    for (const entry of index) assert.ok(SEARCH_GROUPS.includes(entry.group), entry.id);
+    assert.equal(index.find((entry) => entry.id === "whiteboard")?.group, "creative");
+    assert.equal(index.find((entry) => entry.id === "pdfMerge")?.group, "pdf");
+    assert.equal(index.find((entry) => entry.id === "ocr")?.group, "text");
+    assert.equal(index.find((entry) => entry.id === "removeBackground")?.group, "image");
+    const results = searchTools(index.map((entry) => ({ ...entry, name: entry.title })), "compress");
+    const grouped = groupResults(results);
+    assert.equal(grouped[0]?.entries[0]?.id, results[0]?.id);
+    assert.equal(grouped.flatMap((group) => group.entries).length, results.length);
 });

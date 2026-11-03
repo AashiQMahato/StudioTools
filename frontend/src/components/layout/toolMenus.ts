@@ -1,4 +1,4 @@
-import { ArrowLeftRight, Files, History, type LucideIcon, Replace, ScanText, ShieldCheck, SlidersHorizontal, Sparkles, Gauge, FileImage, FileOutput } from "lucide-react";
+import { ArrowLeftRight, Files, FileImage, FileOutput, Gauge, History, IdCard, Lock, type LucideIcon, PenLine, Replace, ScanLine, ScanText, Share2, ShieldCheck, SlidersHorizontal, Sparkles, Type, Wand2 } from "lucide-react";
 import type { Dictionary } from "@/i18n";
 import { ORGANIZE_MODES, type ToolKey } from "@/lib/constants/navigation";
 import { type AppRoute, ROUTES } from "@/lib/constants/routes";
@@ -63,30 +63,38 @@ const IMAGE_SECTIONS: readonly MenuSection<ImageMenuSectionKey>[] = [
     {
         key: "aiTools",
         icon: Sparkles,
-        items: [
-            tool("removeBackground", ROUTES.removeBackground),
-            tool("upscaler", ROUTES.upscale),
-            { ...tool("objectRemover", ROUTES.objectRemover), isNew: true },
-            tool("retouch", ROUTES.retouch),
-            { ...tool("photoRestoration", ROUTES.photoRestoration), isNew: true },
-            tool("watermarkRemover", ROUTES.watermarkRemover),
-            tool("photoGenerator", ROUTES.photoGenerator),
-        ],
+        items: [tool("removeBackground", ROUTES.removeBackground), tool("upscaler", ROUTES.upscale), { ...tool("objectRemover", ROUTES.objectRemover), isNew: true }],
     },
     {
         key: "editAdjust",
         icon: SlidersHorizontal,
         items: [
             tool("editor", ROUTES.editor),
+            tool("crop", ROUTES.crop),
+            // Shortcuts into the editor's resize panel and the crop tool's rotate controls.
+            { ...tool("resize", ROUTES.editor), alias: true, mode: true },
+            { ...tool("rotateFlip", ROUTES.crop), alias: true, mode: true },
         ],
+    },
+    {
+        key: "retouchRestore",
+        icon: Wand2,
+        items: [tool("retouch", ROUTES.retouch), { ...tool("photoRestoration", ROUTES.photoRestoration), isNew: true }, tool("watermarkRemover", ROUTES.watermarkRemover)],
     },
     {
         key: "optimize",
         icon: Gauge,
-        items: [
-            tool("compressor", ROUTES.compress),
-            { ...tool("socialResizer", ROUTES.socialResizer), isNew: true },
-        ],
+        items: [tool("compressor", ROUTES.compress)],
+    },
+    {
+        key: "photoId",
+        icon: IdCard,
+        items: [tool("photoGenerator", ROUTES.photoGenerator)],
+    },
+    {
+        key: "social",
+        icon: Share2,
+        items: [{ ...tool("socialResizer", ROUTES.socialResizer), isNew: true }],
     },
 ];
 
@@ -105,16 +113,19 @@ export const imageMenu: ToolMenu<ImageMenuSectionKey> = {
 
 const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
     {
-        key: "textOcr",
-        icon: ScanText,
+        key: "pdfEditing",
+        icon: PenLine,
+        items: [tool("pdfEditor", ROUTES.pdfEditor), tool("pdfSign", ROUTES.pdfSign), tool("pdfWatermark", ROUTES.pdfWatermark), tool("pdfPageNumbers", ROUTES.pdfPageNumbers)],
+    },
+    {
+        key: "convert",
+        icon: ArrowLeftRight,
         items: [
-            { ...tool("ocr", ROUTES.ocr), isNew: true },
-            // Cleaning, find & replace, word counts and case conversion are the Text Editor's own panels.
-            { ...tool("textEditor", ROUTES.textEditor), members: [ROUTES.textCleaner, ROUTES.wordCounter, ROUTES.caseConverter] },
-            { ...tool("textCleaner", ROUTES.textCleaner), mode: true },
-            { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true, mode: true },
-            { ...tool("wordCounter", ROUTES.wordCounter), mode: true },
-            { ...tool("caseConverter", ROUTES.caseConverter), mode: true },
+            tool("pdfToWord", ROUTES.pdfToWord),
+            tool("pdfToImages", ROUTES.pdfToImages),
+            tool("imagesToPdf", ROUTES.imagesToPdf),
+            { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true, mode: true },
+            { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true, mode: true },
         ],
     },
     {
@@ -132,32 +143,33 @@ const DOCUMENT_SECTIONS: readonly MenuSection<DocumentMenuSectionKey>[] = [
         ],
     },
     {
-        key: "convert",
-        icon: ArrowLeftRight,
+        key: "securePdf",
+        icon: Lock,
+        items: [tool("pdfProtect", ROUTES.pdfProtect), tool("pdfUnlock", ROUTES.pdfUnlock)],
+    },
+    {
+        key: "textOcr",
+        icon: ScanText,
+        items: [{ ...tool("ocr", ROUTES.ocr), isNew: true }, tool("pdfToText", ROUTES.pdfToText)],
+    },
+    {
+        key: "textUtils",
+        icon: Type,
         items: [
-            { ...tool("documentScanner", ROUTES.documentScanner), isNew: true },
-            tool("pdfToWord", ROUTES.pdfToWord),
-            tool("pdfToText", ROUTES.pdfToText),
-            tool("pdfToImages", ROUTES.pdfToImages),
-            tool("imagesToPdf", ROUTES.imagesToPdf),
-            { key: "pdfToJpg", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=jpg", alias: true, mode: true },
-            { key: "pdfToPng", icon: FileImage, href: ROUTES.pdfToImages, search: "?format=png", alias: true, mode: true },
+            // Cleaning, find & replace, word counts and case conversion are the Text Editor's own panels.
+            { ...tool("textEditor", ROUTES.textEditor), members: [ROUTES.textCleaner, ROUTES.wordCounter, ROUTES.caseConverter] },
+            { ...tool("textCleaner", ROUTES.textCleaner), mode: true },
+            { key: "findReplace", icon: Replace, href: ROUTES.textEditor, search: "?find=replace", alias: true, mode: true },
+            { ...tool("wordCounter", ROUTES.wordCounter), mode: true },
+            { ...tool("caseConverter", ROUTES.caseConverter), mode: true },
         ],
     },
     {
-        key: "editSecure",
-        icon: ShieldCheck,
-        items: [
-            tool("pdfEditor", ROUTES.pdfEditor),
-            tool("pdfSign", ROUTES.pdfSign),
-            tool("pdfWatermark", ROUTES.pdfWatermark),
-            tool("pdfPageNumbers", ROUTES.pdfPageNumbers),
-            tool("pdfProtect", ROUTES.pdfProtect),
-            tool("pdfUnlock", ROUTES.pdfUnlock),
-        ],
+        key: "scanning",
+        icon: ScanLine,
+        items: [{ ...tool("documentScanner", ROUTES.documentScanner), isNew: true }],
     },
 ];
-
 
 export const documentMenu: ToolMenu<DocumentMenuSectionKey> = {
     href: ROUTES.documents,

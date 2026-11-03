@@ -147,15 +147,15 @@ export function NavDropdown({ label, current = false, href, children }: NavDropd
         "aria-controls": panelId,
         onKeyDown: onTriggerKeyDown,
         className: cn(
-            "flex h-9 cursor-pointer items-center gap-1 rounded-lg px-3 text-sm font-medium transition-colors duration-150",
+            "flex h-9 cursor-pointer items-center gap-1 rounded-full px-3.5 text-sm font-medium transition-colors duration-150",
             "outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2",
-            open || current ? "bg-primary_hover text-primary" : "text-secondary hover:bg-primary_hover hover:text-primary",
+            open || current ? "nav-fill text-primary" : "text-secondary hover:nav-fill hover:text-primary",
         ),
     };
     const triggerContent = (
         <>
             {label}
-            <ChevronDown className="nav-chevron size-4 text-quaternary" aria-hidden />
+            <ChevronDown className="nav-chevron size-3.5 text-quaternary" aria-hidden />
         </>
     );
 

@@ -1,14 +1,16 @@
-import { ChevronDown, ImagePlus, LoaderCircle, Menu } from "lucide-react";
-import { createContext, type ReactNode, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
+import { ChevronDown, CircleHelp, ImagePlus, LoaderCircle, Menu, Search } from "lucide-react";
+import { createContext, type CSSProperties, type ReactNode, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { LogoMark } from "@/components/common/Logo";
 import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { TOOL_ICONS } from "@/components/layout/toolIcons";
+import { TOOL_ACCENT } from "@/components/layout/toolRegistry";
 import { useImageUpload } from "@/hooks/useImageUpload";
 import { isDocumentTool, studioToolGroups, type ToolKey } from "@/lib/constants/navigation";
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useHandoff } from "@/store/useHandoff";
+import { useToolSearch } from "@/store/useToolSearch";
 import { useSectionImageStore } from "@/store/useImageStore";
 import { useImmersiveLayout } from "@/store/useLayoutStore";
 import { useT } from "@/i18n";
@@ -110,12 +112,11 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
         return () => window.clearTimeout(timer);
     }, [upload.error, clearError]);
 
-    const iconButton =
-        "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-secondary transition-colors duration-150 outline-focus-ring hover:bg-primary_hover hover:text-primary focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 pointer-coarse:size-11";
+    const iconButton = STUDIO_ICON_BUTTON;
 
     return (
         <StudioContext.Provider value={{ openPicker, uploadError: upload.error, clearImage: requestNewImage, hasImage: Boolean(original) }}>
-            <div className="flex min-h-dvh flex-col bg-secondary lg:h-dvh">
+            <div className="studio-shell flex min-h-dvh flex-col lg:h-dvh" style={{ "--accent": TOOL_ACCENT[tool] ?? "var(--brand-solid)" } as CSSProperties}>
                 <input {...upload.inputProps} aria-hidden />
                 {onFiles && (
                     <input
@@ -134,7 +135,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                     />
                 )}
 
-                <header className="flex h-16 shrink-0 items-center gap-2 border-b border-secondary bg-primary px-3 sm:gap-3 sm:px-5">
+                <header className="studio-topbar sticky top-0 z-30 flex h-14 shrink-0 items-center gap-2 px-2.5 sm:gap-3 sm:px-4 lg:static">
                     {/* The tool list: folds away beside the work on wide screens, slides in as a drawer on narrow ones. */}
                     <button
                         type="button"
@@ -147,13 +148,13 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                     >
                         <Menu className="size-[1.125rem]" aria-hidden />
                     </button>
-                    <Link to={ROUTES.home} aria-label={t.common.homeAria} className="flex shrink-0 items-center gap-2 rounded-lg text-md font-semibold tracking-[-0.01em] text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
-                        <LogoMark />
+                    <Link to={ROUTES.home} aria-label={t.common.homeAria} className="flex shrink-0 items-center gap-2 rounded-lg text-[0.9375rem] font-semibold tracking-[-0.015em] text-primary outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-2">
+                        <LogoMark className="size-6" />
                         <span className="hidden sm:inline">
-                            {copy.name} <span className="text-[var(--brand)]">{copy.suffix}</span>
+                            {copy.name} <span className="text-tertiary">{copy.suffix}</span>
                         </span>
                     </Link>
-                    <span aria-hidden className="mx-1 hidden h-6 w-px bg-[var(--card-line)] md:block" />
+                    <span aria-hidden className="mx-0.5 hidden h-5 w-px bg-[var(--card-line)] md:block" />
                     <ToolBreadcrumb tool={tool} fileName={customName ?? original?.name} onRename={original ? rename : undefined} onNewImage={original ? requestNewImage : undefined} />
 
                     <div className="ml-auto flex shrink-0 items-center gap-0.5 sm:gap-1">
@@ -166,17 +167,21 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                                 </button>
                             </>
                         )}
+                        <button type="button" onClick={() => useToolSearch.getState().setOpen(true)} aria-haspopup="dialog" aria-keyshortcuts="Meta+K Control+K" aria-label={t.nav.mega.search.label} title={t.nav.mega.search.label} className={cn(iconButton, "hidden sm:grid")}>
+                            <Search className="size-[1.125rem]" aria-hidden />
+                        </button>
+                        <ShortcutsHelp className="hidden sm:block" />
                         {/* grid, not flex: the sun and moon share one cell and swap in place, as on the home page. */}
-                        <ThemeToggle className="hidden sm:grid" />
+                        <ThemeToggle className="hidden size-9! rounded-lg! sm:grid" />
                         {working && exportSlot && <div className="ml-1">{exportSlot}</div>}
                     </div>
                 </header>
 
-                <div className="flex flex-1 flex-col gap-3 p-2 pt-1 sm:p-3 sm:pt-1.5 lg:min-h-0 lg:flex-row lg:pl-0">
+                <div className="flex flex-1 flex-col gap-2.5 p-2 pt-0 sm:p-2.5 sm:pt-0 lg:min-h-0 lg:flex-row lg:pl-0">
                     <StudioSidebar current={tool} id={sidebarId} collapsed={sidebar.collapsed} drawerOpen={sidebar.drawerOpen} onCloseDrawer={sidebar.closeDrawer} />
 
                     {/* A section, not <main>: the page's <main> (AppLayout) already contains the whole studio. */}
-                    <section aria-labelledby={headingId} className="flex min-w-0 flex-1 flex-col max-lg:has-[.studio-drop]:flex-none gap-3 rounded-2xl border border-[var(--card-line)] bg-primary p-2 sm:p-3 lg:min-h-0">
+                    <section aria-labelledby={headingId} className="studio-surface flex min-w-0 flex-1 flex-col gap-3 rounded-[1.25rem] p-2 max-lg:has-[.studio-drop]:flex-none sm:p-2.5 lg:min-h-0">
                         {/* The page's heading: the tool's name (shown in the header bar; here for search engines and screen readers). */}
                         <h1 id={headingId} className="sr-only">
                             {t.nav.toolItems[tool].title}
@@ -185,7 +190,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                     </section>
 
                     {working && (
-                        <aside aria-label={panelLabel} className={cn("flex shrink-0 flex-col overflow-hidden rounded-2xl border border-[var(--card-line)] bg-primary lg:min-h-0", panelWidth === "compact" ? "lg:w-[17rem] xl:w-[18rem]" : isDocumentTool(tool) ? "lg:w-[20rem] xl:w-[21.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
+                        <aside aria-label={panelLabel} className={cn("studio-surface studio-panel-in flex shrink-0 flex-col overflow-hidden rounded-[1.25rem] lg:min-h-0", panelWidth === "compact" ? "lg:w-[17rem] xl:w-[18rem]" : isDocumentTool(tool) ? "lg:w-[20rem] xl:w-[21.5rem]" : "lg:w-[22.5rem] xl:w-[24rem]", mobilePanel === "none" && "hidden lg:flex")}>
                             {/* The panel's own heading, so its sections' headings sit under it in the outline. */}
                             <h2 className="sr-only">{panelLabel}</h2>
                             {panel}
@@ -195,9 +200,12 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
 
                 {/* Drop anywhere: the whole studio is the target. */}
                 <div aria-hidden={!dragging} className={cn("pointer-events-none fixed inset-0 z-50 flex items-center justify-center p-6 transition-opacity duration-200", dragging ? "opacity-100" : "opacity-0")}>
-                    <div className="absolute inset-0 bg-primary/70 backdrop-blur-sm" />
-                    <div className="relative flex size-full items-center justify-center rounded-3xl border-2 border-dashed border-[var(--color-focus-ring)]">
-                        <p className="text-tile text-primary">{t.upload.dropToOpen}</p>
+                    <div className="absolute inset-0 bg-[color-mix(in_srgb,var(--page-bg)_72%,transparent)] backdrop-blur-md" />
+                    <div className="relative flex size-full items-center justify-center rounded-[1.75rem] border-2 border-dashed border-[var(--accent)]">
+                        <p className="glass flex items-center gap-2.5 rounded-full px-5 py-3 text-tile text-primary">
+                            <ImagePlus className="size-5 text-[var(--accent)]" aria-hidden />
+                            {t.upload.dropToOpen}
+                        </p>
                     </div>
                 </div>
                 {confirming && (
@@ -212,7 +220,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                 <p
                     role="alert"
                     className={cn(
-                        "fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-xl border border-error_subtle bg-primary px-4 py-2.5 text-sm font-medium text-error-primary shadow-lg transition-[opacity,translate] duration-200",
+                        "glass-strong fixed bottom-6 left-1/2 z-50 -translate-x-1/2 rounded-full px-4 py-2.5 text-sm font-medium text-error-primary transition-[opacity,translate] duration-200",
                         upload.error ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
                     )}
                 >
@@ -222,7 +230,7 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                 <p
                     role="status"
                     className={cn(
-                        "fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-xl border border-[var(--card-line)] bg-primary px-4 py-2.5 text-sm font-medium text-secondary shadow-lg transition-[opacity,translate] duration-200",
+                        "glass-strong fixed bottom-6 left-1/2 z-50 flex -translate-x-1/2 items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium text-secondary transition-[opacity,translate] duration-200",
                         upload.status && !upload.error ? "translate-y-0 opacity-100" : "pointer-events-none translate-y-2 opacity-0",
                     )}
                 >
@@ -231,6 +239,55 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                 </p>
             </div>
         </StudioContext.Provider>
+    );
+}
+
+/** Square toolbar buttons in the studio's top bar (and in tools' own `actions`). */
+export const STUDIO_ICON_BUTTON =
+    "grid size-9 shrink-0 cursor-pointer place-items-center rounded-lg text-secondary transition-[background-color,color,scale] duration-150 outline-focus-ring hover:nav-fill hover:text-primary active:scale-95 focus-visible:outline-2 disabled:cursor-not-allowed disabled:opacity-35 disabled:active:scale-100 pointer-coarse:size-11";
+
+const IS_APPLE = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform || navigator.userAgent);
+
+/** Help: the keyboard shortcuts that work across the studio, in a small glass popover. */
+function ShortcutsHelp({ className }: { className?: string }) {
+    const t = useT();
+    const copy = t.studio.help;
+    const { open, setOpen, wrap, trigger } = usePopover();
+    const mod = IS_APPLE ? "⌘" : "Ctrl";
+    const rows: [string, string[]][] = [
+        [copy.search, [mod, "K"]],
+        [copy.paste, [mod, "V"]],
+        [copy.drop, [copy.dropKey]],
+        [copy.undo, [mod, "Z"]],
+        [copy.redo, IS_APPLE ? [mod, "⇧", "Z"] : [mod, "Y"]],
+        [copy.close, ["Esc"]],
+    ];
+    return (
+        <div ref={wrap} className={cn("relative", className)}>
+            <button ref={trigger} type="button" onClick={() => setOpen((value) => !value)} aria-expanded={open} aria-haspopup="dialog" aria-label={copy.label} title={copy.label} className={STUDIO_ICON_BUTTON}>
+                <CircleHelp className="size-[1.125rem]" aria-hidden />
+            </button>
+            {open && (
+                <div role="dialog" aria-label={copy.title} className="material-popover absolute top-full right-0 z-50 mt-2 w-72 origin-top-right rounded-2xl p-2">
+                    <p className="px-2.5 pt-1.5 pb-2 text-[0.6875rem] font-semibold tracking-[0.06em] text-quaternary uppercase">{copy.title}</p>
+                    <dl className="flex flex-col">
+                        {rows.map(([label, keys]) => (
+                            <div key={label} className="flex items-center justify-between gap-3 rounded-lg px-2.5 py-1.5 text-sm">
+                                <dt className="text-secondary">{label}</dt>
+                                <dd className="flex shrink-0 gap-1">
+                                    {keys.map((key) => (
+                                        <kbd key={key} className="inline-grid h-6 min-w-6 place-items-center rounded-md bg-[rgb(120_113_98/0.1)] px-1.5 font-sans text-xs font-medium text-secondary shadow-[inset_0_-1px_0_rgb(0_0_0/0.08)] dark:bg-white/8">
+                                            {key}
+                                        </kbd>
+                                    ))}
+                                </dd>
+                            </div>
+                        ))}
+                    </dl>
+                    <p className="mt-1 border-t border-[var(--card-line)] px-2.5 pt-2 pb-1 text-xs text-tertiary">{copy.undoNote}</p>
+                </div>
+            )}
+        </div>
     );
 }
 
@@ -334,8 +391,10 @@ function ToolBreadcrumb({ tool, fileName, onRename, onNewImage }: { tool: ToolKe
 
     return (
         <nav aria-label={copy.breadcrumb} className="flex min-w-0 flex-1 items-center gap-1.5 text-sm">
-            <span className="hidden shrink-0 items-center gap-1.5 lg:flex">
-                <Icon className="size-4 shrink-0 text-tertiary" aria-hidden />
+            <span className="hidden shrink-0 items-center gap-2 lg:flex">
+                <span className="grid size-6 shrink-0 place-items-center rounded-md bg-[color-mix(in_srgb,var(--accent)_14%,transparent)] text-[var(--accent)]">
+                    <Icon className="size-3.5" strokeWidth={2} aria-hidden />
+                </span>
                 <span className="truncate font-medium text-primary" aria-current="page">
                     {t.nav.toolItems[tool].title}
                 </span>
@@ -355,7 +414,7 @@ function ToolBreadcrumb({ tool, fileName, onRename, onNewImage }: { tool: ToolKe
                     <ChevronDown className={cn("size-4 shrink-0 text-quaternary transition-transform duration-200", open && "rotate-180")} aria-hidden />
                 </button>
                 {open && (
-                    <div ref={menuRef} className="absolute top-full left-0 z-50 mt-2 w-64 max-w-[calc(100vw-1.5rem)] rounded-2xl border border-[var(--card-line)] bg-primary p-1.5 shadow-xl">
+                    <div ref={menuRef} className="material-popover absolute top-full left-0 z-50 mt-2 max-h-[min(32rem,calc(100dvh-5rem))] w-64 max-w-[calc(100vw-1.5rem)] origin-top-left overflow-y-auto rounded-2xl p-1.5">
                         {studioToolGroups(tool).flatMap((group) => group.items).map((item) => {
                             const ItemIcon = TOOL_ICONS[item.key];
                             const current = !item.alias && (item.key === tool || Boolean(item.members?.some((member) => member.key === tool)));
@@ -367,10 +426,10 @@ function ToolBreadcrumb({ tool, fileName, onRename, onNewImage }: { tool: ToolKe
                                     aria-current={current ? "page" : undefined}
                                     className={cn(
                                         "flex h-11 items-center gap-3 rounded-xl px-3 text-sm font-medium outline-focus-ring focus-visible:outline-2",
-                                        current ? "bg-[var(--brand-soft)] text-[var(--brand)]" : "text-secondary hover:bg-primary_hover hover:text-primary",
+                                        current ? "nav-fill text-primary" : "text-secondary hover:nav-fill hover:text-primary",
                                     )}
                                 >
-                                    <ItemIcon className="size-4 shrink-0" aria-hidden />
+                                    <ItemIcon className="size-4 shrink-0" style={{ color: TOOL_ACCENT[item.key] }} aria-hidden />
                                     {t.nav.toolItems[item.key].title}
                                 </Link>
                             );
@@ -485,8 +544,8 @@ function ConfirmDiscard({ onKeep, onDiscard }: { onKeep: () => void; onDiscard: 
     }, [onKeep]);
     return (
         <div className="fixed inset-0 z-50 flex items-end justify-center p-4 sm:items-center">
-            <div aria-hidden className="absolute inset-0 bg-neutral-950/40" onClick={onKeep} />
-            <div role="alertdialog" aria-modal="true" aria-labelledby="discard-title" aria-describedby="discard-body" className="animate-enter relative w-full max-w-sm rounded-2xl border border-[var(--card-line)] bg-primary p-5 shadow-xl [--i:-1]">
+            <div aria-hidden className="absolute inset-0 bg-[rgb(17_19_24/0.32)] backdrop-blur-[2px]" onClick={onKeep} />
+            <div role="alertdialog" aria-modal="true" aria-labelledby="discard-title" aria-describedby="discard-body" className="studio-dialog glass-strong relative w-full max-w-sm rounded-[1.375rem] p-5">
                 <h2 id="discard-title" className="text-md font-semibold text-primary">
                     {copy.discardTitle}
                 </h2>
@@ -494,10 +553,10 @@ function ConfirmDiscard({ onKeep, onDiscard }: { onKeep: () => void; onDiscard: 
                     {copy.discardBody}
                 </p>
                 <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-                    <button ref={keepRef} type="button" onClick={onKeep} className="h-10 cursor-pointer rounded-lg border border-[var(--card-line)] px-4 text-sm font-semibold text-secondary outline-focus-ring hover:bg-primary_hover focus-visible:outline-2 pointer-coarse:h-11">
+                    <button ref={keepRef} type="button" onClick={onKeep} className="h-10 cursor-pointer rounded-full bg-primary px-4 text-sm font-semibold text-secondary shadow-[0_0_0_1px_var(--card-line)] outline-focus-ring hover:text-primary focus-visible:outline-2 pointer-coarse:h-11">
                         {copy.keepEditing}
                     </button>
-                    <button type="button" onClick={onDiscard} className="h-10 cursor-pointer rounded-lg bg-error-solid px-4 text-sm font-semibold text-white outline-focus-ring hover:bg-error-solid_hover focus-visible:outline-2 pointer-coarse:h-11">
+                    <button type="button" onClick={onDiscard} className="h-10 cursor-pointer rounded-full bg-error-solid px-4 text-sm font-semibold text-white outline-focus-ring hover:bg-error-solid_hover focus-visible:outline-2 pointer-coarse:h-11">
                         {copy.discard}
                     </button>
                 </div>

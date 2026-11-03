@@ -16,8 +16,16 @@ export interface SearchEntry {
     description: string;
     /** The menu section it sits in ("AI tools", "Convert"…), shown beside each result. */
     category: string;
+    /** The palette's result group. */
+    group: SearchGroup;
     keywords: readonly string[];
 }
+
+/** The palette groups results by what they work on. */
+export type SearchGroup = "image" | "pdf" | "text" | "creative";
+export const SEARCH_GROUPS: readonly SearchGroup[] = ["image", "pdf", "text", "creative"];
+/** Document sections whose tools work on text rather than on PDF pages. */
+const TEXT_SECTIONS = new Set<string>(["textOcr", "textUtils"]);
 
 const WHITEBOARD_KEYWORDS = ["draw", "drawing", "sketch", "diagram", "flowchart", "wireframe", "board", "canvas", "brainstorm", "mind map", "shapes", "arrows", "excalidraw"];
 
@@ -37,12 +45,13 @@ export function buildSearchIndex(t: Dictionary): SearchEntry[] {
                 seen.add(item.key);
                 const { title, description } = menuItemCopy(t, item.key);
                 const keywords = TOOL_CATALOG.find((tool) => tool.key === item.key)?.keywords ?? [];
-                entries.push({ id: item.key, route: item.href, search: item.search, icon: item.icon, title, description, category, keywords: [...keywords, category] });
+                const group: SearchGroup = menu === imageMenu ? "image" : TEXT_SECTIONS.has(section.key) ? "text" : "pdf";
+                entries.push({ id: item.key, route: item.href, search: item.search, icon: item.icon, title, description, category, group, keywords: [...keywords, category] });
             }
         }
     }
     const whiteboard = t.nav.mega.search.whiteboard;
-    entries.push({ id: "whiteboard", route: ROUTES.whiteboard, icon: Presentation, title: whiteboard.title, description: whiteboard.description, category: whiteboard.category, keywords: [...WHITEBOARD_KEYWORDS, whiteboard.category] });
+    entries.push({ id: "whiteboard", route: ROUTES.whiteboard, icon: Presentation, title: whiteboard.title, description: whiteboard.description, category: whiteboard.category, group: "creative", keywords: [...WHITEBOARD_KEYWORDS, whiteboard.category] });
     return entries;
 }
 
@@ -50,4 +59,18 @@ export function buildSearchIndex(t: Dictionary): SearchEntry[] {
 export function suggestedEntries(index: readonly SearchEntry[]): SearchEntry[] {
     const ids = [...popularTools().map((tool) => tool.id), "whiteboard"];
     return ids.map((id) => index.find((entry) => entry.id === id)).filter((entry): entry is SearchEntry => Boolean(entry));
+}
+
+/**
+ * Results in their groups: groups appear in the order of their best match (so the top hit stays on
+ * top), and each keeps the ranking inside it. The flat order is what the arrow keys move through.
+ */
+export function groupResults(results: readonly SearchEntry[]): { group: SearchGroup; entries: SearchEntry[] }[] {
+    const groups = new Map<SearchGroup, SearchEntry[]>();
+    for (const entry of results) {
+        const list = groups.get(entry.group) ?? [];
+        list.push(entry);
+        groups.set(entry.group, list);
+    }
+    return [...groups].map(([group, entries]) => ({ group, entries }));
 }

@@ -147,7 +147,7 @@ export function DocumentScannerPage() {
             />
             {!supported ? (
                 <StudioCanvas>
-                    <StudioError title={copy.unsupportedTitle} message={copy.unsupported} />
+                    <StudioError tone="unavailable" title={copy.unsupportedTitle} message={copy.unsupported} />
                 </StudioCanvas>
             ) : pages.length === 0 ? (
                 <>

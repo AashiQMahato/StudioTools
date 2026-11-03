@@ -14,7 +14,7 @@ export function EditorSection() {
     return (
         <section ref={ref} data-inview={inView} aria-labelledby="editor-title" className="py-20 md:py-24">
             <div className="page-container">
-                <div className="reveal card grid items-center gap-10 bg-[var(--color-bg-secondary)] p-6 sm:p-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12 lg:p-12">
+                <div className="reveal card grid items-center gap-10 bg-tertiary shadow-none p-6 sm:p-10 lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-12 lg:p-12">
                     <div>
                         <p className="section-badge">{t.editorSection.badge}</p>
                         <h2 id="editor-title" className="mt-4 text-section text-balance text-primary">

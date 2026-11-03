@@ -11,7 +11,6 @@ import { useT } from "@/i18n";
 import { DesktopNav } from "./DesktopNav";
 import { MobileNav } from "./MobileNav";
 import { useToolSearch } from "@/store/useToolSearch";
-import { SearchDialog } from "./SearchDialog";
 import { ThemeToggle } from "./ThemeToggle";
 
 const DESKTOP = "(min-width: 64rem)";
@@ -112,7 +111,6 @@ export function Navbar() {
             </div>
 
             <MobileNav id={MOBILE_NAV_ID} open={menuOpen} onClose={closeMenu} activeSection={activeSection} />
-            <SearchDialog />
         </header>
     );
 }

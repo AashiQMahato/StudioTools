@@ -1,4 +1,4 @@
-import { ChevronDown, CircleHelp, ImagePlus, LoaderCircle, Menu } from "lucide-react";
+import { ChevronDown, CircleHelp, ImagePlus, LoaderCircle, Menu, Search } from "lucide-react";
 import { createContext, type CSSProperties, type ReactNode, useCallback, useContext, useEffect, useId, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { LogoMark } from "@/components/common/Logo";
@@ -10,6 +10,7 @@ import { isDocumentTool, studioToolGroups, type ToolKey } from "@/lib/constants/
 import { ROUTES } from "@/lib/constants/routes";
 import { cn } from "@/lib/utils/cn";
 import { useHandoff } from "@/store/useHandoff";
+import { useToolSearch } from "@/store/useToolSearch";
 import { useSectionImageStore } from "@/store/useImageStore";
 import { useImmersiveLayout } from "@/store/useLayoutStore";
 import { useT } from "@/i18n";
@@ -166,6 +167,9 @@ export function StudioShell({ tool, actions, exportSlot, panel, panelLabel, chil
                                 </button>
                             </>
                         )}
+                        <button type="button" onClick={() => useToolSearch.getState().setOpen(true)} aria-haspopup="dialog" aria-keyshortcuts="Meta+K Control+K" aria-label={t.nav.mega.search.label} title={t.nav.mega.search.label} className={cn(iconButton, "hidden sm:grid")}>
+                            <Search className="size-[1.125rem]" aria-hidden />
+                        </button>
                         <ShortcutsHelp className="hidden sm:block" />
                         {/* grid, not flex: the sun and moon share one cell and swap in place, as on the home page. */}
                         <ThemeToggle className="hidden size-9! rounded-lg! sm:grid" />

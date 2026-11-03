@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router-dom";
 import { Footer } from "./Footer";
 import { Navbar } from "./Navbar";
+import { SearchDialog } from "./SearchDialog";
 import { useDocumentLanguage, useT } from "@/i18n";
 import { useSeo } from "@/lib/seo/useSeo";
 import { useLayoutStore } from "@/store/useLayoutStore";
@@ -38,6 +39,8 @@ export function AppLayout() {
                 <Outlet />
             </main>
             {!immersive && <Footer />}
+            {/* Tool search (⌘K / Ctrl+K) works everywhere, tool workspaces included. */}
+            <SearchDialog />
         </div>
     );
 }

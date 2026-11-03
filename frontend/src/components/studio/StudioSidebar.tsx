@@ -1,6 +1,7 @@
 import { ArrowLeft, X } from "lucide-react";
-import { type ReactNode, useEffect, useRef } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef } from "react";
 import { Link, useLocation } from "react-router-dom";
+import { TOOL_ACCENT } from "@/components/layout/toolRegistry";
 import { documentMenu, imageMenu, isCurrentItem, menuItemCopy, sidebarSections, type ToolMenu } from "@/components/layout/toolMenus";
 import { isDocumentTool, type ToolKey } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils/cn";
@@ -49,12 +50,12 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                     collapsed ? "w-0 opacity-0 lg:-mr-3" : "opacity-100 lg:w-[4.25rem] xl:w-[13.75rem]",
                 )}
             >
-                <SidebarNav current={current} className="lg:w-[4.25rem] lg:rounded-l-none lg:border-l-0 xl:w-[13.75rem]" />
+                <SidebarNav current={current} className="lg:w-[4.25rem] lg:pt-1 lg:pl-2.5 xl:w-[13.75rem]" />
             </div>
 
             {/* Narrow screens: a drawer from the left, over the page. */}
             <div className={cn("fixed inset-0 z-50 lg:hidden", !drawerOpen && "pointer-events-none")} inert={!drawerOpen}>
-                <div aria-hidden onClick={onCloseDrawer} className={cn("absolute inset-0 bg-neutral-950/40 backdrop-blur-[2px] transition-opacity duration-300 motion-reduce:transition-none", drawerOpen ? "opacity-100" : "opacity-0")} />
+                <div aria-hidden onClick={onCloseDrawer} className={cn("absolute inset-0 bg-[rgb(17_19_24/0.3)] backdrop-blur-[2px] transition-opacity duration-300 motion-reduce:transition-none", drawerOpen ? "opacity-100" : "opacity-0")} />
                 <div
                     ref={drawer}
                     role="dialog"
@@ -62,7 +63,7 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                     aria-label={t.studio.toolsNav}
                     tabIndex={-1}
                     className={cn(
-                        "absolute inset-y-0 left-0 flex w-[min(14.5rem,66vw)] flex-col rounded-r-3xl bg-primary pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
+                        "glass-strong absolute inset-y-0 left-0 flex w-[min(15rem,72vw)] flex-col rounded-r-[1.75rem] pt-[env(safe-area-inset-top)] pb-[env(safe-area-inset-bottom)] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
                         drawerOpen ? "translate-x-0" : "-translate-x-full",
                     )}
                 >
@@ -73,7 +74,7 @@ export function StudioSidebar({ current, collapsed, drawerOpen, onCloseDrawer, i
                         header={
                             <div className="mb-2 flex shrink-0 items-center justify-between pl-2">
                                 <span className="text-base font-semibold tracking-tight text-primary">{t.studio.toolsNav}</span>
-                                <button type="button" onClick={onCloseDrawer} aria-label={t.studio.hideTools} className="grid size-8 cursor-pointer place-items-center rounded-full bg-secondary text-tertiary outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 pointer-coarse:size-10">
+                                <button type="button" onClick={onCloseDrawer} aria-label={t.studio.hideTools} className="grid size-8 cursor-pointer place-items-center rounded-full nav-fill text-tertiary outline-focus-ring transition-colors hover:text-primary focus-visible:outline-2 pointer-coarse:size-10">
                                     <X className="size-4" aria-hidden />
                                 </button>
                             </div>
@@ -101,7 +102,7 @@ function SidebarNav({ current, className, onNavigate, header }: { current: ToolK
     }, [pathname]);
 
     return (
-        <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-2xl border border-[var(--card-line)] bg-primary p-2", className)}>
+        <nav aria-label={copy.toolsNav} className={cn("flex shrink-0 flex-col rounded-[1.25rem] p-2", className)}>
             {header}
             <div ref={list} className="-mx-1 flex flex-1 flex-col gap-5 overflow-y-auto px-1 pb-1">
                 {sidebarSections(menu).map((section) => (
@@ -120,20 +121,21 @@ function SidebarNav({ current, className, onNavigate, header }: { current: ToolK
                                     onClick={onNavigate}
                                     aria-current={active ? "page" : undefined}
                                     title={title}
+                                    style={{ "--item": TOOL_ACCENT[item.key] ?? "var(--brand-solid)" } as CSSProperties}
                                     className={cn(
                                         "studio-nav-item group relative flex items-center gap-2.5 rounded-xl p-1.5 outline-focus-ring transition-colors duration-150 focus-visible:outline-2 lg:justify-center xl:justify-start xl:pr-2",
-                                        active ? "bg-[var(--brand-soft)] before:absolute before:top-2 before:bottom-2 before:-left-1 before:w-1 before:rounded-full before:bg-[var(--brand)] lg:before:hidden xl:before:block" : "hover:bg-secondary",
+                                        active ? "bg-primary shadow-[0_0_0_1px_var(--card-line),0_4px_12px_-8px_rgb(32_33_36/0.3)]" : "hover:nav-fill",
                                     )}
                                 >
                                     <span
                                         className={cn(
-                                            "grid size-8 shrink-0 place-items-center rounded-lg border transition-colors duration-150",
-                                            active ? "border-transparent bg-linear-to-b from-[#3B82F6] to-[#2563EB] text-white shadow-[0_4px_10px_-4px_rgb(37_99_235/0.6)]" : "border-transparent bg-secondary text-tertiary group-hover:bg-primary group-hover:text-primary",
+                                            "grid size-8 shrink-0 place-items-center rounded-[0.625rem] transition-colors duration-150",
+                                            active ? "bg-[var(--item)] text-white shadow-[0_4px_10px_-5px_var(--item)]" : "text-tertiary group-hover:bg-[color-mix(in_srgb,var(--item)_12%,transparent)] group-hover:text-[var(--item)]",
                                         )}
                                     >
                                         <Icon className="size-4" strokeWidth={1.9} aria-hidden />
                                     </span>
-                                    <span className={cn("min-w-0 truncate text-[0.8125rem] font-medium whitespace-nowrap lg:sr-only xl:not-sr-only", active ? "font-semibold text-[var(--brand)]" : "text-secondary")}>{title}</span>
+                                    <span className={cn("min-w-0 truncate text-[0.8125rem] whitespace-nowrap lg:sr-only xl:not-sr-only", active ? "font-semibold text-primary" : "font-medium text-secondary group-hover:text-primary")}>{title}</span>
                                 </Link>
                             );
                         })}
@@ -146,7 +148,7 @@ function SidebarNav({ current, className, onNavigate, header }: { current: ToolK
                     to={menu.href}
                     onClick={onNavigate}
                     title={back}
-                    className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-sm font-medium text-tertiary outline-focus-ring transition-colors duration-150 hover:bg-secondary hover:text-primary focus-visible:outline-2 lg:justify-center xl:justify-start"
+                    className="flex h-10 items-center gap-2 rounded-xl px-2.5 text-sm font-medium text-tertiary outline-focus-ring transition-colors duration-150 hover:nav-fill hover:text-primary focus-visible:outline-2 lg:justify-center xl:justify-start"
                 >
                     <ArrowLeft className="size-4 shrink-0" aria-hidden />
                     <span className="lg:sr-only xl:not-sr-only">{back}</span>

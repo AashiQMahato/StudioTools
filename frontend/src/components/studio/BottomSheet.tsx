@@ -21,7 +21,7 @@ export function BottomSheet({ open, onClose, title, closeLabel, children, classN
 
     return (
         <div className={cn("fixed inset-0 z-40 lg:hidden", !open && "pointer-events-none", className)} inert={!open}>
-            <div aria-hidden onClick={onClose} className={cn("absolute inset-0 bg-neutral-950/35 transition-opacity duration-300", open ? "opacity-100" : "opacity-0")} />
+            <div aria-hidden onClick={onClose} className={cn("absolute inset-0 bg-[rgb(17_19_24/0.3)] transition-opacity duration-300", open ? "opacity-100" : "opacity-0")} />
             <div
                 ref={panelRef}
                 role="dialog"
@@ -29,7 +29,7 @@ export function BottomSheet({ open, onClose, title, closeLabel, children, classN
                 aria-label={title}
                 tabIndex={-1}
                 className={cn(
-                    "absolute inset-x-0 bottom-0 flex max-h-[78svh] flex-col rounded-t-3xl border-t border-[var(--card-line)] bg-primary pb-[env(safe-area-inset-bottom)] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
+                    "glass-strong absolute inset-x-0 bottom-0 flex max-h-[78svh] flex-col rounded-t-[1.75rem] pb-[env(safe-area-inset-bottom)] shadow-2xl outline-none transition-transform duration-300 ease-[var(--ease-out)] motion-reduce:transition-none",
                     open ? "translate-y-0" : "translate-y-full",
                 )}
             >

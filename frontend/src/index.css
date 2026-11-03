@@ -1641,6 +1641,70 @@
     }
 }
 
+/* The workspace: paper around the work, the top bar a strip of glass over it. */
+.studio-shell {
+    background-color: var(--page-bg);
+}
+.studio-topbar {
+    background-color: color-mix(in srgb, var(--page-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+
+    @media (width >= 64rem) {
+        background-color: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+/* The canvas card and the settings panel: solid surfaces (the work is never under glass). */
+.studio-surface {
+    background-color: var(--color-bg-primary);
+    box-shadow:
+        0 0 0 1px var(--card-line),
+        0 1px 2px rgb(32 33 36 / 0.04),
+        0 12px 32px -24px rgb(32 33 36 / 0.25);
+}
+.dark-mode .studio-surface {
+    box-shadow: 0 0 0 1px var(--card-line);
+}
+/* The settings panel slides in when there is something to set. */
+.studio-panel-in {
+    animation: studio-panel-in 360ms var(--ease-out) both;
+}
+@keyframes studio-panel-in {
+    from {
+        opacity: 0;
+        translate: 12px 0;
+    }
+}
+.studio-dialog {
+    animation: studio-dialog-in 220ms var(--ease-out) both;
+}
+@keyframes studio-dialog-in {
+    from {
+        opacity: 0;
+        scale: 0.96;
+        translate: 0 6px;
+    }
+}
+@media (width < 64rem) {
+    .studio-panel-in {
+        animation-name: studio-panel-up;
+    }
+    @keyframes studio-panel-up {
+        from {
+            opacity: 0;
+            translate: 0 12px;
+        }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .studio-panel-in,
+    .studio-dialog {
+        animation: none;
+    }
+}
+
 .studio-nav-item {
     transition:
         background-color 150ms ease-out,
@@ -1658,7 +1722,71 @@
         translate: none;
     }
     .studio-cta,
-    .studio-nav-item {
+    /* The workspace: paper around the work, the top bar a strip of glass over it. */
+.studio-shell {
+    background-color: var(--page-bg);
+}
+.studio-topbar {
+    background-color: color-mix(in srgb, var(--page-bg) 82%, transparent);
+    -webkit-backdrop-filter: blur(18px) saturate(160%);
+    backdrop-filter: blur(18px) saturate(160%);
+
+    @media (width >= 64rem) {
+        background-color: transparent;
+        backdrop-filter: none;
+        -webkit-backdrop-filter: none;
+    }
+}
+/* The canvas card and the settings panel: solid surfaces (the work is never under glass). */
+.studio-surface {
+    background-color: var(--color-bg-primary);
+    box-shadow:
+        0 0 0 1px var(--card-line),
+        0 1px 2px rgb(32 33 36 / 0.04),
+        0 12px 32px -24px rgb(32 33 36 / 0.25);
+}
+.dark-mode .studio-surface {
+    box-shadow: 0 0 0 1px var(--card-line);
+}
+/* The settings panel slides in when there is something to set. */
+.studio-panel-in {
+    animation: studio-panel-in 360ms var(--ease-out) both;
+}
+@keyframes studio-panel-in {
+    from {
+        opacity: 0;
+        translate: 12px 0;
+    }
+}
+.studio-dialog {
+    animation: studio-dialog-in 220ms var(--ease-out) both;
+}
+@keyframes studio-dialog-in {
+    from {
+        opacity: 0;
+        scale: 0.96;
+        translate: 0 6px;
+    }
+}
+@media (width < 64rem) {
+    .studio-panel-in {
+        animation-name: studio-panel-up;
+    }
+    @keyframes studio-panel-up {
+        from {
+            opacity: 0;
+            translate: 0 12px;
+        }
+    }
+}
+@media (prefers-reduced-motion: reduce) {
+    .studio-panel-in,
+    .studio-dialog {
+        animation: none;
+    }
+}
+
+.studio-nav-item {
         scale: none !important;
     }
 }

@@ -72,7 +72,7 @@ export function WhiteboardToolbar({ activeTool, locked, onSelect, onToggleLock, 
             orientation={rail ? "vertical" : "horizontal"}
             className={cn(
                 "whiteboard-toolbar flex shrink-0 items-center gap-1 bg-primary",
-                rail ? "w-14 flex-col border-r border-secondary py-2" : "h-12 flex-row overflow-x-auto border-b border-secondary px-2 [scrollbar-width:none]",
+                rail ? "w-14 flex-col border-r border-[var(--card-line)] py-2" : "h-12 flex-row overflow-x-auto border-b border-[var(--card-line)] px-2 [scrollbar-width:none]",
             )}
         >
             {TOOL_GROUPS.map((group, index) => (

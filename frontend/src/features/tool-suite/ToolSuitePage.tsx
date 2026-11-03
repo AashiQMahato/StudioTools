@@ -87,7 +87,8 @@ export function ToolSuitePage<K extends MenuSectionKey>({ menu, other, copy, gro
     const sections = menu.sections.filter((section) => filter === "all" || section.key === filter);
 
     return (
-        <div className="relative isolate overflow-hidden">
+        // Runs up under the glass navbar (as the home hero does), so the light reaches the top edge.
+        <div className="relative isolate -mt-18 overflow-hidden pt-18">
             {/* Light from above in the brand's indigo and violet, fading into the paper. */}
             <div aria-hidden className="hero-glow pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem]" />
 

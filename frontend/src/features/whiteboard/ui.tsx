@@ -70,9 +70,9 @@ export function ToolButton({ icon: Icon, label, shortcut, tipPlacement, classNam
             <ToggleButton
                 aria-label={label}
                 className={cn(
-                    "relative grid size-10 shrink-0 cursor-default place-items-center rounded-lg text-secondary outline-none transition-colors duration-100",
+                    "relative grid size-10 shrink-0 cursor-default place-items-center rounded-[0.75rem] text-secondary outline-none transition-[background-color,color,box-shadow,scale] duration-100 pressed:scale-95",
                     "hovered:bg-primary_hover hovered:text-primary pressed:bg-[var(--color-bg-active)]",
-                    "selected:bg-[var(--brand-soft)] selected:text-[var(--brand)] selected:shadow-[inset_0_0_0_1px_var(--brand-line)] selected:hovered:bg-[var(--brand-soft)]",
+                    "selected:bg-[var(--brand-solid)] selected:text-white selected:shadow-[0_4px_12px_-6px_var(--brand-solid)] selected:hovered:bg-[var(--brand-solid)]",
                     "focus-visible:outline-2 focus-visible:outline-offset-[-1px] focus-visible:outline-[var(--brand)]",
                     className as string,
                 )}
@@ -84,7 +84,7 @@ export function ToolButton({ icon: Icon, label, shortcut, tipPlacement, classNam
     );
 }
 
-export const menuPopover = "min-w-56 overflow-auto rounded-xl border border-secondary bg-primary p-1 text-primary shadow-lg outline-none entering:animate-in entering:fade-in entering:zoom-in-[0.98] exiting:animate-out exiting:fade-out";
+export const menuPopover = "glass-strong min-w-56 overflow-auto rounded-2xl p-1.5 text-primary outline-none entering:animate-in entering:fade-in entering:zoom-in-[0.98] exiting:animate-out exiting:fade-out";
 
 export function MenuPopover({ className, ...props }: PopoverProps) {
     return <Popover offset={6} className={cn(menuPopover, "z-[1500] max-h-[min(32rem,var(--visual-viewport-height))]", className as string)} {...props} />;
@@ -123,7 +123,7 @@ export function MenuDivider() {
 export function ConfirmDialog({ open, onOpenChange, title, body, confirm, cancel, onConfirm }: { open: boolean; onOpenChange: (open: boolean) => void; title: string; body: string; confirm: string; cancel: string; onConfirm: () => void }) {
     return (
         <ModalOverlay isOpen={open} onOpenChange={onOpenChange} isDismissable className="fixed inset-0 z-[2000] grid place-items-center bg-overlay/30 p-4 entering:animate-in entering:fade-in exiting:animate-out exiting:fade-out">
-            <Modal className="w-full max-w-sm rounded-2xl border border-secondary bg-primary p-5 text-primary shadow-xl entering:animate-in entering:zoom-in-[0.98]">
+            <Modal className="glass-strong w-full max-w-sm rounded-[1.375rem] p-5 text-primary outline-none entering:animate-in entering:zoom-in-[0.98]">
                 <Dialog role="alertdialog" className="outline-none">
                     {({ close }) => (
                         <>

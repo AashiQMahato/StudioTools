@@ -198,7 +198,7 @@ function UpscalerStudio() {
                 {!original ? (
                     <StudioDropzone title={copy.dropTitle} hint={copy.intros.upscaler.hint} />
                 ) : unsupported && !done ? (
-                    <StudioError title={copy.unavailableTitle} message={errorMessage(t, unsupported)} />
+                    <StudioError tone="unavailable" title={copy.unavailableTitle} message={errorMessage(t, unsupported)} />
                 ) : status === "error" ? (
                     <StudioError title={copy.errorTitle} message={errorMessage(t, job.error)} onRetry={run} />
                 ) : done && settled && shown ? (

@@ -132,7 +132,7 @@ export function WhiteboardTopBar(props: TopBarProps) {
     const copy = t.whiteboard;
 
     return (
-        <header className="relative z-10 flex h-13 shrink-0 items-center gap-1 border-b border-secondary bg-primary pr-2 pl-1.5 sm:pr-3 sm:pl-2">
+        <header className="relative z-10 flex h-13 shrink-0 items-center gap-1 border-b border-[var(--card-line)] bg-primary pr-2 pl-1.5 sm:pr-3 sm:pl-2">
             <Tip label={copy.back}>
                 <Link href={ROUTES.home} aria-label={copy.back} className="flex h-9 shrink-0 cursor-default items-center gap-1 rounded-lg pr-1.5 pl-1 text-tertiary outline-none hovered:bg-primary_hover hovered:text-primary focus-visible:outline-2 focus-visible:outline-[var(--brand)]">
                     <ChevronLeft className="size-4" strokeWidth={2} aria-hidden />

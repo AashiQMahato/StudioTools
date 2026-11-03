@@ -780,6 +780,18 @@ export const en = {
         },
     },
     studio: {
+        help: {
+            label: "Help and keyboard shortcuts",
+            title: "Shortcuts",
+            search: "Search tools",
+            paste: "Paste an image",
+            drop: "Drop a file anywhere",
+            dropKey: "Drag",
+            undo: "Undo",
+            redo: "Redo",
+            close: "Close menus and dialogs",
+            undoNote: "Undo and redo work in tools that keep an edit history.",
+        },
         name: "Studio",
         suffix: "Tools",
         breadcrumb: "You are here",

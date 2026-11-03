@@ -72,7 +72,7 @@ export function ExportDialog<F extends string>(props: ExportDialogProps<F>) {
             aria-labelledby={titleId}
             onClose={onClose}
             onClick={(event) => event.target === dialog.current && !busy.current && onClose()}
-            className="m-auto w-[min(30rem,calc(100vw-1.5rem))] rounded-2xl border border-[var(--card-line)] bg-primary p-0 text-primary shadow-2xl backdrop:bg-neutral-950/45"
+            className="studio-dialog glass-strong m-auto w-[min(30rem,calc(100vw-1.5rem))] rounded-[1.375rem] p-0 text-primary backdrop:bg-[rgb(17_19_24/0.32)] backdrop:backdrop-blur-[2px]"
         >
             {/* Mounted afresh for each opening: it starts from what the caller suggests. */}
             {open && <ExportForm {...props} titleId={titleId} busyRef={busy} />}

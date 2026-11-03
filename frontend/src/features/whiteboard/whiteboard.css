@@ -61,7 +61,8 @@
     --color-slider-track: var(--color-bg-tertiary);
 
     /* Surfaces and text: the site's neutrals. */
-    --island-bg-color: var(--color-bg-primary);
+    /* Floating panels are Studio Tools glass (see .Island below); popups stay solid for legibility. */
+    --island-bg-color: var(--glass-bg-strong);
     --popup-bg-color: var(--color-bg-primary);
     --sidebar-bg-color: var(--color-bg-primary);
     --default-bg-color: var(--color-bg-primary);
@@ -87,20 +88,38 @@
     --sidebar-border-color: var(--color-border-secondary);
     --input-border-color: var(--color-border-primary);
     --color-border-outline-variant: var(--color-border-secondary);
-    --shadow-island: 0 0 0 1px var(--color-border-secondary), 0 8px 24px -12px rgb(16 24 40 / 0.18);
-    --modal-shadow: 0 24px 64px -24px rgb(16 24 40 / 0.35);
+    --shadow-island: inset 0 1px 0 var(--glass-rim), 0 0 0 1px var(--glass-edge), var(--glass-shadow);
+    --modal-shadow: var(--glass-shadow-lg);
     --sidebar-shadow: none;
     --library-dropdown-shadow: 0 8px 24px -12px rgb(16 24 40 / 0.25);
-    --border-radius-md: 0.5rem;
-    --border-radius-lg: 0.75rem;
+    --border-radius-md: 0.625rem;
+    --border-radius-lg: 1rem;
 
     /* The canvas selection outline and handles, in the accent. The dark theme draws the canvas through
        an inverting filter, so its colour is the one that inverts to the light accent. */
-    --color-selection: #0369a1;
+    --color-selection: #5367e8;
 }
 
 :root .excalidraw.theme--dark {
-    --color-selection: #075985;
+    --color-selection: #4256d6;
+}
+
+/* Liquid Glass for the editor's floating panels (styling panel, library, menus): content on the canvas
+   stays visible, softly, behind them. Solid when the system asks for less transparency. */
+.excalidraw .Island {
+    -webkit-backdrop-filter: var(--glass-blur);
+    backdrop-filter: var(--glass-blur);
+}
+
+@media (prefers-reduced-transparency: reduce) {
+    :root .excalidraw,
+    :root .excalidraw.theme--dark {
+        --island-bg-color: var(--color-bg-primary);
+    }
+    .excalidraw .Island {
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+    }
 }
 
 /* 3. Chrome the Studio Tools shell replaces. The undo/redo and zoom buttons stay in the page (the

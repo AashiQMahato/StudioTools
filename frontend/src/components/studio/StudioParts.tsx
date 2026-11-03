@@ -1,4 +1,4 @@
-import { AlertCircle, ArrowRight, CheckCircle2, ChevronDown, CircleAlert, Clipboard, Coffee, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, X } from "lucide-react";
+import { AlertCircle, ArrowRight, CloudOff, CheckCircle2, ChevronDown, CircleAlert, Clipboard, Coffee, CloudUpload, FileImage, FileText, Image as ImageIcon, ImagePlus, Info, Lightbulb, Lock, type LucideIcon, RotateCcw, Sparkles, X } from "lucide-react";
 import { type PointerEvent, type ReactNode, useId, useRef, useState } from "react";
 import { CompareSlider } from "@/components/common/CompareSlider";
 import { Segmented } from "@/components/common/Segmented";
@@ -54,13 +54,13 @@ export function StudioDropzone({ title, hint, limits, kind = "image", headline, 
             <button
                 type="button"
                 onClick={openPicker}
-                className="studio-drop group m-auto flex w-full max-w-2xl cursor-pointer flex-col items-center rounded-3xl px-5 py-8 text-center outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-4 sm:px-10 sm:py-12"
+                className="studio-drop group m-auto flex w-full max-w-2xl cursor-pointer flex-col items-center rounded-[1.75rem] px-5 py-8 text-center outline-focus-ring focus-visible:outline-2 focus-visible:outline-offset-4 sm:px-10 sm:py-12"
             >
                 <DropArt kind={kind} />
-                <span className="mt-6 text-[1.625rem] leading-tight font-bold tracking-[-0.02em] text-balance text-primary sm:text-[2rem]">
+                <span className="mt-6 text-[1.5rem] leading-tight font-semibold tracking-[-0.025em] text-balance text-primary sm:text-[1.875rem]">
                     {headline ? (
                         <>
-                            {headline.lead} <span className="bg-linear-to-r from-[#6366F1] to-[#A855F7] bg-clip-text text-transparent dark:from-[#818CF8] dark:to-[#C084FC]">{headline.accent}</span>
+                            {headline.lead} <span className="hero-accent">{headline.accent}</span>
                             {headline.tail && <span className="block">{headline.tail}</span>}
                         </>
                     ) : (
@@ -68,17 +68,17 @@ export function StudioDropzone({ title, hint, limits, kind = "image", headline, 
                     )}
                 </span>
                 <span className="mt-3 max-w-md text-sm leading-relaxed text-pretty text-tertiary sm:text-md">{hint}</span>
-                <span className="studio-cta mt-7 inline-flex h-12 items-center gap-2.5 rounded-xl px-6 text-md font-semibold text-white">
+                <span className="studio-cta mt-7 inline-flex h-12 items-center gap-2.5 rounded-full px-6 text-md font-semibold text-white">
                     {kind === "pdf" ? <CloudUpload className="size-5" aria-hidden /> : <ImagePlus className="size-5" aria-hidden />}
                     {actionLabel ?? t.common.chooseImage}
                 </span>
                 <span className="mt-3 text-sm text-tertiary [@media(hover:none)]:hidden">{many ? t.studio.dragHintMany : t.studio.dragHint}</span>
 
                 {features && features.length > 0 && (
-                    <span className="mt-8 grid w-full max-w-xl grid-cols-1 gap-3 rounded-2xl border border-[var(--card-line)] bg-primary/80 p-3 text-left sm:grid-cols-3 sm:p-4">
+                    <span className="mt-8 grid w-full max-w-xl grid-cols-1 gap-3 rounded-2xl bg-secondary p-3 text-left sm:grid-cols-3 sm:p-4">
                         {features.map(({ icon: Icon, title: featureTitle, detail }) => (
                             <span key={featureTitle} className="flex items-center gap-3">
-                                <span className="grid size-9 shrink-0 place-items-center rounded-lg bg-[color-mix(in_srgb,#6366F1_12%,transparent)] text-[#4F46E5] dark:text-[#A5B4FC]">
+                                <span className="grid size-9 shrink-0 place-items-center rounded-[0.625rem] bg-[color-mix(in_srgb,var(--accent)_12%,transparent)] text-[var(--accent)]">
                                     <Icon className="size-[1.125rem]" strokeWidth={1.9} aria-hidden />
                                 </span>
                                 <span className="min-w-0">
@@ -115,32 +115,32 @@ export function StudioDropzone({ title, hint, limits, kind = "image", headline, 
 function DropArt({ kind }: { kind: "image" | "pdf" }) {
     return (
         <span aria-hidden className="studio-drop-art relative block h-32 w-56 sm:h-36 sm:w-64">
-            <span className="absolute top-6 left-6 size-20 rounded-full bg-[#BAE6FD]/60 blur-xl dark:bg-[#0EA5E9]/25" />
-            <span className="absolute right-6 bottom-2 size-20 rounded-full bg-[#DDD6FE]/70 blur-xl dark:bg-[#8B5CF6]/25" />
+            <span className="absolute top-6 left-6 size-20 rounded-full bg-[#C9E8F5]/60 blur-xl dark:bg-[#36A5D6]/25" />
+            <span className="absolute right-6 bottom-2 size-20 rounded-full bg-[#E2D9FB]/70 blur-xl dark:bg-[#8866E8]/25" />
             {kind === "pdf" ? (
                 <>
                     <span className="absolute top-1 left-[22%] flex h-28 w-22 -rotate-6 flex-col rounded-xl border border-white/80 bg-white p-2.5 shadow-[0_16px_32px_-14px_rgb(30_41_59/0.4)] sm:h-30 dark:border-white/10 dark:bg-[#1c1f2b]">
-                        <span className="grid h-12 place-items-center rounded-lg bg-linear-to-br from-[#FB7185] to-[#E11D48] text-white">
+                        <span className="grid h-12 place-items-center rounded-lg bg-linear-to-br from-[#EE8B93] to-[#D9606B] text-white">
                             <FileText className="size-6" strokeWidth={1.8} />
                         </span>
-                        <span className="mt-2.5 h-1.5 w-[80%] rounded-full bg-[#E2E8F0] dark:bg-white/15" />
-                        <span className="mt-1.5 h-1.5 w-[60%] rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                        <span className="mt-2.5 h-1.5 w-[80%] rounded-full bg-[#E8E5DD] dark:bg-white/15" />
+                        <span className="mt-1.5 h-1.5 w-[60%] rounded-full bg-[#E8E5DD] dark:bg-white/15" />
                     </span>
-                    <span className="absolute top-10 right-[16%] grid h-18 w-22 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#60A5FA] to-[#2563EB] shadow-[0_16px_32px_-12px_rgb(37_99_235/0.55)] ring-4 ring-white dark:ring-[#1c1f2b]">
+                    <span className="absolute top-10 right-[16%] grid h-18 w-22 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#7A8CF2] to-[#4256D6] shadow-[0_16px_32px_-12px_rgb(83_103_232/0.55)] ring-4 ring-white dark:ring-[#1c1f2b]">
                         <ImageIcon className="size-8 text-white" strokeWidth={1.6} />
                     </span>
                 </>
             ) : (
                 <>
                     <span className="absolute top-2 left-[24%] h-26 w-36 -rotate-6 overflow-hidden rounded-xl shadow-[0_16px_32px_-14px_rgb(30_41_59/0.45)] ring-4 ring-white dark:ring-[#1c1f2b]">
-                        <span className="absolute inset-0 bg-linear-to-b from-[#FDE68A] via-[#F9A8D4] to-[#A5B4FC]" />
+                        <span className="absolute inset-0 bg-linear-to-b from-[#FDE68A] via-[#F9A8D4] to-[#B7BFFF]" />
                         <span className="absolute top-3 right-6 size-6 rounded-full bg-[#FEF3C7]" />
                         <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="absolute inset-x-0 bottom-0 h-[55%] w-full">
-                            <path d="M0 60V38l22-20 16 14 20-24 42 34v18z" fill="#6366F1" opacity="0.85" />
-                            <path d="M0 60V46l30-16 22 14 18-10 30 18v8z" fill="#4338CA" />
+                            <path d="M0 60V38l22-20 16 14 20-24 42 34v18z" fill="#5367E8" opacity="0.85" />
+                            <path d="M0 60V46l30-16 22 14 18-10 30 18v8z" fill="#3F4FC8" />
                         </svg>
                     </span>
-                    <span className="absolute top-12 right-[16%] grid size-14 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#A78BFA] to-[#7C3AED] text-white shadow-[0_16px_32px_-12px_rgb(124_58_237/0.55)]">
+                    <span className="absolute top-12 right-[16%] grid size-14 rotate-6 place-items-center rounded-xl bg-linear-to-br from-[#A68CF2] to-[#7A58E0] text-white shadow-[0_16px_32px_-12px_rgb(122_88_224/0.55)]">
                         <Sparkles className="size-6" strokeWidth={1.8} />
                     </span>
                 </>
@@ -149,12 +149,13 @@ function DropArt({ kind }: { kind: "image" | "pdf" }) {
     );
 }
 
-export function StudioError({ title, message, onRetry }: { title: string; message: string; onRetry?: () => void }) {
+export function StudioError({ title, message, onRetry, tone = "error" }: { title: string; message: string; onRetry?: () => void; /** "unavailable": the server doesn't offer this right now — a state, not a failure. */ tone?: "error" | "unavailable" }) {
     const t = useT();
+    const unavailable = tone === "unavailable";
     return (
-        <div role="alert" className="animate-enter flex flex-1 flex-col items-center justify-center p-6 text-center [--i:-1]">
-            <span className="grid size-12 place-items-center rounded-2xl bg-error-primary text-error-primary">
-                <AlertCircle className="size-6" aria-hidden />
+        <div role={unavailable ? "status" : "alert"} className="animate-enter flex flex-1 flex-col items-center justify-center p-6 text-center [--i:-1]">
+            <span className={cn("grid size-12 place-items-center rounded-2xl", unavailable ? "bg-[var(--a-amber-soft)] text-[var(--a-amber)]" : "bg-error-primary text-error-primary")}>
+                {unavailable ? <CloudOff className="size-6" aria-hidden /> : <AlertCircle className="size-6" aria-hidden />}
             </span>
             <p className="mt-4 text-md font-semibold text-primary">{title}</p>
             <p className="mt-1 max-w-sm text-sm text-tertiary">{message}</p>
@@ -219,7 +220,7 @@ export function ClearImageX() {
         <div className="group absolute top-3 right-3 z-20 flex items-center">
             <span
                 role="tooltip"
-                className="pointer-events-none absolute right-full mr-2 translate-x-1 rounded-full bg-neutral-900/85 px-3 py-1.5 text-xs font-medium whitespace-nowrap text-white opacity-0 shadow-lg backdrop-blur-md transition-[opacity,translate] duration-150 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-300 motion-reduce:transition-none pointer-coarse:hidden"
+                className="pointer-events-none absolute right-full mr-2 translate-x-1 rounded-full material px-3 py-1.5 text-xs font-medium whitespace-nowrap text-primary opacity-0 transition-[opacity,translate] duration-150 group-focus-within:translate-x-0 group-focus-within:opacity-100 group-hover:translate-x-0 group-hover:opacity-100 group-hover:delay-300 motion-reduce:transition-none pointer-coarse:hidden"
             >
                 {t.studio.clearImage}
             </span>
@@ -227,7 +228,7 @@ export function ClearImageX() {
                 type="button"
                 onClick={clearImage}
                 aria-label={t.studio.clearImage}
-                className="press-scale grid size-9 cursor-pointer place-items-center rounded-full bg-neutral-900/55 text-white shadow-sm ring-1 ring-white/20 backdrop-blur-xl backdrop-saturate-150 outline-focus-ring transition-[background-color,transform] duration-150 hover:bg-neutral-900/80 focus-visible:outline-2 pointer-coarse:size-11"
+                className="press-scale material grid size-9 cursor-pointer place-items-center rounded-full text-secondary hover:text-primary outline-focus-ring transition-[color,transform] duration-150 focus-visible:outline-2 pointer-coarse:size-11"
             >
                 <X className="size-4" strokeWidth={2.25} aria-hidden />
             </button>
@@ -264,7 +265,8 @@ export function PanelTabs<T extends string>({ tabs, value, onChange, label }: { 
                     disabled: tab.disabled,
                     label: (
                         <>
-                            <span className="hidden shrink-0 sm:inline-flex">{tab.icon}</span>
+                            {/* Four or more tabs: words only, so each label fits whole. */}
+                            {tabs.length < 4 && <span className="hidden shrink-0 sm:inline-flex">{tab.icon}</span>}
                             <span className="truncate">{tab.label}</span>
                         </>
                     ),
@@ -311,7 +313,7 @@ export function PanelIntro({ title, steps, art, formats, tip }: PanelIntroProps)
                         const { title: stepTitle, detail } = typeof step === "string" ? { title: step, detail: null } : step;
                         return (
                             <li key={stepTitle} className="flex gap-3">
-                                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-linear-to-b from-[#818CF8] to-[#6366F1] text-xs font-semibold text-white tabular-nums shadow-[0_3px_8px_-3px_rgb(99_102_241/0.7)]">{index + 1}</span>
+                                <span className="grid size-6 shrink-0 place-items-center rounded-full bg-linear-to-b from-[#8E9BFF] to-[#5367E8] text-xs font-semibold text-white tabular-nums shadow-[0_3px_8px_-3px_rgb(83_103_232/0.7)]">{index + 1}</span>
                                 <span className="min-w-0 pt-0.5">
                                     <span className={cn("block text-sm", detail ? "font-semibold text-primary" : "text-secondary")}>{stepTitle}</span>
                                     {detail && <span className="mt-0.5 block text-sm leading-relaxed text-tertiary">{detail}</span>}
@@ -337,7 +339,7 @@ export function PanelIntro({ title, steps, art, formats, tip }: PanelIntroProps)
             {tip && tipShown && (
                 <aside className="relative rounded-2xl border border-[color-mix(in_srgb,#A855F7_18%,transparent)] bg-[color-mix(in_srgb,#A855F7_7%,transparent)] p-4 pr-10">
                     <p className="flex items-center gap-2 text-sm font-semibold text-primary">
-                        <Lightbulb className="size-4 text-[#F59E0B]" aria-hidden />
+                        <Lightbulb className="size-4 text-[#E4A23A]" aria-hidden />
                         {t.studio.proTip}
                     </p>
                     <p className="mt-1.5 text-sm leading-relaxed text-tertiary">{tip}</p>
@@ -350,7 +352,7 @@ export function PanelIntro({ title, steps, art, formats, tip }: PanelIntroProps)
     );
 }
 
-const FORMAT_TONES = ["#3B82F6", "#8B5CF6", "#10B981", "#F59E0B"];
+const FORMAT_TONES = ["#5367E8", "#8866E8", "#20A77A", "#E4A23A"];
 
 /** A picture for the panel's top: what goes in, an arrow, what comes out. Decorative. */
 export function PanelArt({ from, to }: { from: "pdf" | "image"; to: "pdf" | "images" | "text" }) {
@@ -359,30 +361,30 @@ export function PanelArt({ from, to }: { from: "pdf" | "image"; to: "pdf" | "ima
         <div aria-hidden className="flex h-32 items-center justify-center gap-4 rounded-2xl bg-linear-to-br from-[color-mix(in_srgb,#6366F1_8%,var(--color-bg-primary))] to-[color-mix(in_srgb,#0EA5E9_8%,var(--color-bg-primary))]">
             {from === "pdf" ? (
                 <span className="flex h-20 w-16 -rotate-3 flex-col items-center justify-center gap-1.5 rounded-lg border border-white/80 bg-white shadow-md dark:border-white/10 dark:bg-[#1c1f2b]">
-                    <span className="rounded-md bg-linear-to-br from-[#FB7185] to-[#E11D48] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">PDF</span>
-                    <span className="h-1 w-8 rounded-full bg-[#E2E8F0] dark:bg-white/15" />
-                    <span className="h-1 w-6 rounded-full bg-[#E2E8F0] dark:bg-white/15" />
+                    <span className="rounded-md bg-linear-to-br from-[#EE8B93] to-[#D9606B] px-1.5 py-0.5 text-[0.625rem] font-bold text-white">PDF</span>
+                    <span className="h-1 w-8 rounded-full bg-[#E8E5DD] dark:bg-white/15" />
+                    <span className="h-1 w-6 rounded-full bg-[#E8E5DD] dark:bg-white/15" />
                 </span>
             ) : (
-                <span className={cn(tile, "size-16 -rotate-3 bg-linear-to-br from-[#60A5FA] to-[#2563EB] shadow-md")}>
+                <span className={cn(tile, "size-16 -rotate-3 bg-linear-to-br from-[#7A8CF2] to-[#4256D6] shadow-md")}>
                     <ImageIcon className="size-7" strokeWidth={1.6} />
                 </span>
             )}
-            <ArrowRight className="size-6 text-[#818CF8]" strokeWidth={2.4} />
+            <ArrowRight className="size-6 text-[#8E9BFF]" strokeWidth={2.4} />
             {to === "images" ? (
                 <span className="relative h-20 w-20">
-                    <span className={cn(tile, "absolute top-0 left-0 size-11 bg-linear-to-br from-[#93C5FD] to-[#3B82F6] shadow-md")}>
+                    <span className={cn(tile, "absolute top-0 left-0 size-11 bg-linear-to-br from-[#9AAAF5] to-[#5367E8] shadow-md")}>
                         <ImageIcon className="size-5" />
                     </span>
-                    <span className={cn(tile, "absolute top-3 right-0 size-11 bg-linear-to-br from-[#A5B4FC] to-[#6366F1] shadow-md")}>
+                    <span className={cn(tile, "absolute top-3 right-0 size-11 bg-linear-to-br from-[#B7BFFF] to-[#5367E8] shadow-md")}>
                         <ImageIcon className="size-5" />
                     </span>
-                    <span className={cn(tile, "absolute bottom-0 left-4 size-11 bg-linear-to-br from-[#7DD3FC] to-[#0EA5E9] shadow-md")}>
+                    <span className={cn(tile, "absolute bottom-0 left-4 size-11 bg-linear-to-br from-[#7FCDEE] to-[#36A5D6] shadow-md")}>
                         <ImageIcon className="size-5" />
                     </span>
                 </span>
             ) : (
-                <span className={cn(tile, "size-16 rotate-3 shadow-md", to === "pdf" ? "bg-linear-to-br from-[#FB7185] to-[#E11D48]" : "bg-linear-to-br from-[#5EEAD4] to-[#0D9488]")}>
+                <span className={cn(tile, "size-16 rotate-3 shadow-md", to === "pdf" ? "bg-linear-to-br from-[#EE8B93] to-[#D9606B]" : "bg-linear-to-br from-[#5EEAD4] to-[#1E9A70]")}>
                     <FileText className="size-7" strokeWidth={1.6} />
                 </span>
             )}

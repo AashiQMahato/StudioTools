@@ -134,7 +134,7 @@ export function ImagePane({ src, alt, size, tool, region, onRegion, blocks, offs
                                         fill={active ? "rgb(37 99 235 / 0.14)" : "transparent"}
                                         stroke={active ? "rgb(37 99 235)" : "rgb(37 99 235 / 0.4)"}
                                         strokeWidth={active ? stroke * 1.5 : stroke}
-                                        className={cn(onBlockClick && "cursor-pointer hover:fill-[rgb(37_99_235/0.08)]")}
+                                        className={cn(onBlockClick && "cursor-pointer hover:fill-[rgb(83_103_232/0.08)]")}
                                         onClick={() => onBlockClick?.(block.id)}
                                     />
                                 );

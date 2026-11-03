@@ -9,7 +9,7 @@ export function ToolUnavailable({ tool, error }: { tool: ToolKey; error: AppErro
     return (
         <StudioShell tool={tool} panel={null} panelLabel={t.nav.toolItems[tool].title} hasWork={false}>
             <StudioCanvas>
-                <StudioError title={t.studio.unavailableTitle} message={errorMessage(t, error)} />
+                <StudioError tone="unavailable" title={t.studio.unavailableTitle} message={errorMessage(t, error)} />
             </StudioCanvas>
         </StudioShell>
     );
